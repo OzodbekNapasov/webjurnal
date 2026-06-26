@@ -94,7 +94,7 @@ function JournalContent() {
                 .from("lessons")
                 .select("*")
                 .eq("group_id", groupId)
-                .order("created_at", { ascending: true });
+                .order("id", { ascending: true });
 
             if (lessonsError) {
                 if (lessonsError.message.includes('relation "lessons" does not exist') || lessonsError.message.includes('public.lessons') || lessonsError.message.includes('schema cache')) {
@@ -316,7 +316,7 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                 <tr className="bg-slate-950/80 border-b border-slate-800/80 text-left">
                                                     <th className="p-2 sm:p-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider w-12 min-w-[48px] max-w-[48px] text-center sticky left-0 bg-[#0c1222] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">T/r</th>
                                                     <th className="p-2 sm:p-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider w-[140px] min-w-[140px] max-w-[140px] sm:w-[220px] sm:min-w-[220px] sm:max-w-[220px] sticky left-12 bg-[#0c1222] z-20 shadow-[4px_0_8px_-3px_rgba(0,0,0,0.6)] border-r border-slate-700/60 truncate">Talaba ismi-sharifi</th>
-                                                    {lessons.map((lesson) => (
+                                                    {lessons.map((lesson, index) => (
                                                         <th 
                                                             key={lesson.id} 
                                                             onClick={() => {
@@ -324,11 +324,11 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                 setIsEditLessonOpen(true);
                                                             }}
                                                             className="p-2 sm:p-4 text-[10px] sm:text-xs font-extrabold text-slate-400 uppercase tracking-wider text-center w-20 min-w-[80px] sm:w-24 sm:min-w-[96px] border-l border-slate-800/40 cursor-pointer hover:bg-slate-950/80 transition-colors"
-                                                            title={`${lesson.hours} soat: ${lesson.topic || 'Mavzu kiritilmagan'} (Tahrirlash/O'chirish)`}
+                                                            title={`${index + 1}-dars: ${lesson.topic || 'Mavzu kiritilmagan'} (${lesson.hours} soat, Tahrirlash/O'chirish)`}
                                                         >
                                                             <div className="flex flex-col items-center">
-                                                                <span className="hover:underline tracking-tight block">{lesson.lesson_date || "Sana?"}</span>
-                                                                <span className="text-[8px] sm:text-[9px] text-slate-500 font-semibold lowercase mt-0.5">{lesson.hours} soat</span>
+                                                                <span className="hover:underline tracking-tight block text-[11px] sm:text-xs">{lesson.lesson_date || "Sana?"}</span>
+                                                                <span className="text-[8px] sm:text-[9px] text-slate-400 font-bold mt-0.5">{index + 1}-dars</span>
                                                             </div>
                                                         </th>
                                                     ))}
