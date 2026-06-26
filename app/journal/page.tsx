@@ -38,9 +38,9 @@ function JournalContent() {
     // Tablar boshqaruvi
     const [activeTab, setActiveTab] = useState<"jurnal" | "mavzular">("jurnal");
 
-    // Yangi dars qo'shish modal holati
-    const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
-    const [newLesson, setNewLesson] = useState({ date: "", topic: "", hours: 2 });
+    // Yangi talaba qo'shish modal holati
+    const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+    const [newStudentName, setNewStudentName] = useState("");
 
     // Hujayra (Cell) tahrirlash modal holati
     const [isEditCellOpen, setIsEditCellOpen] = useState(false);
@@ -281,12 +281,12 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                         <div className="w-full md:w-auto">
                             <button
                                 onClick={() => {
-                                    setNewLesson({ date: getTodayFormatted(), topic: "", hours: 2 });
-                                    setIsAddLessonOpen(true);
+                                    setNewStudentName("");
+                                    setIsAddStudentOpen(true);
                                 }}
                                 className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
                             >
-                                <span>➕</span> Yangi dars qo'shish
+                                <span>👥</span> Yangi talaba qo'shish
                             </button>
                         </div>
                     </div>
@@ -482,44 +482,23 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                 </div>
             </div>
 
-            {/* MODAL 1: YANGI DARS QO'SHISH */}
-            {isAddLessonOpen && (
+            {/* MODAL 1: YANGI TALABA QO'SHISH */}
+            {isAddStudentOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
                     <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-md shadow-2xl">
-                        <h3 className="text-lg font-black text-white mb-2">➕ Yangi dars qo'shish</h3>
+                        <h3 className="text-lg font-black text-white mb-2">➕ Yangi talaba qo'shish</h3>
                         <p className="text-xs text-slate-400 font-bold mb-4">
-                            Sinf jurnaliga yangi dars ustunini qo'shish
+                            Guruhga yangi talaba ismini qo'shish
                         </p>
                         
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs font-bold text-slate-400 block mb-1">Dars sanasi</label>
+                                <label className="text-xs font-bold text-slate-400 block mb-1">Talaba F.I.Sh.</label>
                                 <input
                                     type="text"
-                                    placeholder="Masalan: 07.XI yoki 26.06.2026"
-                                    value={newLesson.date}
-                                    onChange={(e) => setNewLesson(prev => ({ ...prev, date: e.target.value }))}
-                                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-slate-400 block mb-1">Mavzu</label>
-                                <textarea
-                                    placeholder="Mashg'ulot mavzusini kiriting..."
-                                    value={newLesson.topic}
-                                    onChange={(e) => setNewLesson(prev => ({ ...prev, topic: e.target.value }))}
-                                    rows={3}
-                                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-semibold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner resize-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-xs font-bold text-slate-400 block mb-1">Dars soati</label>
-                                <input
-                                    type="number"
-                                    min={1}
-                                    max={10}
-                                    value={newLesson.hours}
-                                    onChange={(e) => setNewLesson(prev => ({ ...prev, hours: parseInt(e.target.value) || 2 }))}
+                                    placeholder="Masalan: ALIMOV VALI OLIM O'G'LI"
+                                    value={newStudentName}
+                                    onChange={(e) => setNewStudentName(e.target.value)}
                                     className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
                                 />
                             </div>
@@ -528,7 +507,7 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                         <div className="flex gap-3 mt-6">
                             <button
                                 type="button"
-                                onClick={() => setIsAddLessonOpen(false)}
+                                onClick={() => setIsAddStudentOpen(false)}
                                 className="flex-1 py-2.5 bg-slate-950/60 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-xl font-bold text-sm transition-all"
                             >
                                 Bekor qilish
@@ -536,26 +515,42 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                             <button
                                 type="button"
                                 onClick={async () => {
-                                    if (!newLesson.date.trim() || !newLesson.topic.trim()) {
-                                        alert("Iltimos, barcha maydonlarni to'ldiring!");
+                                    if (!newStudentName.trim()) {
+                                        alert("Iltimos, talaba ismini kiriting!");
                                         return;
                                     }
                                     try {
-                                        const { error } = await supabase!.from('lessons').insert({
-                                            group_id: parseInt(groupId!),
-                                            lesson_date: newLesson.date.trim(),
-                                            topic: newLesson.topic.trim(),
-                                            hours: newLesson.hours
-                                        });
+                                        // 1. Fetch current students to compute next sequential ID
+                                        const { data: currentStudents, error: fetchErr } = await supabase!
+                                            .from('students')
+                                            .select('id');
                                         
-                                        if (error) {
-                                            if (error.message.includes('duplicate key value violates unique constraint')) {
-                                                alert(`Bu guruhda ${newLesson.date} sanasidagi dars allaqachon mavjud!`);
-                                            } else {
-                                                alert(`Dars qo'shishda xatolik: ${error.message}`);
+                                        if (fetchErr) {
+                                            alert(`Talabalarni olishda xatolik: ${fetchErr.message}`);
+                                            return;
+                                        }
+
+                                        let nextId = "1";
+                                        if (currentStudents && currentStudents.length > 0) {
+                                            const numericIds = currentStudents.map(s => parseInt(s.id)).filter(n => !isNaN(n));
+                                            if (numericIds.length > 0) {
+                                                nextId = (Math.max(...numericIds) + 1).toString();
                                             }
+                                        }
+
+                                        // 2. Insert new student
+                                        const { error: insertErr } = await supabase!
+                                            .from('students')
+                                            .insert({
+                                                id: nextId,
+                                                fullName: newStudentName.trim().toUpperCase(),
+                                                group_id: parseInt(groupId!)
+                                            });
+                                        
+                                        if (insertErr) {
+                                            alert(`Talaba qo'shishda xatolik: ${insertErr.message}`);
                                         } else {
-                                            setIsAddLessonOpen(false);
+                                            setIsAddStudentOpen(false);
                                             loadData();
                                         }
                                     } catch (err: any) {
@@ -776,32 +771,6 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                     Saqlash
                                 </button>
                             </div>
-                            <button
-                                type="button"
-                                onClick={async () => {
-                                    if (!confirm("Haqiqatan ham ushbu darsni o'chirib tashlamoqchimisiz? (Shu darsdagi barcha davomat va baholar ham o'chib ketadi!)")) {
-                                        return;
-                                    }
-                                    try {
-                                        const { error } = await supabase!
-                                            .from('lessons')
-                                            .delete()
-                                            .eq('id', editingLesson.id);
-                                        
-                                        if (error) {
-                                            alert(`O'chirishda xatolik: ${error.message}`);
-                                        } else {
-                                            setIsEditLessonOpen(false);
-                                            loadData();
-                                        }
-                                    } catch (err: any) {
-                                        alert(`Xatolik: ${err.message}`);
-                                    }
-                                }}
-                                className="w-full py-2.5 bg-rose-950/40 hover:bg-rose-900/30 border border-rose-900/50 text-rose-400 rounded-xl font-bold text-sm transition-all mt-2"
-                            >
-                                🗑️ Darsni butunlay o'chirish
-                            </button>
                         </div>
                     </div>
                 </div>
