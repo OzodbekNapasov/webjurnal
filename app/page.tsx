@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 // .env o'zgaruvchilarini o'qish (bo'shliq va carriage return belgilaridan tozalash)
 const envUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
-const envKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '').trim();
+const envKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
 
 const FALLBACK_GROUPS = [
     { id: "25-16", name: "25-16 Hamshiralik ishi (3 yillik)" },
