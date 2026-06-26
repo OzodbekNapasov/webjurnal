@@ -6,13 +6,6 @@ import Link from 'next/link';
 const envUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
 const envKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
 
-const FALLBACK_GROUPS = [
-    { id: "25-16", name: "25-16 Hamshiralik ishi (3 yillik)" },
-    { id: "25-17", name: "25-17 Hamshiralik ishi (3 yillik)" },
-    { id: "25-18", name: "25-18 Hamshiralik ishi (3 yillik)" },
-    { id: "25-22", name: "25-22 Hamshiralik ishi (2 yillik)" }
-];
-
 export default async function HomePage() {
     let groups: any[] = [];
     let fetchError: string | null = null;
@@ -28,20 +21,17 @@ export default async function HomePage() {
             const supabase = createClient(envUrl, envKey);
             const { data, error } = await supabase.from('groups').select('*');
             if (error) {
-                console.error(`Supabase xatoligi: ${error.message} (Kod: ${error.code})`);
-                groups = FALLBACK_GROUPS;
+                fetchError = `Supabase xatoligi: ${error.message} (Kod: ${error.code})`;
+                console.error(fetchError);
             } else {
                 groups = data || [];
-                if (groups.length === 0) {
-                    groups = FALLBACK_GROUPS;
-                }
             }
         } catch (err: any) {
-            console.error(`Ulanish xatoligi (Failed to fetch):`, err);
-            groups = FALLBACK_GROUPS;
+            fetchError = `Ulanish xatoligi (Failed to fetch). Tarmoq o'chirilgan yoki Supabase domeni bloklangan bo'lishi mumkin. Batafsil xato: ${err.message || String(err)}`;
+            console.error(fetchError);
         }
     } else {
-        groups = FALLBACK_GROUPS;
+        fetchError = "Supabase sozlamalari (.env/Vercel) topilmadi. Iltimos, NEXT_PUBLIC_SUPABASE_URL va NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY kalitlarini tekshiring.";
     }
 
     // Guruhlarni nomi bo'yicha ajratish
