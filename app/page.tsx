@@ -62,66 +62,6 @@ export default async function HomePage() {
                     </div>
                 </div>
 
-                {/* SUPABASE DIAGNOSTIKA PANELI (Ekrandagi xavfsiz nazorat) */}
-                <div className="mb-10 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 shadow-2xl backdrop-blur-md">
-                    <h3 className="text-base font-extrabold text-white mb-4 flex items-center gap-2 border-b border-slate-800/60 pb-3">
-                        ⚙️ Supabase Ulanish Diagnostikasi (Faqat O'qituvchi/Admin uchun)
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        {/* URL Check */}
-                        <div className="p-4 bg-slate-950/40 border border-slate-800/60 rounded-2xl">
-                            <span className="text-xs font-bold text-slate-400 block uppercase mb-1">NEXT_PUBLIC_SUPABASE_URL</span>
-                            {hasUrl ? (
-                                <code className="text-xs font-mono font-bold text-slate-300 block break-all bg-slate-950/80 p-2 rounded-xl mt-1 border border-slate-800/80">
-                                    "{envUrl}"
-                                </code>
-                            ) : (
-                                <span className="text-xs font-bold text-rose-400 bg-rose-950/30 px-2 py-1 rounded mt-1 inline-block border border-rose-900/50">
-                                    ❌ TOPILMADI (undefined yoki bo'sh)
-                                </span>
-                            )}
-                        </div>
-
-                        {/* KEY Check */}
-                        <div className="p-4 bg-slate-950/40 border border-slate-800/60 rounded-2xl">
-                            <span className="text-xs font-bold text-slate-400 block uppercase mb-1">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</span>
-                            {hasKey ? (
-                                <div className="mt-1">
-                                    <code className="text-xs font-mono font-bold text-slate-300 block break-all bg-slate-950/80 p-2 rounded-xl border border-slate-800/80">
-                                        "{envKey.slice(0, 15)}...{envKey.slice(-10)}"
-                                    </code>
-                                    <span className="text-[10px] text-slate-500 font-semibold mt-1 block">
-                                        Uzunligi: {envKey.length} ta belgi (to'g'ri o'qildi)
-                                    </span>
-                                </div>
-                            ) : (
-                                <span className="text-xs font-bold text-rose-400 bg-rose-950/30 px-2 py-1 rounded mt-1 inline-block border border-rose-900/50">
-                                    ❌ TOPILMADI (undefined yoki bo'sh)
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Ulanish Xulosasi */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-950/40 p-4 rounded-2xl border border-slate-800/60 text-xs">
-                        <div>
-                            <span className="font-bold text-slate-400">Ulanish holati:</span>
-                            {isClientCreated ? (
-                                <span className="text-emerald-400 font-extrabold ml-1.5 bg-emerald-950/30 px-2.5 py-1 rounded-full border border-emerald-900/40">
-                                    ✓ Sozlamalar mavjud
-                                </span>
-                            ) : (
-                                <span className="text-rose-400 font-extrabold ml-1.5 bg-rose-950/30 px-2.5 py-1 rounded-full border border-rose-900/40">
-                                    ✗ Sozlamalar yetishmayapti (.env faylini to'ldiring)
-                                </span>
-                            )}
-                        </div>
-                        <div className="text-slate-500 font-semibold">
-                            Next.js Muhiti: {process.env.NODE_ENV} (Server Component)
-                        </div>
-                    </div>
-                </div>
 
                 {/* Error Banner */}
                 {fetchError && (
