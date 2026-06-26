@@ -6,7 +6,15 @@ import Link from 'next/link';
 const envUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
 const envKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
 
-export default async function HomePage() {
+interface PageProps {
+    searchParams?: {
+        techSchool?: string;
+    };
+}
+
+export default async function HomePage({ searchParams }: PageProps) {
+    const techSchool = searchParams?.techSchool;
+
     let groups: any[] = [];
     let fetchError: string | null = null;
 
@@ -15,7 +23,7 @@ export default async function HomePage() {
     const hasKey = !!envKey;
     const isClientCreated = hasUrl && hasKey;
 
-    if (isClientCreated) {
+    if (isClientCreated && techSchool === 'shahrisabz') {
         try {
             // Supabase SDK orqali ma'lumotlarni tortish (Server Side)
             const supabase = createClient(envUrl, envKey);
@@ -30,7 +38,7 @@ export default async function HomePage() {
             fetchError = `Ulanish xatoligi (Failed to fetch). Tarmoq o'chirilgan yoki Supabase domeni bloklangan bo'lishi mumkin. Batafsil xato: ${err.message || String(err)}`;
             console.error(fetchError);
         }
-    } else {
+    } else if (!isClientCreated && techSchool === 'shahrisabz') {
         fetchError = "Supabase sozlamalari (.env/Vercel) topilmadi. Iltimos, NEXT_PUBLIC_SUPABASE_URL va NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY kalitlarini tekshiring.";
     }
 
@@ -39,9 +47,130 @@ export default async function HomePage() {
     const hamshiralik2 = groups.filter(g => g.name?.toLowerCase().includes('2 yillik'));
     const farmatsiya = groups.filter(g => g.name?.toLowerCase().includes('farmatsiya'));
 
+    // 1. LANDING PAGE: Texnikumni tanlash sahifasi
+    if (!techSchool || (techSchool !== 'shahrisabz' && techSchool !== 'ibn_sino')) {
+        return (
+            <div className="min-h-screen bg-gradient-to-tr from-slate-950 via-slate-900 to-zinc-950 py-16 px-4 sm:px-6 lg:px-8 text-slate-100 antialiased flex flex-col justify-center items-center">
+                <div className="max-w-4xl w-full">
+                    {/* Hero Header */}
+                    <div className="text-center mb-16 relative">
+                        <div className="absolute inset-0 -top-12 flex justify-center -z-10 opacity-10">
+                            <div className="w-[500px] h-[250px] bg-gradient-to-r from-blue-500 to-indigo-500 blur-3xl rounded-full"></div>
+                        </div>
+                        
+                        <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-blue-400">
+                            Tibbiyot Texnikumlari
+                        </h1>
+                        <p className="text-md sm:text-lg font-medium text-slate-400 uppercase tracking-widest mb-6">
+                            Elektron Dars Jurnali Platformasi
+                        </p>
+                        
+                        <div className="inline-flex items-center gap-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-900/40 px-6 py-3 rounded-2xl font-bold transition-all duration-300">
+                            <span className="text-xl">🩺</span>
+                            <span>Tibbiyotda Axborot Texnologiyalari fani jurnallari</span>
+                        </div>
+                    </div>
+
+                    {/* School Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+                        
+                        {/* Shahrisabz Card */}
+                        <Link 
+                            href="/?techSchool=shahrisabz"
+                            className="group relative bg-slate-900/40 backdrop-blur-md p-8 rounded-3xl border border-slate-800/60 hover:border-blue-500/50 hover:shadow-[0_0_40px_rgba(59,130,246,0.15)] transition-all duration-300 flex flex-col justify-between items-center text-center h-[340px]"
+                        >
+                            <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl -z-10"></div>
+                            
+                            <div className="w-16 h-16 rounded-2xl bg-blue-950/50 border border-blue-900/40 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300">
+                                🏛️
+                            </div>
+                            
+                            <div className="my-4">
+                                <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-blue-400 transition-colors duration-200">
+                                    Shahrisabz Tibbiyot Texnikumi
+                                </h2>
+                                <p className="text-xs sm:text-sm text-slate-400 font-semibold mt-2.5 leading-relaxed">
+                                    Shahrisabz filiali guruhlari, talabalar ro'yxati va dars jurnali platformasi.
+                                </p>
+                            </div>
+                            
+                            <span className="w-full py-3 bg-blue-600 group-hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-colors shadow-lg shadow-blue-500/10 text-center">
+                                Kirish →
+                            </span>
+                        </Link>
+
+                        {/* Ibn Sino Card */}
+                        <Link 
+                            href="/?techSchool=ibn_sino"
+                            className="group relative bg-slate-900/40 backdrop-blur-md p-8 rounded-3xl border border-slate-800/60 hover:border-emerald-500/50 hover:shadow-[0_0_40px_rgba(16,185,129,0.15)] transition-all duration-300 flex flex-col justify-between items-center text-center h-[340px]"
+                        >
+                            <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl -z-10"></div>
+                            
+                            <div className="w-16 h-16 rounded-2xl bg-emerald-950/50 border border-emerald-900/40 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300">
+                                🌿
+                            </div>
+                            
+                            <div className="my-4">
+                                <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-emerald-400 transition-colors duration-200">
+                                    IBN SINO Tibbiyot Texnikumi
+                                </h2>
+                                <p className="text-xs sm:text-sm text-slate-400 font-semibold mt-2.5 leading-relaxed">
+                                    Ibn Sino filiali guruhlari, talabalar ro'yxati va dars jurnali platformasi.
+                                </p>
+                            </div>
+                            
+                            <span className="w-full py-3 bg-emerald-600 group-hover:bg-emerald-500 text-white rounded-2xl font-bold text-sm transition-colors shadow-lg shadow-emerald-500/10 text-center">
+                                Kirish →
+                            </span>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // 2. IBN SINO DASHBOARD (Placeholder)
+    if (techSchool === 'ibn_sino') {
+        return (
+            <div className="min-h-screen bg-gradient-to-tr from-slate-950 via-slate-900 to-zinc-950 py-16 px-4 sm:px-6 lg:px-8 text-slate-100 antialiased flex flex-col justify-center items-center">
+                <div className="max-w-xl w-full">
+                    {/* Back Link */}
+                    <div className="text-left mb-6">
+                        <Link href="/" className="group inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors py-1.5 px-3 rounded-xl bg-slate-900/40 border border-slate-800/60 shadow-sm">
+                            <span className="group-hover:-translate-x-0.5 transition-transform">⬅️</span> 
+                            Bosh sahifaga qaytish
+                        </Link>
+                    </div>
+
+                    {/* Placeholder Content */}
+                    <div className="text-center py-16 bg-slate-900/40 backdrop-blur-md rounded-3xl border border-slate-800/60 shadow-2xl p-8">
+                        <span className="text-5xl block mb-4">🌿</span>
+                        <h2 className="text-2xl font-black text-white mb-2">IBN SINO Tibbiyot Texnikumi</h2>
+                        <p className="text-xs sm:text-sm text-slate-400 font-semibold mb-8 px-4 leading-relaxed">
+                            Ushbu texnikum bo'yicha guruhlar ro'yxati tez kunda taqdim etiladi. Ma'lumotlar bazasi guruhlarini sozlash ishlari olib borilmoqda.
+                        </p>
+                        <div className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-950/40 px-3 py-1.5 rounded-full border border-slate-800/40">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Yangi ma'lumotlar kutilmoqda
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // 3. SHAHRISABZ DASHBOARD (Bor bo'lgan guruhlar)
     return (
         <div className="min-h-screen bg-gradient-to-tr from-slate-950 via-slate-900 to-zinc-950 py-12 px-4 sm:px-6 lg:px-8 text-slate-100 antialiased">
             <div className="max-w-6xl mx-auto">
+
+                {/* Back Link to Selection */}
+                <div className="text-left mb-6">
+                    <Link href="/" className="group inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-slate-200 transition-colors py-1.5 px-3 rounded-xl bg-slate-900/40 border border-slate-800/60 shadow-sm">
+                        <span className="group-hover:-translate-x-0.5 transition-transform">⬅️</span> 
+                        Bosh sahifaga qaytish
+                    </Link>
+                </div>
 
                 {/* Hero Header */}
                 <div className="text-center mb-12 relative">
@@ -61,7 +190,6 @@ export default async function HomePage() {
                         <span>Tanlangan fan: Tibbiyotda Axborot Texnologiyalari</span>
                     </div>
                 </div>
-
 
                 {/* Error Banner */}
                 {fetchError && (
