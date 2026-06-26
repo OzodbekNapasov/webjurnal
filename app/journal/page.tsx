@@ -38,6 +38,9 @@ function JournalContent() {
     // Tablar boshqaruvi
     const [activeTab, setActiveTab] = useState<"jurnal" | "mavzular">("jurnal");
 
+    // Vazifa rejimi (Davomat yoki Baholash)
+    const [journalMode, setJournalMode] = useState<"davomat" | "baholash">("davomat");
+
     // Yangi talaba qo'shish modal holati
     const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
     const [newStudentName, setNewStudentName] = useState("");
@@ -47,6 +50,7 @@ function JournalContent() {
     const [editingCell, setEditingCell] = useState<{
         studentId: string | number;
         studentName: string;
+        lessonId: number;
         lessonDate: string;
     } | null>(null);
     const [editingState, setEditingState] = useState<RecordState>({ is_present: true, grade: "" });
@@ -107,14 +111,24 @@ function JournalContent() {
             }
 
             // 3. Jurnal yozuvlarini yuklash
-            const { data: recordsData, error: recordsError } = await supabase
-                .from("journal_records")
-                .select("*");
+            const lessonIds = lessonsData?.map(l => l.id) || [];
+            let recordsData: any[] = [];
+            if (lessonIds.length > 0) {
+                const { data, error: recordsError } = await supabase
+                    .from("journal_records")
+                    .select("id, student_id, lesson_id, is_present, grade")
+                    .in("lesson_id", lessonIds);
 
-            if (recordsError) {
-                setFetchError(`Jurnal yozuvlarini yuklashda xatolik: ${recordsError.message}`);
-                setLoading(false);
-                return;
+                if (recordsError) {
+                    if (recordsError.message.includes("lesson_id")) {
+                        setFetchError('journal_records_schema_outdated');
+                    } else {
+                        setFetchError(`Jurnal yozuvlarini yuklashda xatolik: ${recordsError.message}`);
+                    }
+                    setLoading(false);
+                    return;
+                }
+                recordsData = data || [];
             }
 
             if (studentsData) {
@@ -128,7 +142,7 @@ function JournalContent() {
 
             const recordsMap: Record<string, RecordState> = {};
             recordsData?.forEach((rec) => {
-                const key = `${rec.student_id}-${rec.lesson_date}`;
+                const key = `${rec.student_id}-${rec.lesson_id}`;
                 recordsMap[key] = {
                     is_present: rec.is_present,
                     grade: rec.grade || "",
@@ -147,18 +161,17 @@ function JournalContent() {
     }, [groupId]);
 
     // Ma'lumotlarni Supabase-ga saqlash (Upsert)
-    async function handleSaveToSupabase(studentId: string | number, date: string, isPresent: boolean, gradeValue: string) {
-        if (!date) return;
+    async function handleSaveToSupabase(studentId: string | number, lessonId: number, isPresent: boolean, gradeValue: string) {
+        if (!supabase) return;
         try {
-            await supabase!.from("journal_records").upsert(
+            await supabase.from("journal_records").upsert(
                 {
                     student_id: studentId.toString(),
-                    subject_name: "Tibbiyotda Axborot Texnologiyalari",
-                    lesson_date: date,
+                    lesson_id: lessonId,
                     is_present: isPresent,
                     grade: gradeValue || null,
                 },
-                { onConflict: "student_id,lesson_date" }
+                { onConflict: "student_id,lesson_id" }
             );
         } catch (error) {
             console.error("Supabase-ga yozishda xatolik:", error);
@@ -170,6 +183,49 @@ function JournalContent() {
             <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-3 text-slate-100">
                 <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 <div className="font-extrabold text-slate-400 text-sm tracking-wide">Onlayn bazadan ma'lumotlar yuklanmoqda...</div>
+            </div>
+        );
+    }
+
+    // "journal_records" jadvali sxemasi eski bo'lsa ko'rsatiladigan oyna
+    if (fetchError === 'journal_records_schema_outdated') {
+        return (
+            <div className="min-h-screen bg-slate-950 p-6 flex flex-col items-center justify-center text-slate-100">
+                <div className="max-w-xl w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl">
+                    <h3 className="text-lg font-black text-rose-400 mb-3 flex items-center gap-2">
+                        ⚠️ Ma'lumotlar bazasini yangilash zarur
+                    </h3>
+                    <p className="text-sm text-slate-300 font-semibold mb-4 leading-relaxed">
+                        Supabase ma'lumotlar bazangizda `journal_records` jadvali sxemasini yangilashingiz kerak. Yangi tizim darslarni xavfsiz ID bog'lanishi orqali saqlaydi va bir xil baho takrorlanishi muammosini to'liq bartaraf etadi.
+                    </p>
+                    <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 mb-6">
+                        <span className="text-xs font-bold text-slate-500 block mb-2 uppercase">Bajariladigan SQL Kod</span>
+                        <code className="text-xs font-mono text-emerald-400 block break-all whitespace-pre bg-slate-950 p-2 rounded-xl mt-1 select-all">
+{`DROP TABLE IF EXISTS journal_records;
+
+CREATE TABLE journal_records (
+    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    student_id TEXT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    lesson_id BIGINT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+    is_present BOOLEAN NOT NULL DEFAULT true,
+    grade TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    CONSTRAINT unique_student_lesson UNIQUE (student_id, lesson_id)
+);
+
+ALTER TABLE journal_records DISABLE ROW LEVEL SECURITY;`}
+                        </code>
+                    </div>
+                    <p className="text-xs text-slate-400 mb-6 font-medium">
+                        **Ko'rsatma:** Ushbu kodni nusxalab oling, Supabase Dashboard-dagi **SQL Editor** bo'limiga o'ting, kodni joylab **Run** tugmasini bosing va sahifani qayta yangilang.
+                    </p>
+                    <button
+                        onClick={loadData}
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-500/20"
+                    >
+                        ✓ Bazani yangiladim, sahifani yangilash
+                    </button>
+                </div>
             </div>
         );
     }
@@ -294,6 +350,41 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                     {activeTab === "jurnal" ? (
                         /* TAB 1: JURNAL GRIDA JADVALI */
                         <div>
+                            {/* Mode Selector */}
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6 bg-slate-950/40 p-3 rounded-2xl border border-slate-800/40">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-lg">⚙️</span>
+                                    <div>
+                                        <h4 className="text-xs sm:text-sm font-extrabold text-white">Vazifani tanlang:</h4>
+                                        <p className="text-[10px] text-slate-400 font-semibold">Tegishli katakchani bosish orqali amal bajariladi</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 w-full sm:w-auto bg-slate-900/65 p-1 rounded-xl border border-slate-800/60">
+                                    <button
+                                        onClick={() => setJournalMode("davomat")}
+                                        className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                                            journalMode === "davomat"
+                                                ? "bg-blue-600/20 text-blue-400 border border-blue-500/35 shadow-sm"
+                                                : "text-slate-400 hover:text-slate-200 border border-transparent"
+                                        }`}
+                                    >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
+                                        🔵 Davomat (NB belgilash)
+                                    </button>
+                                    <button
+                                        onClick={() => setJournalMode("baholash")}
+                                        className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                                            journalMode === "baholash"
+                                                ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/35 shadow-sm"
+                                                : "text-slate-400 hover:text-slate-200 border border-transparent"
+                                        }`}
+                                    >
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                        🟢 Baholash (Baho qo'yish)
+                                    </button>
+                                </div>
+                            </div>
+
                             {/* Darslar kiritilmagan bo'lsa */}
                             {lessons.length === 0 ? (
                                 <div className="text-center py-16 bg-slate-950/20 rounded-2xl border border-slate-800/40">
@@ -345,23 +436,36 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                 {student.fullName}
                                                             </td>
                                                             {lessons.map((lesson) => {
-                                                                const key = `${student.id}-${lesson.lesson_date}`;
+                                                                const key = `${student.id}-${lesson.id}`;
                                                                 const record = journalRecords[key] || { is_present: true, grade: "" };
 
                                                                 return (
                                                                     <td 
                                                                         key={lesson.id} 
-                                                                        onClick={() => {
-                                                                            setEditingCell({
-                                                                                studentId: student.id,
-                                                                                studentName: student.fullName,
-                                                                                lessonDate: lesson.lesson_date
-                                                                            });
-                                                                            setEditingState({
-                                                                                is_present: record.is_present,
-                                                                                grade: record.grade || ""
-                                                                            });
-                                                                            setIsEditCellOpen(true);
+                                                                        onClick={async () => {
+                                                                            if (journalMode === "davomat") {
+                                                                                const newIsPresent = !record.is_present;
+                                                                                setJournalRecords(prev => ({
+                                                                                    ...prev,
+                                                                                    [`${student.id}-${lesson.id}`]: {
+                                                                                        is_present: newIsPresent,
+                                                                                        grade: ""
+                                                                                    }
+                                                                                }));
+                                                                                await handleSaveToSupabase(student.id, lesson.id, newIsPresent, "");
+                                                                            } else {
+                                                                                setEditingCell({
+                                                                                    studentId: student.id,
+                                                                                    studentName: student.fullName,
+                                                                                    lessonId: lesson.id,
+                                                                                    lessonDate: lesson.lesson_date || `Dars #${lesson.id}`
+                                                                                });
+                                                                                setEditingState({
+                                                                                    is_present: record.is_present,
+                                                                                    grade: record.grade || ""
+                                                                                });
+                                                                                setIsEditCellOpen(true);
+                                                                            }
                                                                         }}
                                                                         className="p-2 sm:p-3 text-center border-l border-slate-800/30 cursor-pointer hover:bg-blue-950/10 transition-colors w-20 min-w-[80px] sm:w-24 sm:min-w-[96px]"
                                                                     >
@@ -566,123 +670,129 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                 </div>
             )}
 
-            {/* MODAL 2: HUJAYRA (CELL) TAHRIRLASH (Attendance & Grades) */}
+            {/* MODAL 2: HUJAYRA (CELL) TAHRIRLASH (Quick Grades & Autosave) */}
             {isEditCellOpen && editingCell && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-md shadow-2xl">
-                        <h3 className="text-lg font-black text-white mb-2">Davomat va Baholash</h3>
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-sm shadow-2xl">
+                        <h3 className="text-lg font-black text-white mb-2">🟢 Baho qo'yish</h3>
                         <p className="text-xs text-slate-400 font-bold mb-4">
-                            {editingCell.studentName} — {editingCell.lessonDate} darsi
+                            {editingCell.studentName} — {editingCell.lessonDate}
                         </p>
                         
                         <div className="space-y-4">
-                            {/* Ishtirok */}
+                            {/* Baholar to'plami */}
                             <div>
-                                <label className="text-xs font-bold text-slate-400 block mb-2">Ishtirok holati</label>
-                                <div className="flex gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setEditingState(prev => ({ ...prev, is_present: true }))}
-                                        className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all border ${
-                                            editingState.is_present
-                                                ? "bg-emerald-950/40 text-emerald-400 border-emerald-900/50 shadow-lg shadow-emerald-950/20"
-                                                : "bg-slate-950/40 text-slate-400 border-slate-800 hover:text-slate-300"
-                                        }`}
-                                    >
-                                        Bor
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setEditingState(prev => ({ ...prev, is_present: false, grade: "" }))}
-                                        className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all border ${
-                                            !editingState.is_present
-                                                ? "bg-rose-950/40 text-rose-400 border-rose-900/50 shadow-lg shadow-rose-950/20"
-                                                : "bg-slate-950/40 text-slate-400 border-slate-800 hover:text-slate-300"
-                                        }`}
-                                    >
-                                        NB (Kelmadi)
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Baholash */}
-                            <div>
-                                <label className="text-xs font-bold text-slate-400 block mb-2">Baho (faqat ishtirok etgan bo'lsa)</label>
-                                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
+                                <label className="text-xs font-bold text-slate-500 block mb-2 uppercase tracking-wider">Baholardan birini tanlang:</label>
+                                <div className="grid grid-cols-3 gap-2">
                                     {["5", "4", "3", "2"].map((g) => (
                                         <button
                                             key={g}
                                             type="button"
-                                            disabled={!editingState.is_present}
-                                            onClick={() => setEditingState(prev => ({ ...prev, grade: g }))}
-                                            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl font-black text-sm transition-all border flex items-center justify-center ${
-                                                !editingState.is_present
-                                                    ? "bg-slate-950/20 border-slate-950 text-slate-600 cursor-not-allowed"
-                                                    : editingState.grade === g
-                                                        ? "bg-blue-600 text-white border-transparent shadow-lg shadow-blue-500/20"
-                                                        : "bg-slate-950/40 text-slate-300 border-slate-800 hover:bg-slate-950/60"
+                                            onClick={async () => {
+                                                setJournalRecords(prev => ({
+                                                    ...prev,
+                                                    [`${editingCell.studentId}-${editingCell.lessonId}`]: {
+                                                        is_present: true,
+                                                        grade: g
+                                                    }
+                                                }));
+                                                setIsEditCellOpen(false);
+                                                await handleSaveToSupabase(editingCell.studentId, editingCell.lessonId, true, g);
+                                            }}
+                                            className={`py-3 rounded-xl font-black text-sm transition-all border flex items-center justify-center ${
+                                                editingState.grade === g
+                                                    ? "bg-emerald-600 text-white border-transparent shadow-lg shadow-emerald-500/20"
+                                                    : "bg-slate-950/40 text-slate-300 border-slate-800 hover:bg-slate-950/60 hover:border-slate-700"
                                             }`}
                                         >
                                             {g}
                                         </button>
                                     ))}
-                                    <button
-                                        key="clear"
-                                        type="button"
-                                        disabled={!editingState.is_present}
-                                        onClick={() => setEditingState(prev => ({ ...prev, grade: "" }))}
-                                        className={`flex-1 h-9 sm:h-10 rounded-xl font-bold text-xs transition-all border flex items-center justify-center ${
-                                            !editingState.is_present
-                                                ? "bg-slate-950/20 border-slate-950 text-slate-600 cursor-not-allowed"
-                                                : editingState.grade === ""
-                                                    ? "bg-blue-600 text-white border-transparent"
-                                                    : "bg-slate-950/40 text-slate-300 border-slate-800 hover:bg-slate-950/60"
-                                        }`}
-                                    >
-                                        O'chirish
-                                    </button>
+                                    {["+", "-"].map((g) => (
+                                        <button
+                                            key={g}
+                                            type="button"
+                                            onClick={async () => {
+                                                setJournalRecords(prev => ({
+                                                    ...prev,
+                                                    [`${editingCell.studentId}-${editingCell.lessonId}`]: {
+                                                        is_present: true,
+                                                        grade: g
+                                                    }
+                                                }));
+                                                setIsEditCellOpen(false);
+                                                await handleSaveToSupabase(editingCell.studentId, editingCell.lessonId, true, g);
+                                            }}
+                                            className={`py-3 rounded-xl font-black text-sm transition-all border flex items-center justify-center ${
+                                                editingState.grade === g
+                                                    ? "bg-emerald-600 text-white border-transparent shadow-lg shadow-emerald-500/20"
+                                                    : "bg-slate-950/40 text-slate-300 border-slate-800 hover:bg-slate-950/60 hover:border-slate-700"
+                                            }`}
+                                        >
+                                            {g}
+                                        </button>
+                                    ))}
                                 </div>
-                                {editingState.is_present && (
+                            </div>
+
+                            {/* Boshqa belgilar */}
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 block mb-2 uppercase tracking-wider">Boshqa belgi (Kiriting va bosing):</label>
+                                <div className="flex gap-2">
                                     <input
                                         type="text"
-                                        placeholder="Boshqa baho (Masalan: + yoki -)"
+                                        placeholder="Masalan: 4/5"
                                         value={editingState.grade}
-                                        onChange={(e) => setEditingState(prev => ({ ...prev, grade: e.target.value.slice(0, 3) }))}
-                                        className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
+                                        onChange={(e) => setEditingState(prev => ({ ...prev, grade: e.target.value.slice(0, 5) }))}
+                                        className="flex-1 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
                                     />
-                                )}
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            const trimGrade = editingState.grade.trim();
+                                            setJournalRecords(prev => ({
+                                                ...prev,
+                                                [`${editingCell.studentId}-${editingCell.lessonId}`]: {
+                                                    is_present: true,
+                                                    grade: trimGrade
+                                                }
+                                            }));
+                                            setIsEditCellOpen(false);
+                                            await handleSaveToSupabase(editingCell.studentId, editingCell.lessonId, true, trimGrade);
+                                        }}
+                                        className="px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition-colors"
+                                    >
+                                        Qo'yish
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="flex gap-3 mt-6">
-                            <button
-                                type="button"
-                                onClick={() => setIsEditCellOpen(false)}
-                                className="flex-1 py-2.5 bg-slate-950/60 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-xl font-bold text-sm transition-all"
-                            >
-                                Bekor qilish
-                            </button>
+                        <div className="flex flex-col gap-2 mt-6 pt-4 border-t border-slate-800/60">
                             <button
                                 type="button"
                                 onClick={async () => {
-                                    await handleSaveToSupabase(
-                                        editingCell.studentId,
-                                        editingCell.lessonDate,
-                                        editingState.is_present,
-                                        editingState.grade
-                                    );
                                     setJournalRecords(prev => ({
                                         ...prev,
-                                        [`${editingCell.studentId}-${editingCell.lessonDate}`]: {
-                                            is_present: editingState.is_present,
-                                            grade: editingState.grade
+                                        [`${editingCell.studentId}-${editingCell.lessonId}`]: {
+                                            is_present: true,
+                                            grade: ""
                                         }
                                     }));
                                     setIsEditCellOpen(false);
+                                    await handleSaveToSupabase(editingCell.studentId, editingCell.lessonId, true, "");
                                 }}
-                                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
+                                className="w-full py-2.5 bg-rose-950/40 hover:bg-rose-900/35 border border-rose-900/50 text-rose-400 hover:text-rose-300 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5"
                             >
-                                Saqlash
+                                🗑️ Bahoni olib tashlash (O'chirish)
+                            </button>
+                            
+                            <button
+                                type="button"
+                                onClick={() => setIsEditCellOpen(false)}
+                                className="w-full py-2.5 bg-slate-950/60 hover:bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-300 rounded-xl font-bold text-xs transition-all"
+                            >
+                                Bekor qilish
                             </button>
                         </div>
                     </div>
