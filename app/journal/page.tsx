@@ -456,22 +456,34 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                 <tr className="bg-slate-950/80 border-b border-slate-800/80 text-left">
                                                     <th className="p-2 sm:p-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider w-12 min-w-[48px] max-w-[48px] text-center sticky left-0 bg-[#0c1222] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)]">T/r</th>
                                                     <th className="p-2 sm:p-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider w-[140px] min-w-[140px] max-w-[140px] sm:w-[220px] sm:min-w-[220px] sm:max-w-[220px] sticky left-12 bg-[#0c1222] z-20 shadow-[4px_0_8px_-3px_rgba(0,0,0,0.6)] border-r border-slate-700/60 truncate">Talaba ismi-sharifi</th>
-                                                    {lessons.map((lesson, index) => (
-                                                        <th 
-                                                            key={lesson.id} 
-                                                            onClick={() => {
-                                                                setEditingLesson(lesson);
-                                                                setIsEditLessonOpen(true);
-                                                            }}
-                                                            className="p-2 sm:p-4 text-[10px] sm:text-xs font-extrabold text-slate-400 uppercase tracking-wider text-center w-20 min-w-[80px] sm:w-24 sm:min-w-[96px] border-l border-slate-800/40 cursor-pointer hover:bg-slate-950/80 transition-colors"
-                                                            title={`${index + 1}-dars: ${lesson.topic || 'Mavzu kiritilmagan'} (${lesson.hours} soat, Tahrirlash/O'chirish)`}
-                                                        >
-                                                            <div className="flex flex-col items-center">
-                                                                <span className="hover:underline tracking-tight block text-[11px] sm:text-xs">{lesson.lesson_date || "Sana?"}</span>
-                                                                <span className="text-[8px] sm:text-[9px] text-slate-400 font-bold mt-0.5">{index + 1}-dars</span>
-                                                            </div>
-                                                        </th>
-                                                    ))}
+                                                    {lessons.map((lesson, index) => {
+                                                        const isToday = lesson.lesson_date === getTodayFormatted();
+                                                        return (
+                                                            <th 
+                                                                key={lesson.id} 
+                                                                onClick={() => {
+                                                                    setEditingLesson(lesson);
+                                                                    setIsEditLessonOpen(true);
+                                                                }}
+                                                                className={`p-2 sm:p-4 text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-center w-20 min-w-[80px] sm:w-24 sm:min-w-[96px] border-l border-slate-800/40 cursor-pointer hover:bg-slate-950/80 transition-colors ${
+                                                                    isToday 
+                                                                        ? "bg-blue-500/15 text-blue-300 border-x border-blue-500/30" 
+                                                                        : "text-slate-400"
+                                                                }`}
+                                                                title={`${index + 1}-dars: ${lesson.topic || 'Mavzu kiritilmagan'} (${lesson.hours} soat, Tahrirlash/O'chirish)`}
+                                                            >
+                                                                <div className="flex flex-col items-center relative">
+                                                                    {isToday && (
+                                                                        <span className="absolute -top-3.5 px-1.5 py-0.2 text-[7px] sm:text-[8px] font-black tracking-wider bg-blue-600 text-white rounded uppercase animate-pulse shadow-sm shadow-blue-500/20">
+                                                                            Bugun
+                                                                        </span>
+                                                                    )}
+                                                                    <span className="hover:underline tracking-tight block text-[11px] sm:text-xs mt-1">{lesson.lesson_date || "Sana?"}</span>
+                                                                    <span className="text-[8px] sm:text-[9px] text-slate-400 font-bold mt-0.5">{index + 1}-dars</span>
+                                                                </div>
+                                                            </th>
+                                                        );
+                                                    })}
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-800/60">
@@ -487,6 +499,7 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                             {lessons.map((lesson) => {
                                                                 const key = `${student.id}-${lesson.id}`;
                                                                 const record = journalRecords[key] || { is_present: true, grade: "" };
+                                                                const isToday = lesson.lesson_date === getTodayFormatted();
 
                                                                 return (
                                                                     <td 
@@ -516,7 +529,11 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                                 setIsEditCellOpen(true);
                                                                             }
                                                                         }}
-                                                                        className="p-2 sm:p-3 text-center border-l border-slate-800/30 cursor-pointer hover:bg-blue-950/10 transition-colors w-20 min-w-[80px] sm:w-24 sm:min-w-[96px]"
+                                                                        className={`p-2 sm:p-3 text-center border-l border-slate-800/30 cursor-pointer hover:bg-blue-950/10 transition-colors w-20 min-w-[80px] sm:w-24 sm:min-w-[96px] ${
+                                                                            isToday 
+                                                                                ? "bg-blue-500/5 border-x border-blue-500/20" 
+                                                                                : ""
+                                                                        }`}
                                                                     >
                                                                         {!record.is_present ? (
                                                                             <span className="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] sm:text-xs font-black rounded bg-rose-950/40 text-rose-400 border border-rose-900/40 shadow-sm">
@@ -562,32 +579,46 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                             {/* Mobile View: Cards */}
                             <div className="block sm:hidden space-y-3">
                                 {lessons.length > 0 ? (
-                                    lessons.map((lesson, index) => (
-                                        <div key={lesson.id} className="p-4 bg-slate-950/40 border border-slate-800/60 rounded-2xl space-y-2 shadow-lg animate-fadeIn">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-[10px] font-black text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-900/40">
-                                                    {index + 1}-dars
-                                                </span>
-                                                <span className="text-[11px] font-bold text-slate-400">{lesson.lesson_date || "Sana kiritilmagan"}</span>
+                                    lessons.map((lesson, index) => {
+                                        const isToday = lesson.lesson_date === getTodayFormatted();
+                                        return (
+                                            <div 
+                                                key={lesson.id} 
+                                                className={`p-4 border rounded-2xl space-y-2 shadow-lg animate-fadeIn transition-all ${
+                                                    isToday
+                                                        ? "bg-blue-950/20 border-blue-500/40 ring-1 ring-blue-500/10 shadow-blue-500/5"
+                                                        : "bg-slate-950/40 border-slate-800/60"
+                                                }`}
+                                            >
+                                                <div className="flex justify-between items-center">
+                                                    <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${
+                                                        isToday
+                                                            ? "bg-blue-600 text-white border-transparent"
+                                                            : "text-blue-400 bg-blue-950/60 border-blue-900/40"
+                                                    }`}>
+                                                        {index + 1}-dars {isToday && "(Bugun)"}
+                                                    </span>
+                                                    <span className="text-[11px] font-bold text-slate-400">{lesson.lesson_date || "Sana kiritilmagan"}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-[10px] text-slate-500 font-bold block mb-1 uppercase tracking-wider">Mashg'ulot mavzusi:</span>
+                                                    <p className="text-xs font-semibold text-slate-200 leading-relaxed">{lesson.topic}</p>
+                                                </div>
+                                                <div className="flex justify-between items-center pt-2.5 border-t border-slate-800/50">
+                                                    <span className="text-[11px] font-bold text-slate-400">⏱️ {lesson.hours} soat</span>
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingLesson(lesson);
+                                                            setIsEditLessonOpen(true);
+                                                        }}
+                                                        className="px-3 py-1.5 text-[11px] font-bold bg-slate-900 hover:bg-slate-950 border border-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors"
+                                                    >
+                                                        Tahrirlash
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <span className="text-[10px] text-slate-500 font-bold block mb-1 uppercase tracking-wider">Mashg'ulot mavzusi:</span>
-                                                <p className="text-xs font-semibold text-slate-200 leading-relaxed">{lesson.topic}</p>
-                                            </div>
-                                            <div className="flex justify-between items-center pt-2.5 border-t border-slate-800/50">
-                                                <span className="text-[11px] font-bold text-slate-400">⏱️ {lesson.hours} soat</span>
-                                                <button
-                                                    onClick={() => {
-                                                        setEditingLesson(lesson);
-                                                        setIsEditLessonOpen(true);
-                                                    }}
-                                                    className="px-3 py-1.5 text-[11px] font-bold bg-slate-900 hover:bg-slate-950 border border-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors"
-                                                >
-                                                    Tahrirlash
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
                                     <div className="text-center py-12 text-sm text-slate-500 font-bold bg-slate-950/20 rounded-2xl border border-slate-800/40">
                                         📖 Hozircha o'tilgan mashg'ulotlar mavzulari kiritilmagan.
@@ -609,25 +640,44 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                     </thead>
                                     <tbody className="divide-y divide-slate-800/60">
                                         {lessons.length > 0 ? (
-                                            lessons.map((lesson, index) => (
-                                                <tr key={lesson.id} className="hover:bg-slate-950/20 transition-colors">
-                                                    <td className="p-4 text-sm font-bold text-slate-500 text-center">{index + 1}</td>
-                                                    <td className="p-4 text-sm font-bold text-slate-300 text-center">{lesson.lesson_date || "—"}</td>
-                                                    <td className="p-4 text-sm font-bold text-slate-400 text-center">{lesson.hours} soat</td>
-                                                    <td className="p-4 text-sm font-semibold text-slate-200 leading-relaxed">{lesson.topic}</td>
-                                                    <td className="p-4 text-center">
-                                                        <button
-                                                            onClick={() => {
-                                                                setEditingLesson(lesson);
-                                                                setIsEditLessonOpen(true);
-                                                            }}
-                                                            className="px-3 py-1.5 text-xs font-bold bg-slate-950/60 hover:bg-slate-950 border border-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors"
-                                                        >
-                                                            Tahrirlash
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))
+                                            lessons.map((lesson, index) => {
+                                                const isToday = lesson.lesson_date === getTodayFormatted();
+                                                return (
+                                                    <tr 
+                                                        key={lesson.id} 
+                                                        className={`transition-colors ${
+                                                            isToday
+                                                                ? "bg-blue-950/20 hover:bg-blue-950/30 border-y border-blue-500/25"
+                                                                : "hover:bg-slate-950/20"
+                                                        }`}
+                                                    >
+                                                        <td className="p-4 text-sm font-bold text-slate-500 text-center">
+                                                            {index + 1}
+                                                            {isToday && (
+                                                                <span className="ml-1.5 px-1 py-0.5 text-[8px] font-extrabold bg-blue-600 text-white rounded">Bugun</span>
+                                                            )}
+                                                        </td>
+                                                        <td className={`p-4 text-sm font-bold text-center ${isToday ? "text-blue-300" : "text-slate-300"}`}>{lesson.lesson_date || "—"}</td>
+                                                        <td className={`p-4 text-sm font-bold text-center ${isToday ? "text-blue-400/90" : "text-slate-400"}`}>{lesson.hours} soat</td>
+                                                        <td className={`p-4 text-sm font-semibold leading-relaxed ${isToday ? "text-blue-100" : "text-slate-200"}`}>{lesson.topic}</td>
+                                                        <td className="p-4 text-center">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setEditingLesson(lesson);
+                                                                    setIsEditLessonOpen(true);
+                                                                }}
+                                                                className={`px-3 py-1.5 text-xs font-bold border rounded-lg transition-colors ${
+                                                                    isToday
+                                                                        ? "bg-blue-600 hover:bg-blue-500 border-transparent text-white shadow-md shadow-blue-500/10"
+                                                                        : "bg-slate-950/60 hover:bg-slate-950 border-slate-800 text-slate-300 hover:text-white"
+                                                                }`}
+                                                            >
+                                                                Tahrirlash
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })
                                         ) : (
                                             <tr>
                                                 <td colSpan={5} className="text-center py-12 text-sm text-slate-500 font-bold bg-slate-950/20">
