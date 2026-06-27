@@ -1,3 +1,92 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ── Login sahifasi animatsiyalari ─────────────────────────────────── */
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(30px, -40px) scale(1.1); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(-25px, 30px) scale(0.95); }
+}
+@keyframes float3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(20px, -20px) scale(1.05); }
+  66%       { transform: translate(-15px, 15px) scale(0.98); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-10px); }
+  30%       { transform: translateX(10px); }
+  45%       { transform: translateX(-8px); }
+  60%       { transform: translateX(8px); }
+  75%       { transform: translateX(-4px); }
+  90%       { transform: translateX(4px); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes rippleAnim {
+  from { opacity: 0.4; transform: scale(0); }
+  to   { opacity: 0;   transform: scale(3); }
+}
+@keyframes successPulse {
+  0%   { box-shadow: 0 0 0 0   rgba(34,211,238,0.5); }
+  70%  { box-shadow: 0 0 0 20px rgba(34,211,238,0); }
+  100% { box-shadow: 0 0 0 0   rgba(34,211,238,0); }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeOut {
+  to { opacity: 0; pointer-events: none; }
+}
+
+.blob1 { animation: float1 8s  ease-in-out infinite; }
+.blob2 { animation: float2 10s ease-in-out infinite; }
+.blob3 { animation: float3 12s ease-in-out infinite; }
+
+.card-shake  { animation: shake        0.6s cubic-bezier(.36,.07,.19,.97); }
+.error-msg   { animation: slideDown    0.3s ease; }
+.card-anim   { animation: fadeInUp     0.7s cubic-bezier(0.16,1,0.3,1) both; }
+.success-ring{ animation: successPulse 1s   ease-out; }
+.page-fade-out{ animation: fadeOut     0.6s ease forwards; }
+
+.ripple-span {
+  position:      absolute;
+  border-radius: 50%;
+  width:  140px;
+  height: 140px;
+  margin-left: -70px;
+  margin-top:  -70px;
+  background:  rgba(255,255,255,0.3);
+  animation:   rippleAnim 0.6s linear;
+  pointer-events: none;
+}
+
+.input-field {
+  width:       100%;
+  padding:     14px 16px;
+  background:  rgba(255,255,255,0.06);
+  border:      1.5px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  color:       #f1f5f9;
+  font-size:   15px;
+  font-family: 'Inter', sans-serif;
+  outline:     none;
+  transition:  border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.input-field::placeholder { color: rgba(255,255,255,0.3); }
+.input-field:focus {
+  border-color: rgba(34,211,238,0.6);
+  background:   rgba(255,255,255,0.09);
+  box-shadow:   0 0 0 3px rgba(34,211,238,0.12);
+}
+.input-field.error {
+  border-color: rgba(239,68,68,0.6);
+  box-shadow:   0 0 0 3px rgba(239,68,68,0.1);
+}

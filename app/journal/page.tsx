@@ -39,6 +39,42 @@ function JournalContent() {
     // Tablar boshqaruvi
     const [activeTab, setActiveTab] = useState<"jurnal" | "mavzular">("jurnal");
 
+    // Tahrirlash rejimi (Lock/Unlock)
+    const [isEditable, setIsEditable] = useState(false);
+
+    // Baholarning ranglarini aniqlash funksiyasi
+    const getGradeStyle = (grade: string) => {
+        switch (grade) {
+            case "5":
+                return "bg-emerald-950/40 text-emerald-400 border-emerald-500/40 shadow-sm shadow-emerald-500/10";
+            case "4":
+                return "bg-blue-950/40 text-blue-400 border-blue-500/40 shadow-sm shadow-blue-500/10";
+            case "3":
+                return "bg-amber-950/40 text-amber-400 border-amber-500/40 shadow-sm shadow-amber-500/10";
+            case "2":
+                return "bg-rose-950/40 text-rose-400 border-rose-500/40 shadow-sm shadow-rose-500/10";
+            case "+":
+                return "bg-indigo-950/40 text-indigo-400 border-indigo-500/40 shadow-sm shadow-indigo-500/10";
+            case "-":
+                return "bg-slate-900/50 text-slate-400 border-slate-750";
+            default:
+                return "bg-slate-900/40 text-slate-300 border-slate-800";
+        }
+    };
+
+    // Baholash modalidagi faol tugma ranglari
+    const getGradeButtonActiveStyle = (g: string) => {
+        switch (g) {
+            case "5": return "bg-emerald-600 text-white border-transparent shadow-lg shadow-emerald-500/30";
+            case "4": return "bg-blue-600 text-white border-transparent shadow-lg shadow-blue-500/30";
+            case "3": return "bg-amber-600 text-white border-transparent shadow-lg shadow-amber-500/30";
+            case "2": return "bg-rose-600 text-white border-transparent shadow-lg shadow-rose-500/30";
+            case "+": return "bg-indigo-600 text-white border-transparent shadow-lg shadow-indigo-500/30";
+            case "-": return "bg-slate-600 text-white border-transparent shadow-lg shadow-slate-500/30";
+            default: return "bg-blue-600 text-white border-transparent shadow-lg shadow-blue-500/30";
+        }
+    };
+
     // Vazifa rejimi (Davomat yoki Baholash)
     const [journalMode, setJournalMode] = useState<"davomat" | "baholash">("davomat");
 
@@ -59,6 +95,12 @@ function JournalContent() {
     // Darsni tahrirlash modal holati
     const [isEditLessonOpen, setIsEditLessonOpen] = useState(false);
     const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
+
+    // Talabani boshqa guruhga o'tkazish modal holati
+    const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+    const [transferringStudent, setTransferringStudent] = useState<Student | null>(null);
+    const [allGroups, setAllGroups] = useState<{ id: number; name: string }[]>([]);
+    const [targetGroupId, setTargetGroupId] = useState<number | string>("");
 
     // Bugungi sanani formatlash funksiyasi
     const getTodayFormatted = () => {
@@ -160,6 +202,26 @@ function JournalContent() {
     useEffect(() => {
         loadData();
     }, [groupId]);
+
+    useEffect(() => {
+        if (isTransferModalOpen) {
+            const fetchGroups = async () => {
+                if (!supabase) return;
+                const { data, error } = await supabase
+                    .from('groups')
+                    .select('id, name')
+                    .order('name', { ascending: true });
+                if (!error && data) {
+                    setAllGroups(data);
+                    const otherGroups = data.filter(g => g.id.toString() !== groupId);
+                    if (otherGroups.length > 0) {
+                        setTargetGroupId(otherGroups[0].id);
+                    }
+                }
+            };
+            fetchGroups();
+        }
+    }, [isTransferModalOpen]);
 
     // Ma'lumotlarni Supabase-ga saqlash (Upsert)
     async function handleSaveToSupabase(studentId: string | number, lessonId: number, isPresent: boolean, gradeValue: string) {
@@ -404,7 +466,16 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                 <div className="flex items-center gap-2">
                                     <span className="text-lg">⚙️</span>
                                     <div>
-                                        <h4 className="text-xs sm:text-sm font-extrabold text-white">Vazifani tanlang:</h4>
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="text-xs sm:text-sm font-extrabold text-white">Vazifani tanlang:</h4>
+                                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider ${
+                                                isEditable 
+                                                    ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" 
+                                                    : "bg-amber-600/20 text-amber-400 border border-amber-500/30"
+                                            }`}>
+                                                {isEditable ? "🔓 Tahrirlash ochiq" : "🔒 Qulflangan"}
+                                            </span>
+                                        </div>
                                         <p className="text-[10px] text-slate-400 font-semibold">Tegishli katakchani bosish orqali amal bajariladi</p>
                                     </div>
                                 </div>
@@ -494,7 +565,22 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                 {index + 1}
                                                             </td>
                                                             <td className="p-2 sm:p-4 text-xs sm:text-sm font-extrabold text-slate-200 sticky left-12 bg-[#0a0f1d] group-hover:bg-slate-900 z-10 transition-colors shadow-[4px_0_8px_-3px_rgba(0,0,0,0.6)] border-r border-slate-700/60 w-[140px] min-w-[140px] max-w-[140px] sm:w-[220px] sm:min-w-[220px] sm:max-w-[220px] truncate" title={student.fullName}>
-                                                                {student.fullName}
+                                                                <div className="flex items-center justify-between gap-1 w-full">
+                                                                    <span className="truncate">{student.fullName}</span>
+                                                                    {isEditable && (
+                                                                        <button 
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setTransferringStudent(student);
+                                                                                setIsTransferModalOpen(true);
+                                                                            }}
+                                                                            className="p-1 sm:p-1.5 text-[10px] bg-slate-800 hover:bg-slate-700 hover:text-white rounded border border-slate-700 transition-opacity"
+                                                                            title="Guruhdan boshqa guruhga o'tkazish"
+                                                                        >
+                                                                            🔄
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </td>
                                                             {lessons.map((lesson) => {
                                                                 const key = `${student.id}-${lesson.id}`;
@@ -505,6 +591,10 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                     <td 
                                                                         key={lesson.id} 
                                                                         onClick={async () => {
+                                                                            if (!isEditable) {
+                                                                                alert("O'zgartirish kiritish uchun iltimos tahrirlash rejimini yoqing (pastdagi 'Tahrirlash' tugmasini bosing).");
+                                                                                return;
+                                                                            }
                                                                             if (journalMode === "davomat") {
                                                                                 const newIsPresent = !record.is_present;
                                                                                 setJournalRecords(prev => ({
@@ -529,7 +619,11 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                                 setIsEditCellOpen(true);
                                                                             }
                                                                         }}
-                                                                        className={`p-2 sm:p-3 text-center border-l border-slate-800/30 cursor-pointer hover:bg-blue-950/10 transition-colors w-20 min-w-[80px] sm:w-24 sm:min-w-[96px] ${
+                                                                        className={`p-2 sm:p-3 text-center border-l border-slate-800/30 transition-colors w-20 min-w-[80px] sm:w-24 sm:min-w-[96px] ${
+                                                                            isEditable 
+                                                                                ? "cursor-pointer hover:bg-blue-950/10" 
+                                                                                : "cursor-not-allowed opacity-85"
+                                                                        } ${
                                                                             isToday 
                                                                                 ? "bg-blue-500/5 border-x border-blue-500/20" 
                                                                                 : ""
@@ -540,7 +634,7 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                                 NB
                                                                             </span>
                                                                         ) : record.grade ? (
-                                                                            <span className="inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-emerald-950/30 text-emerald-400 font-black text-xs sm:text-sm border border-emerald-900/40">
+                                                                            <span className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full font-black text-xs sm:text-sm border ${getGradeStyle(record.grade)}`}>
                                                                                 {record.grade}
                                                                             </span>
                                                                         ) : (
@@ -561,11 +655,43 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             </tbody>
                                         </table>
                                     </div>
-                                    {/* Excel Export Button */}
-                                    <div className="mt-6 flex justify-end">
+                                    {/* Actions & Excel Export Row */}
+                                    <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-800/40">
+                                        {/* Lock / Unlock Actions */}
+                                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                                            <button
+                                                onClick={() => {
+                                                    setIsEditable(true);
+                                                }}
+                                                className={`px-5 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${
+                                                    isEditable
+                                                        ? "bg-slate-950/60 text-slate-500 border border-slate-850 cursor-not-allowed"
+                                                        : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transform hover:-translate-y-0.5 active:translate-y-0"
+                                                }`}
+                                                disabled={isEditable}
+                                            >
+                                                ✍️ Tahrirlash
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setIsEditable(false);
+                                                    alert("Muvaffaqiyatli saqlandi va tahrirlashdan qulflandi!");
+                                                }}
+                                                className={`px-5 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${
+                                                    !isEditable
+                                                        ? "bg-slate-950/60 text-slate-500 border border-slate-850 cursor-not-allowed"
+                                                        : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5 active:translate-y-0"
+                                                }`}
+                                                disabled={!isEditable}
+                                            >
+                                                💾 Saqlash
+                                            </button>
+                                        </div>
+
+                                        {/* Excel Button */}
                                         <button
                                             onClick={handleExportJournal}
-                                            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 transform hover:-translate-y-0.5"
+                                            className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0"
                                         >
                                             📥 Excelga eksport qilish
                                         </button>
@@ -716,14 +842,15 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                         
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs font-bold text-slate-400 block mb-1">Talaba F.I.Sh.</label>
-                                <input
-                                    type="text"
-                                    placeholder="Masalan: ALIMOV VALI OLIM O'G'LI"
+                                <label className="text-xs font-bold text-slate-400 block mb-1">Talabalar ro'yxati (F.I.Sh.)</label>
+                                <textarea
+                                    placeholder="Har bir talabani alohida yangi qatordan yozing. Masalan:&#10;ALIMOV VALI OLIM O'G'LI&#10;KARIMOV HASAN HUSAN O'G'LI"
                                     value={newStudentName}
                                     onChange={(e) => setNewStudentName(e.target.value)}
-                                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
+                                    rows={6}
+                                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner resize-none font-mono"
                                 />
+                                <span className="text-[10px] text-slate-500 font-semibold mt-1 block">Har bir ismdan keyin Enter tugmasini bosing</span>
                             </div>
                         </div>
 
@@ -738,12 +865,13 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                             <button
                                 type="button"
                                 onClick={async () => {
-                                    if (!newStudentName.trim()) {
-                                        alert("Iltimos, talaba ismini kiriting!");
+                                    const names = newStudentName.split('\n').map(n => n.trim()).filter(n => n.length > 0);
+                                    if (names.length === 0) {
+                                        alert("Iltimos, kamida bitta talaba ismini kiriting!");
                                         return;
                                     }
                                     try {
-                                        // 1. Fetch current students to compute next sequential ID
+                                        // 1. Fetch current students to compute starting ID
                                         const { data: currentStudents, error: fetchErr } = await supabase!
                                             .from('students')
                                             .select('id');
@@ -753,25 +881,27 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             return;
                                         }
 
-                                        let nextId = "1";
+                                        let startId = 1;
                                         if (currentStudents && currentStudents.length > 0) {
                                             const numericIds = currentStudents.map(s => parseInt(s.id)).filter(n => !isNaN(n));
                                             if (numericIds.length > 0) {
-                                                nextId = (Math.max(...numericIds) + 1).toString();
+                                                startId = Math.max(...numericIds) + 1;
                                             }
                                         }
 
-                                        // 2. Insert new student
+                                        const recordsToInsert = names.map((name, index) => ({
+                                            id: (startId + index).toString(),
+                                            fullName: name.toUpperCase(),
+                                            group_id: parseInt(groupId!)
+                                        }));
+
+                                        // 2. Batch insert
                                         const { error: insertErr } = await supabase!
                                             .from('students')
-                                            .insert({
-                                                id: nextId,
-                                                fullName: newStudentName.trim().toUpperCase(),
-                                                group_id: parseInt(groupId!)
-                                            });
+                                            .insert(recordsToInsert);
                                         
                                         if (insertErr) {
-                                            alert(`Talaba qo'shishda xatolik: ${insertErr.message}`);
+                                            alert(`Talabalarni qo'shishda xatolik: ${insertErr.message}`);
                                         } else {
                                             setIsAddStudentOpen(false);
                                             loadData();
@@ -820,7 +950,7 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             }}
                                             className={`py-3 rounded-xl font-black text-sm transition-all border flex items-center justify-center ${
                                                 editingState.grade === g
-                                                    ? "bg-emerald-600 text-white border-transparent shadow-lg shadow-emerald-500/20"
+                                                    ? getGradeButtonActiveStyle(g)
                                                     : "bg-slate-950/40 text-slate-300 border-slate-800 hover:bg-slate-950/60 hover:border-slate-700"
                                             }`}
                                         >
@@ -844,7 +974,7 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             }}
                                             className={`py-3 rounded-xl font-black text-sm transition-all border flex items-center justify-center ${
                                                 editingState.grade === g
-                                                    ? "bg-emerald-600 text-white border-transparent shadow-lg shadow-emerald-500/20"
+                                                    ? getGradeButtonActiveStyle(g)
                                                     : "bg-slate-950/40 text-slate-300 border-slate-800 hover:bg-slate-950/60 hover:border-slate-700"
                                             }`}
                                         >
@@ -1014,6 +1144,76 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                     Saqlash
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 4: TALABANI BOSHQA GURUHGA O'TKAZISH */}
+            {isTransferModalOpen && transferringStudent && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-md shadow-2xl">
+                        <h3 className="text-lg font-black text-white mb-2">🔄 Talabani boshqa guruhga o'tkazish</h3>
+                        <p className="text-xs text-slate-400 font-bold mb-4">
+                            Talaba: <span className="text-blue-400">{transferringStudent.fullName}</span>
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 block mb-1.5">Yangi guruhni tanlang:</label>
+                                <select
+                                    value={targetGroupId}
+                                    onChange={(e) => setTargetGroupId(e.target.value)}
+                                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500 shadow-inner"
+                                >
+                                    {allGroups
+                                        .filter(g => g.id.toString() !== groupId)
+                                        .map(g => (
+                                            <option key={g.id} value={g.id} className="bg-slate-950 text-white font-semibold">
+                                                {g.name.trim()}
+                                            </option>
+                                        ))
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                type="button"
+                                onClick={() => setIsTransferModalOpen(false)}
+                                className="flex-1 py-2.5 bg-slate-950/60 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-xl font-bold text-sm transition-all"
+                            >
+                                Bekor qilish
+                            </button>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    if (!targetGroupId) {
+                                        alert("Iltimos, guruhni tanlang!");
+                                        return;
+                                    }
+                                    try {
+                                        const { error } = await supabase!
+                                            .from('students')
+                                            .update({ group_id: parseInt(targetGroupId.toString()) })
+                                            .eq('id', transferringStudent.id);
+                                        
+                                        if (error) {
+                                            alert(`O'tkazishda xatolik: ${error.message}`);
+                                        } else {
+                                            setIsTransferModalOpen(false);
+                                            alert("Talaba muvaffaqiyatli boshqa guruhga o'tkazildi!");
+                                            loadData();
+                                        }
+                                    } catch (err: any) {
+                                        alert(`Xatolik: ${err.message}`);
+                                    }
+                                }}
+                                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
+                            >
+                                O'tkazish
+                            </button>
                         </div>
                     </div>
                 </div>
