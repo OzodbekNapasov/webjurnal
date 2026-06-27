@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import * as XLSX from "xlsx";
 
 const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
 const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
@@ -177,6 +178,54 @@ function JournalContent() {
             console.error("Supabase-ga yozishda xatolik:", error);
         }
     }
+
+    // Jurnal jadvalini Excel-ga eksport qilish
+    const handleExportJournal = () => {
+        const headers = ["T/r", "Talaba ismi-sharifi", ...lessons.map((l, idx) => `${l.lesson_date || 'Sana kiritilmagan'} (${idx + 1}-dars)`)];
+        
+        const rows = students.map((student, sIdx) => {
+            const studentRow: (string | number)[] = [
+                sIdx + 1,
+                student.fullName
+            ];
+            lessons.forEach(lesson => {
+                const key = `${student.id}-${lesson.id}`;
+                const record = journalRecords[key];
+                if (record) {
+                    if (!record.is_present) {
+                        studentRow.push("NB");
+                    } else {
+                        studentRow.push(record.grade || "—");
+                    }
+                } else {
+                    studentRow.push("—");
+                }
+            });
+            return studentRow;
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Jurnal Jadvali");
+        XLSX.writeFile(workbook, `${groupName.replace(/[\/\\?%*:|"<>]/g, '_')}_Jurnal.xlsx`);
+    };
+
+    // O'tilgan mavzularni Excel-ga eksport qilish
+    const handleExportLessons = () => {
+        const headers = ["T/r", "Sana", "Mashg'ulot soati", "Mashg'ulot mavzusi"];
+        
+        const rows = lessons.map((lesson, idx) => [
+            idx + 1,
+            lesson.lesson_date || "—",
+            `${lesson.hours} soat`,
+            lesson.topic || "—"
+        ]);
+
+        const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "O'tilgan Mavzular");
+        XLSX.writeFile(workbook, `${groupName.replace(/[\/\\?%*:|"<>]/g, '_')}_O'tilgan_Mavzular.xlsx`);
+    };
 
     if (loading) {
         return (
@@ -495,6 +544,15 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             </tbody>
                                         </table>
                                     </div>
+                                    {/* Excel Export Button */}
+                                    <div className="mt-6 flex justify-end">
+                                        <button
+                                            onClick={handleExportJournal}
+                                            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 transform hover:-translate-y-0.5"
+                                        >
+                                            📥 Excelga eksport qilish
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -580,6 +638,17 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                     </tbody>
                                 </table>
                             </div>
+                            {/* Excel Export Button */}
+                            {lessons.length > 0 && (
+                                <div className="mt-6 flex justify-end">
+                                    <button
+                                        onClick={handleExportLessons}
+                                        className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 transform hover:-translate-y-0.5"
+                                    >
+                                        📥 Excelga eksport qilish
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
 
