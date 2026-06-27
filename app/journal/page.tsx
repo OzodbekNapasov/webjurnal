@@ -880,12 +880,26 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                         <div className="space-y-4">
                             <div>
                                 <label className="text-xs font-bold text-slate-400 block mb-1">Dars sanasi</label>
-                                <input
-                                    type="text"
-                                    value={editingLesson.lesson_date}
-                                    onChange={(e) => setEditingLesson(prev => prev ? ({ ...prev, lesson_date: e.target.value }) : null)}
-                                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
-                                />
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Kun.Oy.Yil (Masalan: 27.06.2026)"
+                                        value={editingLesson.lesson_date}
+                                        onChange={(e) => setEditingLesson(prev => prev ? ({ ...prev, lesson_date: e.target.value }) : null)}
+                                        className="flex-1 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (window.confirm("Bugungi sanani qo'yasizmi?")) {
+                                                setEditingLesson(prev => prev ? ({ ...prev, lesson_date: getTodayFormatted() }) : null);
+                                            }
+                                        }}
+                                        className="px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap"
+                                    >
+                                        📅 Bugun
+                                    </button>
+                                </div>
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-slate-400 block mb-1">Mavzu</label>
