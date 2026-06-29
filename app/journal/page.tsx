@@ -36,6 +36,11 @@ function JournalContent() {
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
 
+    // Semestr boshqaruvi
+    const [semesters, setSemesters] = useState<{ id: number; name: string; status: string }[]>([]);
+    const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(null);
+    const [semestersLoading, setSemestersLoading] = useState(true);
+
     // Tablar boshqaruvi
     const [activeTab, setActiveTab] = useState<"jurnal" | "mavzular">("jurnal");
 
@@ -142,12 +147,19 @@ function JournalContent() {
                 return;
             }
 
-            // 2. Darslar ro'yxatini yuklash
-            const { data: lessonsData, error: lessonsError } = await supabase
+            // 2. Darslar ro'yxatini yuklash (semestr bo'yicha filtrlash)
+            let lessonsQuery = supabase
                 .from("lessons")
                 .select("*")
                 .eq("group_id", groupId)
                 .order("id", { ascending: true });
+
+            // Agar semestr tanlangan bo'lsa, filter qo'shamiz
+            if (selectedSemesterId !== null) {
+                lessonsQuery = lessonsQuery.eq("semester_id", selectedSemesterId);
+            }
+
+            const { data: lessonsData, error: lessonsError } = await lessonsQuery;
 
             if (lessonsError) {
                 if (lessonsError.message.includes('relation "lessons" does not exist') || lessonsError.message.includes('public.lessons') || lessonsError.message.includes('schema cache')) {
@@ -206,8 +218,35 @@ function JournalContent() {
     };
 
     useEffect(() => {
-        loadData();
+        if (!groupId || !supabase) return;
+        // Semestrlarni guruh bo'yicha yuklash (har bir guruh uchun alohida)
+        const fetchSemesters = async () => {
+            setSemestersLoading(true);
+
+            const { data, error } = await supabase
+                .from('semesters')
+                .select('id, name, status')
+                .eq('group_id', groupId)
+                .order('id', { ascending: true });
+
+            if (!error && data && data.length > 0) {
+                setSemesters(data);
+                // Active semestrni avtomatik tanlash
+                const active = data.find((s: any) => s.status === 'active');
+                setSelectedSemesterId(active ? active.id : data[0].id);
+            } else {
+                // Semestrlar yo'q — filter ishlamaydi (barcha darslar ko'rinadi)
+                setSemesters([]);
+                setSelectedSemesterId(null);
+            }
+            setSemestersLoading(false);
+        };
+        fetchSemesters();
     }, [groupId]);
+
+    useEffect(() => {
+        loadData();
+    }, [groupId, selectedSemesterId]);
 
     useEffect(() => {
         if (isTransferModalOpen) {
@@ -451,6 +490,34 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                             </p>
                         </div>
 
+                        {/* Semestr tanlash Dropdown */}
+                        {!semestersLoading && semesters.length > 0 && (
+                            <div className="flex items-center gap-2 bg-slate-950/50 border border-slate-800/60 rounded-2xl px-3 py-2 shadow-inner w-full md:w-auto">
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                    <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider whitespace-nowrap">Semestr:</span>
+                                </div>
+                                <select
+                                    value={selectedSemesterId ?? ''}
+                                    onChange={e => setSelectedSemesterId(Number(e.target.value))}
+                                    className="flex-1 md:w-44 bg-transparent text-sm font-bold text-white focus:outline-none cursor-pointer appearance-none"
+                                >
+                                    {semesters.map(sem => (
+                                        <option key={sem.id} value={sem.id} className="bg-slate-900 text-white font-semibold">
+                                            {sem.name}{sem.status === 'active' ? ' ✓' : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                                {semesters.find(s => s.id === selectedSemesterId)?.status === 'active' && (
+                                    <span className="flex-shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-600 text-white uppercase animate-pulse">
+                                        Active
+                                    </span>
+                                )}
+                            </div>
+                        )}
+
                         <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
                             <button
                                 onClick={() => {
@@ -474,6 +541,7 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                             </button>
                         </div>
                     </div>
+
 
                     {activeTab === "jurnal" ? (
                         /* TAB 1: JURNAL GRIDA JADVALI */
@@ -1318,7 +1386,8 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                 lesson_date: newLessonDate.trim(),
                                                 topic: newLessonTopic.trim(),
                                                 hours: newLessonHours,
-                                                subject_name: 'Tibbiyotda Axborot Texnologiyalari'
+                                                subject_name: 'Tibbiyotda Axborot Texnologiyalari',
+                                                ...(selectedSemesterId !== null ? { semester_id: selectedSemesterId } : {})
                                             });
                                         
                                         if (error) {

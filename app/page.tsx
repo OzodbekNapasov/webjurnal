@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import CreateGroup from '../components/CreateGroup';
 import EditGroup from '../components/EditGroup';
+import SemesterManager from '../components/SemesterManager';
 
 export const dynamic = 'force-dynamic';
 
@@ -62,10 +63,11 @@ export default async function HomePage({ searchParams }: PageProps) {
         const n = g.name?.toLowerCase() || '';
         return id === 6 || id === 7 || n.includes('chetlat') || n.includes('akadem');
     }
-    const hamshiralik3 = groups.filter(g => g.name?.toLowerCase().includes('3 yillik') && !isSpecial(g));
-    const hamshiralik2 = groups.filter(g => g.name?.toLowerCase().includes('2 yillik') && !isSpecial(g));
-    const farmatsiya = groups.filter(g => g.name?.toLowerCase().includes('farmatsiya') && !isSpecial(g));
-    const maxsusGroups = groups.filter(g => !hamshiralik3.includes(g) && !hamshiralik2.includes(g) && !farmatsiya.includes(g));
+    const sortByName = (a: any, b: any) => (a.name || '').localeCompare(b.name || '', 'uz', { sensitivity: 'base' });
+    const hamshiralik3 = groups.filter(g => g.name?.toLowerCase().includes('3 yillik') && !isSpecial(g)).sort(sortByName);
+    const hamshiralik2 = groups.filter(g => g.name?.toLowerCase().includes('2 yillik') && !isSpecial(g)).sort(sortByName);
+    const farmatsiya = groups.filter(g => g.name?.toLowerCase().includes('farmatsiya') && !isSpecial(g)).sort(sortByName);
+    const maxsusGroups = groups.filter(g => !hamshiralik3.includes(g) && !hamshiralik2.includes(g) && !farmatsiya.includes(g)).sort(sortByName);
 
     // 1. LANDING PAGE: Texnikumni tanlash sahifasi
     if (!techSchool || (techSchool !== 'shahrisabz' && techSchool !== 'ibn_sino')) {
@@ -234,6 +236,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                                             </span>
                                             <span className="text-xs text-slate-500 group-hover:text-blue-400 transition-colors">→</span>
                                         </Link>
+                                        <SemesterManager groupId={g.id} groupName={g.name} accentColor="blue" />
                                         <EditGroup group={g} accentColor="blue" />
                                     </div>
                                 ))
@@ -273,6 +276,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                                             </span>
                                             <span className="text-xs text-slate-500 group-hover:text-indigo-400 transition-colors">→</span>
                                         </Link>
+                                        <SemesterManager groupId={g.id} groupName={g.name} accentColor="indigo" />
                                         <EditGroup group={g} accentColor="indigo" />
                                     </div>
                                 ))
@@ -312,6 +316,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                                             </span>
                                             <span className="text-xs text-slate-500 group-hover:text-emerald-400 transition-colors">→</span>
                                         </Link>
+                                        <SemesterManager groupId={g.id} groupName={g.name} accentColor="emerald" />
                                         <EditGroup group={g} accentColor="emerald" />
                                     </div>
                                 ))
@@ -395,6 +400,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                                                         isChetlat ? 'text-slate-500 group-hover:text-rose-400' : 'text-slate-500 group-hover:text-amber-400'
                                                     }`}>→</span>
                                                 </Link>
+                                                <SemesterManager groupId={g.id} groupName={g.name} accentColor={isChetlat ? 'rose' : 'amber'} />
                                                 <EditGroup group={g} accentColor={isChetlat ? 'rose' : 'amber'} />
                                             </div>
                                         </div>

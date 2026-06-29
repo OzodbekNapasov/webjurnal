@@ -5,6 +5,11 @@ import LogoutButton from '../components/LogoutButton';
 export const metadata: Metadata = {
   title: 'Tibbiyot Texnikumlari — Elektron Dars Jurnali',
   description: 'Shahrisabz va Ibn Sino Tibbiyot Texnikumlari elektron dars jurnali platformasi',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
