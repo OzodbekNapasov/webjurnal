@@ -13,8 +13,9 @@ export default function LogoutButton() {
     setUsername(getStoredUser());
   }, []);
 
-  // Don't render on the login page itself
-  if (pathname === '/login') return null;
+  // Faqat guruh tanlash sahifasida ko'rsatish (/?techSchool=...)
+  // Login va journal sahifalarida yashirin
+  if (pathname !== '/') return null;
   if (!username) return null;
 
   function handleLogout() {

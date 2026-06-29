@@ -102,6 +102,12 @@ function JournalContent() {
     const [allGroups, setAllGroups] = useState<{ id: number; name: string }[]>([]);
     const [targetGroupId, setTargetGroupId] = useState<number | string>("");
 
+    // Yangi dars qo'shish modal holati
+    const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
+    const [newLessonDate, setNewLessonDate] = useState("");
+    const [newLessonTopic, setNewLessonTopic] = useState("");
+    const [newLessonHours, setNewLessonHours] = useState(2);
+
     // Bugungi sanani formatlash funksiyasi
     const getTodayFormatted = () => {
         const today = new Date();
@@ -445,15 +451,26 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                             </p>
                         </div>
 
-                        <div className="w-full md:w-auto">
+                        <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
                             <button
                                 onClick={() => {
                                     setNewStudentName("");
                                     setIsAddStudentOpen(true);
                                 }}
-                                className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                                className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-900/40 hover:border-blue-500/50 rounded-xl font-bold text-xs sm:text-sm transition-all shadow-sm hover:shadow flex items-center justify-center gap-2"
                             >
                                 <span>👥</span> Yangi talaba qo'shish
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setNewLessonDate(getTodayFormatted());
+                                    setNewLessonTopic("");
+                                    setNewLessonHours(2);
+                                    setIsAddLessonOpen(true);
+                                }}
+                                className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
+                            >
+                                <span>📅</span> Yangi dars qo'shish
                             </button>
                         </div>
                     </div>
@@ -505,17 +522,24 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                 </div>
                             </div>
 
-                            {/* Darslar kiritilmagan bo'lsa */}
-                            {lessons.length === 0 ? (
+                            {/* Darslar va talabalar ikkalasi ham kiritilmagan bo'lsa */}
+                            {lessons.length === 0 && students.length === 0 ? (
                                 <div className="text-center py-16 bg-slate-950/20 rounded-2xl border border-slate-800/40">
                                     <span className="text-4xl block mb-3">📅</span>
-                                    <h4 className="text-base font-bold text-slate-300">Jurnalda darslar mavjud emas</h4>
+                                    <h4 className="text-base font-bold text-slate-300">Guruhda talabalar va darslar mavjud emas</h4>
                                     <p className="text-xs text-slate-500 font-semibold mt-1 mb-6 max-w-md mx-auto">
-                                        Davomat olish va baholashni boshlash uchun o'ng burchakdagi "Yangi dars qo'shish" tugmasi orqali dars qo'shing.
+                                        Tahrirlash rejimini yoqib yangi talaba qo'shing yoki yuqoridagi "Yangi dars qo'shish" tugmasi orqali dars qo'shing.
                                     </p>
                                 </div>
                             ) : (
                                 <div>
+                                    {/* Darslar mavjud bo'lmasa, lekin talabalar bo'lsa ko'rsatiladigan ma'lumot banneri */}
+                                    {lessons.length === 0 && (
+                                        <div className="mb-6 p-4 bg-blue-950/20 border border-blue-900/40 rounded-2xl text-blue-300 text-xs font-semibold flex items-center gap-2">
+                                            <span>ℹ️</span>
+                                            <span>Ushbu guruh uchun hali darslar kiritilmagan. Davomat olish va baholashni boshlash uchun "Yangi dars qo'shish" tugmasidan foydalaning.</span>
+                                        </div>
+                                    )}
                                     {/* Mobile Scroll Assist Hint */}
                                     <div className="flex lg:hidden items-center justify-center gap-1.5 mb-2.5 text-[10px] sm:text-xs font-bold text-slate-500 animate-pulse bg-slate-950/40 py-1.5 px-3 rounded-xl border border-slate-800/40 w-fit mx-auto">
                                         <span>↔️ Jurnalni ko'rish uchun o'ngga suring</span>
@@ -1213,6 +1237,103 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                 className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
                             >
                                 O'tkazish
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL 5: YANGI DARS QO'SHISH */}
+            {isAddLessonOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-md shadow-2xl">
+                        <h3 className="text-lg font-black text-white mb-2">📅 Yangi dars qo'shish</h3>
+                        <p className="text-xs text-slate-400 font-bold mb-4">
+                            Guruh jurnaliga yangi dars mavzusi va sanasini qo'shish
+                        </p>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 block mb-1">Dars sanasi</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Kun.Oy.Yil (Masalan: 27.06.2026)"
+                                        value={newLessonDate}
+                                        onChange={(e) => setNewLessonDate(e.target.value)}
+                                        className="flex-1 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewLessonDate(getTodayFormatted())}
+                                        className="px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap"
+                                    >
+                                        📅 Bugun
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 block mb-1">Mavzu</label>
+                                <textarea
+                                    value={newLessonTopic}
+                                    onChange={(e) => setNewLessonTopic(e.target.value)}
+                                    rows={3}
+                                    placeholder="Dars mavzusini kiriting..."
+                                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-semibold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner resize-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 block mb-1">Dars soati</label>
+                                <input
+                                    type="number"
+                                    min={1}
+                                    max={10}
+                                    value={newLessonHours}
+                                    onChange={(e) => setNewLessonHours(parseInt(e.target.value) || 2)}
+                                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                type="button"
+                                onClick={() => setIsAddLessonOpen(false)}
+                                className="flex-1 py-2.5 bg-slate-950/60 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-xl font-bold text-sm transition-all"
+                            >
+                                Bekor qilish
+                            </button>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    if (!newLessonDate.trim() || !newLessonTopic.trim()) {
+                                        alert("Iltimos, barcha maydonlarni to'ldiring!");
+                                        return;
+                                    }
+                                    try {
+                                        const { error } = await supabase!
+                                            .from('lessons')
+                                            .insert({
+                                                group_id: parseInt(groupId!),
+                                                lesson_date: newLessonDate.trim(),
+                                                topic: newLessonTopic.trim(),
+                                                hours: newLessonHours,
+                                                subject_name: 'Tibbiyotda Axborot Texnologiyalari'
+                                            });
+                                        
+                                        if (error) {
+                                            alert(`Qo'shishda xatolik: ${error.message}`);
+                                        } else {
+                                            setIsAddLessonOpen(false);
+                                            loadData();
+                                        }
+                                    } catch (err: any) {
+                                        alert(`Xatolik: ${err.message}`);
+                                    }
+                                }}
+                                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
+                            >
+                                Qo'shish
                             </button>
                         </div>
                     </div>
