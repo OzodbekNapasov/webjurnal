@@ -165,9 +165,18 @@ export default async function HomePage({ searchParams }: PageProps) {
             <div className="max-w-6xl mx-auto">
 
                 {/* Hero Header */}
-                <div className="text-center mb-12 relative">
+                <div className="text-center mb-12 relative flex flex-col items-center">
                     <div className="absolute inset-0 -top-12 flex justify-center -z-10 opacity-10">
                         <div className={`w-[500px] h-[250px] bg-gradient-to-r ${headerBgGradient} blur-3xl rounded-full`}></div>
+                    </div>
+
+                    {/* Logo */}
+                    <div className="mb-6 flex justify-center">
+                        <img
+                            src="/images/Logo.png"
+                            alt="Logo"
+                            className="h-48 w-auto object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-transform duration-300 hover:scale-105"
+                        />
                     </div>
 
                     <h1 className={`text-4xl sm:text-5xl font-black tracking-tight text-white mb-3 bg-clip-text text-transparent bg-gradient-to-r ${titleTextGradient}`}>
@@ -179,7 +188,18 @@ export default async function HomePage({ searchParams }: PageProps) {
 
                     <div className={`inline-flex items-center gap-3 text-white px-6 py-3 rounded-2xl font-bold transition-all duration-300 transform hover:-translate-y-0.5 ${themeBtnClass}`}>
                         <span className="text-xl">{themeBtnIcon}</span>
-                        <span>Tanlangan fan: Tibbiyotda Axborot Texnologiyalari</span>
+                        <span>Fan: Tibbiyotda Axborot Texnologiyalari</span>
+                    </div>
+
+                    {/* Custom PWA Install Button */}
+                    <div id="pwa-install-container" className="hidden mt-4">
+                        <button 
+                            id="pwa-install-btn"
+                            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-95 cursor-pointer"
+                        >
+                            <span>📥</span>
+                            <span>Dastur sifatda o'rnatish</span>
+                        </button>
                     </div>
                 </div>
 
@@ -356,27 +376,23 @@ export default async function HomePage({ searchParams }: PageProps) {
                                 return (
                                     <div
                                         key={g.id}
-                                        className={`backdrop-blur-md p-6 rounded-3xl shadow-xl border transition-all duration-300 ${
-                                            isChetlat
-                                                ? 'bg-rose-950/10 border-rose-900/40 hover:border-rose-500/50 hover:shadow-rose-500/5'
-                                                : 'bg-amber-950/10 border-amber-900/40 hover:border-amber-500/50 hover:shadow-amber-500/5'
-                                        }`}
+                                        className={`backdrop-blur-md p-6 rounded-3xl shadow-xl border transition-all duration-300 ${isChetlat
+                                            ? 'bg-rose-950/10 border-rose-900/40 hover:border-rose-500/50 hover:shadow-rose-500/5'
+                                            : 'bg-amber-950/10 border-amber-900/40 hover:border-amber-500/50 hover:shadow-amber-500/5'
+                                            }`}
                                     >
                                         {/* Karta sarlavhasi */}
-                                        <div className={`flex items-center justify-between border-b pb-4 mb-5 ${
-                                            isChetlat ? 'border-rose-900/40' : 'border-amber-900/40'
-                                        }`}>
+                                        <div className={`flex items-center justify-between border-b pb-4 mb-5 ${isChetlat ? 'border-rose-900/40' : 'border-amber-900/40'
+                                            }`}>
                                             <div className="flex items-center gap-3">
                                                 <span className="text-xl">{isChetlat ? '🚫' : '📚'}</span>
-                                                <h3 className={`font-extrabold text-base ${
-                                                    isChetlat ? 'text-rose-400' : 'text-amber-400'
-                                                }`}>{g.name}</h3>
+                                                <h3 className={`font-extrabold text-base ${isChetlat ? 'text-rose-400' : 'text-amber-400'
+                                                    }`}>{g.name}</h3>
                                             </div>
-                                            <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${
-                                                isChetlat
-                                                    ? 'bg-rose-950/40 text-rose-300 border-rose-900/40'
-                                                    : 'bg-amber-950/40 text-amber-300 border-amber-900/40'
-                                            }`}>
+                                            <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${isChetlat
+                                                ? 'bg-rose-950/40 text-rose-300 border-rose-900/40'
+                                                : 'bg-amber-950/40 text-amber-300 border-amber-900/40'
+                                                }`}>
                                                 {isChetlat ? "Chetlatilganlar" : "Akademik ta'til"}
                                             </span>
                                         </div>
@@ -386,19 +402,17 @@ export default async function HomePage({ searchParams }: PageProps) {
                                             <div className="flex items-center gap-1.5">
                                                 <Link
                                                     href={`/journal?groupId=${g.id}&groupName=${encodeURIComponent(g.name)}`}
-                                                    className={`flex-1 flex items-center justify-between p-3.5 border rounded-2xl font-bold text-sm transition-all duration-200 shadow-sm hover:shadow group ${
-                                                        isChetlat
-                                                            ? 'bg-slate-950/40 hover:bg-rose-950/20 border-slate-800/60 hover:border-rose-900/50 text-slate-300 hover:text-rose-400'
-                                                            : 'bg-slate-950/40 hover:bg-amber-950/20 border-slate-800/60 hover:border-amber-900/50 text-slate-300 hover:text-amber-400'
-                                                    }`}
+                                                    className={`flex-1 flex items-center justify-between p-3.5 border rounded-2xl font-bold text-sm transition-all duration-200 shadow-sm hover:shadow group ${isChetlat
+                                                        ? 'bg-slate-950/40 hover:bg-rose-950/20 border-slate-800/60 hover:border-rose-900/50 text-slate-300 hover:text-rose-400'
+                                                        : 'bg-slate-950/40 hover:bg-amber-950/20 border-slate-800/60 hover:border-amber-900/50 text-slate-300 hover:text-amber-400'
+                                                        }`}
                                                 >
                                                     <span className="flex items-center gap-2.5">
                                                         <span className="text-base group-hover:scale-110 transition-transform">👥</span>
                                                         Talabalar ro'yxatini ko'rish
                                                     </span>
-                                                    <span className={`text-xs transition-colors ${
-                                                        isChetlat ? 'text-slate-500 group-hover:text-rose-400' : 'text-slate-500 group-hover:text-amber-400'
-                                                    }`}>→</span>
+                                                    <span className={`text-xs transition-colors ${isChetlat ? 'text-slate-500 group-hover:text-rose-400' : 'text-slate-500 group-hover:text-amber-400'
+                                                        }`}>→</span>
                                                 </Link>
                                                 <SemesterManager groupId={g.id} groupName={g.name} accentColor={isChetlat ? 'rose' : 'amber'} />
                                                 <EditGroup group={g} accentColor={isChetlat ? 'rose' : 'amber'} />
@@ -412,6 +426,46 @@ export default async function HomePage({ searchParams }: PageProps) {
                 </div>
 
             </div>
+            
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  (function() {
+                    let deferredPrompt;
+                    const installContainer = document.getElementById('pwa-install-container');
+                    const installBtn = document.getElementById('pwa-install-btn');
+
+                    window.addEventListener('beforeinstallprompt', (e) => {
+                      e.preventDefault();
+                      deferredPrompt = e;
+                      if (installContainer) {
+                        installContainer.classList.remove('hidden');
+                      }
+                    });
+
+                    if (installBtn) {
+                      installBtn.addEventListener('click', async () => {
+                        if (!deferredPrompt) return;
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        console.log('PWA installation outcome:', outcome);
+                        deferredPrompt = null;
+                        if (installContainer) {
+                          installContainer.classList.add('hidden');
+                        }
+                      });
+                    }
+
+                    window.addEventListener('appinstalled', () => {
+                      console.log('App was successfully installed');
+                      if (installContainer) {
+                        installContainer.classList.add('hidden');
+                      }
+                    });
+                  })();
+                `
+              }}
+            />
         </div>
     );
 }
