@@ -18,6 +18,7 @@ interface Lesson {
     lesson_date: string;
     hours: number;
     topic: string;
+    semester_id?: number | null;
 }
 
 interface RecordState {
@@ -25,7 +26,57 @@ interface RecordState {
     grade: string;
 }
 
+const isValidDate = (dateStr: string): boolean => {
+    if (!dateStr || dateStr.trim() === "") return true;
+    const parts = dateStr.trim().split('.');
+    if (parts.length !== 3) return false;
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
+    if (year < 1900 || year > 2100) return false;
+    if (month < 1 || month > 12) return false;
+    const daysInMonth = [31, (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    if (day < 1 || day > daysInMonth[month - 1]) return false;
+    return true;
+};
+
+const isSunday = (dateStr: string): boolean => {
+    if (!dateStr || dateStr.trim() === "") return false;
+    const parts = dateStr.trim().split('.');
+    if (parts.length !== 3) return false;
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const year = parseInt(parts[2], 10);
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
+    const dateObj = new Date(year, month - 1, day);
+    return dateObj.getDay() === 0;
+};
+
+const toYYYYMMDD = (dStr: string): string => {
+    if (!dStr) return "";
+    const parts = dStr.split('.');
+    if (parts.length === 3) {
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return "";
+};
+
 function JournalContent() {
+    const uzbMonths = [
+        { code: "01", name: "Yanvar" },
+        { code: "02", name: "Fevral" },
+        { code: "03", name: "Mart" },
+        { code: "04", name: "Aprel" },
+        { code: "05", name: "May" },
+        { code: "06", name: "Iyun" },
+        { code: "07", name: "Iyul" },
+        { code: "08", name: "Avgust" },
+        { code: "09", name: "Sentabr" },
+        { code: "10", name: "Oktabr" },
+        { code: "11", name: "Noyabr" },
+        { code: "12", name: "Dekabr" }
+    ];
     const searchParams = useSearchParams();
     const groupId = searchParams.get("groupId");
     const groupName = searchParams.get("groupName") || "Tanlanmagan guruh";
@@ -43,9 +94,11 @@ function JournalContent() {
 
     // Tablar boshqaruvi
     const [activeTab, setActiveTab] = useState<"jurnal" | "mavzular">("jurnal");
+    const [highlightMonth, setHighlightMonth] = useState<string | null>(null);
 
     // Tahrirlash rejimi (Lock/Unlock)
     const [isEditable, setIsEditable] = useState(false);
+    const [editableLessons, setEditableLessons] = useState<Record<number, boolean>>({});
 
     // Baholarning ranglarini aniqlash funksiyasi
     const getGradeStyle = (grade: string) => {
@@ -96,6 +149,27 @@ function JournalContent() {
         lessonDate: string;
     } | null>(null);
     const [editingState, setEditingState] = useState<RecordState>({ is_present: true, grade: "" });
+
+    // Refs for hidden date picker inputs
+    const editDateInputRef = useRef<HTMLInputElement>(null);
+    const addDateInputRef = useRef<HTMLInputElement>(null);
+
+    // Custom Alert Modal State
+    const [alertModal, setAlertModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        type: 'success' | 'error' | 'warning' | 'info';
+    } | null>(null);
+
+    const showAlert = (message: string, title = "⚠️ Ogohlantirish", type: 'success' | 'error' | 'warning' | 'info' = 'warning') => {
+        setAlertModal({
+            isOpen: true,
+            title,
+            message,
+            type
+        });
+    };
 
     // Darsni tahrirlash modal holati
     const [isEditLessonOpen, setIsEditLessonOpen] = useState(false);
@@ -616,26 +690,52 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                     <th className="p-2 sm:p-4 text-xs font-extrabold text-slate-400 uppercase tracking-wider w-[140px] min-w-[140px] max-w-[140px] sm:w-[220px] sm:min-w-[220px] sm:max-w-[220px] sticky left-12 bg-[#0c1222] z-20 shadow-[4px_0_8px_-3px_rgba(0,0,0,0.6)] border-r border-slate-700/60 truncate">Talaba ismi-sharifi</th>
                                                     {lessons.map((lesson, index) => {
                                                         const isToday = lesson.lesson_date === getTodayFormatted();
+                                                        const isLessonEditable = !!editableLessons[lesson.id];
                                                         return (
                                                             <th
                                                                 key={lesson.id}
-                                                                onClick={() => {
-                                                                    setEditingLesson(lesson);
-                                                                    setIsEditLessonOpen(true);
-                                                                }}
-                                                                className={`p-2 sm:p-4 text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-center w-20 min-w-[80px] sm:w-24 sm:min-w-[96px] border-l border-slate-800/40 cursor-pointer hover:bg-slate-950/80 transition-colors ${isToday
+                                                                className={`p-2 sm:p-4 text-[10px] sm:text-xs font-extrabold uppercase tracking-wider text-center w-20 min-w-[80px] sm:w-24 sm:min-w-[96px] border-l border-slate-800/40 hover:bg-slate-950/80 transition-colors ${isToday
                                                                         ? "bg-blue-500/15 text-blue-300 border-x border-blue-500/30"
                                                                         : "text-slate-400"
                                                                     }`}
-                                                                title={`${index + 1}-dars: ${lesson.topic || 'Mavzu kiritilmagan'} (${lesson.hours} soat, Tahrirlash/O'chirish)`}
+                                                                title={`${index + 1}-dars: ${lesson.topic || 'Mavzu kiritilmagan'} (${lesson.hours} soat)`}
                                                             >
-                                                                <div className="flex flex-col items-center relative">
+                                                                <div className="flex flex-col items-center relative gap-1">
                                                                     {isToday && (
                                                                         <span className="absolute -top-3.5 px-1.5 py-0.2 text-[7px] sm:text-[8px] font-black tracking-wider bg-blue-600 text-white rounded uppercase animate-pulse shadow-sm shadow-blue-500/20">
                                                                             Bugun
                                                                         </span>
                                                                     )}
-                                                                    <span className="hover:underline tracking-tight block text-[11px] sm:text-xs mt-1">{lesson.lesson_date || "Sana?"}</span>
+                                                                    
+                                                                    {/* Qulf/Ochish Tugmasi */}
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setEditableLessons(prev => ({
+                                                                                ...prev,
+                                                                                [lesson.id]: !prev[lesson.id]
+                                                                            }));
+                                                                        }}
+                                                                        className={`px-1.5 py-0.5 rounded text-[9px] font-extrabold transition-all duration-200 active:scale-95 cursor-pointer ${
+                                                                            isLessonEditable
+                                                                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/35"
+                                                                                : "bg-slate-850 text-slate-400 hover:text-slate-300 border border-slate-700/60"
+                                                                        }`}
+                                                                        title={isLessonEditable ? "Tahrirlashni yopish (Saqlash)" : "Tahrirlashni ochish"}
+                                                                    >
+                                                                        {isLessonEditable ? "🔓 Ochiq" : "🔒 Yopiq"}
+                                                                    </button>
+
+                                                                    <span 
+                                                                        onClick={() => {
+                                                                            setEditingLesson(lesson);
+                                                                            setIsEditLessonOpen(true);
+                                                                        }}
+                                                                        className="hover:underline tracking-tight block text-[11px] sm:text-xs cursor-pointer"
+                                                                        title="Dars mavzusi va soatini tahrirlash"
+                                                                    >
+                                                                        {lesson.lesson_date || "Sana?"}
+                                                                    </span>
                                                                     <span className="text-[8px] sm:text-[9px] text-slate-400 font-bold mt-0.5">{index + 1}-dars</span>
                                                                 </div>
                                                             </th>
@@ -643,14 +743,14 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                     })}
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-slate-800/60">
+                                            <tbody className="divide-y divide-slate-700/80">
                                                 {students.length > 0 ? (
                                                     students.map((student, index) => (
                                                         <tr key={student.id} className="hover:bg-slate-950/20 transition-colors group">
-                                                            <td className="p-2 sm:p-4 text-xs sm:text-sm font-bold text-slate-500 text-center sticky left-0 bg-[#0a0f1d] group-hover:bg-slate-900 z-10 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] w-12 min-w-[48px] max-w-[48px]">
+                                                            <td className="p-2 sm:p-4 text-xs sm:text-sm font-bold text-slate-500 text-center sticky left-0 bg-[#0a0f1d] group-hover:bg-slate-900 z-10 transition-colors shadow-[2px_0_5px_-2px_rgba(0,0,0,0.5)] w-12 min-w-[48px] max-w-[48px] border-b border-slate-700/80">
                                                                 {index + 1}
                                                             </td>
-                                                            <td className="p-2 sm:p-4 text-xs sm:text-sm font-extrabold text-slate-200 sticky left-12 bg-[#0a0f1d] group-hover:bg-slate-900 z-10 transition-colors shadow-[4px_0_8px_-3px_rgba(0,0,0,0.6)] border-r border-slate-700/60 w-[140px] min-w-[140px] max-w-[140px] sm:w-[220px] sm:min-w-[220px] sm:max-w-[220px] truncate" title={student.fullName}>
+                                                            <td className="p-2 sm:p-4 text-xs sm:text-sm font-extrabold text-slate-200 sticky left-12 bg-[#0a0f1d] group-hover:bg-slate-900 z-10 transition-colors shadow-[4px_0_8px_-3px_rgba(0,0,0,0.6)] border-r border-b border-slate-700/80 w-[140px] min-w-[140px] max-w-[140px] sm:w-[220px] sm:min-w-[220px] sm:max-w-[220px] truncate" title={student.fullName}>
                                                                 <div className="flex items-center justify-between gap-1 w-full">
                                                                     <span className="truncate">{student.fullName}</span>
                                                                     {isEditable && (
@@ -672,13 +772,14 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                 const key = `${student.id}-${lesson.id}`;
                                                                 const record = journalRecords[key] || { is_present: true, grade: "" };
                                                                 const isToday = lesson.lesson_date === getTodayFormatted();
+                                                                const isLessonEditable = !!editableLessons[lesson.id];
 
                                                                 return (
                                                                     <td
                                                                         key={lesson.id}
                                                                         onClick={async () => {
-                                                                            if (!isEditable) {
-                                                                                alert("O'zgartirish kiritish uchun iltimos tahrirlash rejimini yoqing (pastdagi 'Tahrirlash' tugmasini bosing).");
+                                                                            if (!isLessonEditable) {
+                                                                                showAlert("Ushbu kun (dars) uchun tahrirlash yopiq. Tahrirlashni yoqish uchun ustun sarlavhasidagi '🔒 Yopiq' tugmasini bosing.", "🔒 Dars qulflangan", "warning");
                                                                                 return;
                                                                             }
                                                                             if (journalMode === "davomat") {
@@ -692,6 +793,10 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                                 }));
                                                                                 await handleSaveToSupabase(student.id, lesson.id, newIsPresent, "");
                                                                             } else {
+                                                                                if (!record.is_present) {
+                                                                                    showAlert("Ushbu talabada NB borligi sababli unga baho qo'yib bo'lmaydi. Avval davomat rejimidan NBni olib tashlang.", "⚠️ Baholash taqiqlanadi", "warning");
+                                                                                    return;
+                                                                                }
                                                                                 setEditingCell({
                                                                                     studentId: student.id,
                                                                                     studentName: student.fullName,
@@ -705,13 +810,13 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                                 setIsEditCellOpen(true);
                                                                             }
                                                                         }}
-                                                                        className={`p-2 sm:p-3 text-center border-l border-slate-800/30 transition-colors w-20 min-w-[80px] sm:w-24 sm:min-w-[96px] ${isEditable
-                                                                                ? "cursor-pointer hover:bg-blue-950/10"
-                                                                                : "cursor-not-allowed opacity-85"
-                                                                            } ${isToday
-                                                                                ? "bg-blue-500/5 border-x border-blue-500/20"
-                                                                                : ""
-                                                                            }`}
+                                                                        className={`p-2 sm:p-3 text-center border-l border-b border-slate-700/80 transition-colors w-20 min-w-[80px] sm:w-24 sm:min-w-[96px] ${
+                                                                            isLessonEditable ? "cursor-pointer hover:bg-emerald-950/10" : "cursor-not-allowed opacity-85"
+                                                                        } ${
+                                                                            isToday
+                                                                                ? (isLessonEditable ? "bg-emerald-500/15 border-x border-emerald-500/35" : "bg-blue-500/5 border-x border-blue-500/20")
+                                                                                : (isLessonEditable ? "bg-emerald-500/[0.03] border-x border-emerald-500/10" : "")
+                                                                        }`}
                                                                     >
                                                                         {!record.is_present ? (
                                                                             <span className="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] sm:text-xs font-black rounded bg-rose-950/40 text-rose-400 border border-rose-900/40 shadow-sm">
@@ -746,27 +851,25 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             <button
                                                 onClick={() => {
                                                     setIsEditable(true);
+                                                    const allEditable: Record<number, boolean> = {};
+                                                    lessons.forEach(l => {
+                                                        allEditable[l.id] = true;
+                                                    });
+                                                    setEditableLessons(allEditable);
                                                 }}
-                                                className={`px-5 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${isEditable
-                                                        ? "bg-slate-950/60 text-slate-500 border border-slate-850 cursor-not-allowed"
-                                                        : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20 transform hover:-translate-y-0.5 active:translate-y-0"
-                                                    }`}
-                                                disabled={isEditable}
+                                                className="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                                             >
-                                                ✍️ Tahrirlash
+                                                ✍️ Tahrirlash (Barchasi)
                                             </button>
                                             <button
                                                 onClick={() => {
                                                     setIsEditable(false);
-                                                    alert("Muvaffaqiyatli saqlandi va tahrirlashdan qulflandi!");
+                                                    setEditableLessons({});
+                                                    showAlert("Muvaffaqiyatli saqlandi va barcha darslar tahrirlashdan qulflandi!", "💾 Saqlandi", "success");
                                                 }}
-                                                className={`px-5 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${!isEditable
-                                                        ? "bg-slate-950/60 text-slate-500 border border-slate-850 cursor-not-allowed"
-                                                        : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5 active:translate-y-0"
-                                                    }`}
-                                                disabled={!isEditable}
+                                                className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                                             >
-                                                💾 Saqlash
+                                                💾 Saqlash (Qulflash)
                                             </button>
                                         </div>
 
@@ -783,19 +886,81 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                         </div>
                     ) : (
                         /* TAB 2: O'TILGAN MAVZULAR RO'YXATI */
-                        <div>
+                        <div className="space-y-6">
+                            {/* Oy bo'yicha hisobot filtri */}
+                            <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                    <div>
+                                        <h4 className="text-sm sm:text-base font-extrabold text-white">📅 Oylar bo'yicha dars soatlari hisoboti</h4>
+                                        <p className="text-xs text-slate-400 font-semibold mt-0.5">Oyni tanlang va o'sha oyda o'tilgan darslar yashil (emerald) rangda ajralib turadi</p>
+                                    </div>
+                                    {highlightMonth && (
+                                        <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/35 rounded-xl text-xs sm:text-sm font-black text-emerald-400 shadow-lg shadow-emerald-500/5 animate-pulse">
+                                            📊 {uzbMonths.find(m => m.code === highlightMonth)?.name} oyidagi umumiy soat: {
+                                                lessons.filter(l => {
+                                                    if (!l.lesson_date) return false;
+                                                    const parts = l.lesson_date.split('.');
+                                                    return parts.length === 3 && parts[1] === highlightMonth;
+                                                }).reduce((sum, l) => sum + (l.hours || 0), 0)
+                                            } soat
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                    {uzbMonths.map(month => {
+                                        const isActive = highlightMonth === month.code;
+                                        const monthlyHours = lessons.filter(l => {
+                                            if (!l.lesson_date) return false;
+                                            const parts = l.lesson_date.split('.');
+                                            return parts.length === 3 && parts[1] === month.code;
+                                        }).reduce((sum, l) => sum + (l.hours || 0), 0);
+
+                                        return (
+                                            <button
+                                                key={month.code}
+                                                onClick={() => setHighlightMonth(isActive ? null : month.code)}
+                                                className={`px-3 py-2 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer ${
+                                                    isActive
+                                                        ? "bg-emerald-500 text-slate-950 border-emerald-400 font-extrabold shadow-lg shadow-emerald-500/20"
+                                                        : "bg-slate-950/60 hover:bg-slate-950 border-slate-800 text-slate-300 hover:text-white"
+                                                }`}
+                                            >
+                                                <span>{month.name}</span>
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                                                    isActive ? "bg-slate-950/20 text-slate-950" : "bg-slate-800 text-slate-400"
+                                                }`}>
+                                                    {monthlyHours}s
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
+                                    {highlightMonth && (
+                                        <button
+                                            onClick={() => setHighlightMonth(null)}
+                                            className="px-3 py-2 text-xs font-bold rounded-xl border border-rose-900/50 bg-rose-950/20 hover:bg-rose-900/20 text-rose-400 transition-colors cursor-pointer"
+                                        >
+                                            ❌ Tozalash
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
                             {/* Mobile View: Cards */}
                             <div className="block sm:hidden space-y-3">
                                 {lessons.length > 0 ? (
                                     lessons.map((lesson, index) => {
                                         const isToday = lesson.lesson_date === getTodayFormatted();
+                                        const isHighlighted = highlightMonth && lesson.lesson_date && lesson.lesson_date.split('.')[1] === highlightMonth;
                                         return (
                                             <div
                                                 key={lesson.id}
-                                                className={`p-4 border rounded-2xl space-y-2 shadow-lg animate-fadeIn transition-all ${isToday
-                                                        ? "bg-blue-950/20 border-blue-500/40 ring-1 ring-blue-500/10 shadow-blue-500/5"
-                                                        : "bg-slate-950/40 border-slate-800/60"
-                                                    }`}
+                                                className={`p-4 border rounded-2xl space-y-2 shadow-lg animate-fadeIn transition-all ${
+                                                    isHighlighted
+                                                        ? "bg-emerald-950/25 border-emerald-500/50 ring-1 ring-emerald-500/20 shadow-emerald-500/5"
+                                                        : isToday
+                                                            ? "bg-blue-950/20 border-blue-500/40 ring-1 ring-blue-500/10 shadow-blue-500/5"
+                                                            : "bg-slate-950/40 border-slate-800/60"
+                                                }`}
                                             >
                                                 <div className="flex justify-between items-center">
                                                     <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${isToday
@@ -848,23 +1013,30 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                         {lessons.length > 0 ? (
                                             lessons.map((lesson, index) => {
                                                 const isToday = lesson.lesson_date === getTodayFormatted();
+                                                const isHighlighted = highlightMonth && lesson.lesson_date && lesson.lesson_date.split('.')[1] === highlightMonth;
                                                 return (
                                                     <tr
                                                         key={lesson.id}
-                                                        className={`transition-colors ${isToday
-                                                                ? "bg-blue-950/20 hover:bg-blue-950/30 border-y border-blue-500/25"
-                                                                : "hover:bg-slate-950/20"
-                                                            }`}
+                                                        className={`transition-colors ${
+                                                            isHighlighted
+                                                                ? "bg-emerald-950/20 hover:bg-emerald-950/30 border-y border-emerald-500/25"
+                                                                : isToday
+                                                                    ? "bg-blue-950/20 hover:bg-blue-950/30 border-y border-blue-500/25"
+                                                                    : "hover:bg-slate-950/20"
+                                                        }`}
                                                     >
                                                         <td className="p-4 text-sm font-bold text-slate-500 text-center">
                                                             {index + 1}
                                                             {isToday && (
                                                                 <span className="ml-1.5 px-1 py-0.5 text-[8px] font-extrabold bg-blue-600 text-white rounded">Bugun</span>
                                                             )}
+                                                            {isHighlighted && (
+                                                                <span className="ml-1.5 px-1 py-0.5 text-[8px] font-extrabold bg-emerald-500 text-slate-950 rounded animate-pulse">Tanlangan</span>
+                                                            )}
                                                         </td>
-                                                        <td className={`p-4 text-sm font-bold text-center ${isToday ? "text-blue-300" : "text-slate-300"}`}>{lesson.lesson_date || "—"}</td>
-                                                        <td className={`p-4 text-sm font-bold text-center ${isToday ? "text-blue-400/90" : "text-slate-400"}`}>{lesson.hours} soat</td>
-                                                        <td className={`p-4 text-sm font-semibold leading-relaxed ${isToday ? "text-blue-100" : "text-slate-200"}`}>{lesson.topic}</td>
+                                                        <td className={`p-4 text-sm font-bold text-center ${isHighlighted ? "text-emerald-400 font-extrabold" : isToday ? "text-blue-300" : "text-slate-300"}`}>{lesson.lesson_date || "—"}</td>
+                                                        <td className={`p-4 text-sm font-bold text-center ${isHighlighted ? "text-emerald-400 font-extrabold" : isToday ? "text-blue-400/90" : "text-slate-400"}`}>{lesson.hours} soat</td>
+                                                        <td className={`p-4 text-sm font-semibold leading-relaxed ${isHighlighted ? "text-emerald-100" : isToday ? "text-blue-100" : "text-slate-200"}`}>{lesson.topic}</td>
                                                         <td className="p-4 text-center">
                                                             <button
                                                                 onClick={() => {
@@ -945,7 +1117,7 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                 onClick={async () => {
                                     const names = newStudentName.split('\n').map(n => n.trim()).filter(n => n.length > 0);
                                     if (names.length === 0) {
-                                        alert("Iltimos, kamida bitta talaba ismini kiriting!");
+                                        showAlert("Iltimos, kamida bitta talaba ismini kiriting!", "⚠️ Ism kiritilmadi", "warning");
                                         return;
                                     }
                                     try {
@@ -955,7 +1127,7 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             .select('id');
 
                                         if (fetchErr) {
-                                            alert(`Talabalarni olishda xatolik: ${fetchErr.message}`);
+                                            showAlert(`Talabalarni olishda xatolik: ${fetchErr.message}`, "❌ Xatolik", "error");
                                             return;
                                         }
 
@@ -979,13 +1151,14 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             .insert(recordsToInsert);
 
                                         if (insertErr) {
-                                            alert(`Talabalarni qo'shishda xatolik: ${insertErr.message}`);
+                                            showAlert(`Talabalarni qo'shishda xatolik: ${insertErr.message}`, "❌ Xatolik", "error");
                                         } else {
                                             setIsAddStudentOpen(false);
                                             loadData();
+                                            showAlert("Talabalar muvaffaqiyatli qo'shildi!", "✅ Qo'shildi", "success");
                                         }
                                     } catch (err: any) {
-                                        alert(`Xatolik: ${err.message}`);
+                                        showAlert(`Xatolik: ${err.message}`, "❌ Xatolik", "error");
                                     }
                                 }}
                                 className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
@@ -1127,7 +1300,15 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
             {/* MODAL 3: DARS TAHRIRLASH / O'CHIRISH */}
             {isEditLessonOpen && editingLesson && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-md shadow-2xl">
+                    <div className="relative bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-md shadow-2xl">
+                        {/* Windows style Close button */}
+                        <button
+                            onClick={() => setIsEditLessonOpen(false)}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center font-bold transition-all cursor-pointer"
+                            title="Yopish"
+                        >
+                            ✕
+                        </button>
                         <h3 className="text-lg font-black text-white mb-2">⚙️ Darsni tahrirlash</h3>
                         <p className="text-xs text-slate-400 font-bold mb-4">
                             Dars sozlamalarini o'zgartirish yoki darsni o'chirish
@@ -1142,18 +1323,41 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                         placeholder="Kun.Oy.Yil (Masalan: 27.06.2026)"
                                         value={editingLesson.lesson_date}
                                         onChange={(e) => setEditingLesson(prev => prev ? ({ ...prev, lesson_date: e.target.value }) : null)}
-                                        className="flex-1 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
+                                        className="flex-1 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-xs sm:text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
+                                    />
+                                    <input
+                                        type="date"
+                                        ref={editDateInputRef}
+                                        onChange={(e) => {
+                                            const dateVal = e.target.value;
+                                            if (dateVal) {
+                                                const [year, month, day] = dateVal.split("-");
+                                                setEditingLesson(prev => prev ? ({ ...prev, lesson_date: `${day}.${month}.${year}` }) : null);
+                                            }
+                                        }}
+                                        className="hidden"
+                                        style={{ colorScheme: 'dark' }}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => {
-                                            if (window.confirm("Bugungi sanani qo'yasizmi?")) {
-                                                setEditingLesson(prev => prev ? ({ ...prev, lesson_date: getTodayFormatted() }) : null);
+                                            if (editDateInputRef.current) {
+                                                editDateInputRef.current.showPicker();
                                             }
                                         }}
-                                        className="px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap"
+                                        className="px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                                        title="Kalendardan tanlash"
                                     >
-                                        📅 Bugun
+                                        📅 Kalendar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setEditingLesson(prev => prev ? ({ ...prev, lesson_date: getTodayFormatted() }) : null);
+                                        }}
+                                        className="px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1 whitespace-nowrap cursor-pointer"
+                                    >
+                                        Bugun
                                     </button>
                                 </div>
                             </div>
@@ -1177,49 +1381,101 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                     className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
                                 />
                             </div>
+                            {semesters.length > 0 && (
+                                <div>
+                                    <label className="text-xs font-bold text-slate-400 block mb-1">Semestr</label>
+                                    <select
+                                        value={editingLesson.semester_id || ""}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setEditingLesson(prev => prev ? ({ ...prev, semester_id: val ? parseInt(val) : null }) : null);
+                                        }}
+                                        className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500 shadow-inner"
+                                    >
+                                        <option value="" className="bg-slate-950 text-white font-semibold">Semestrsiz (Barcha semestrlar)</option>
+                                        {semesters.map(sem => (
+                                            <option key={sem.id} value={sem.id} className="bg-slate-950 text-white font-semibold">
+                                                {sem.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex flex-col gap-2 mt-6">
-                            <div className="flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsEditLessonOpen(false)}
-                                    className="flex-1 py-2.5 bg-slate-950/60 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-xl font-bold text-sm transition-all"
-                                >
-                                    Bekor qilish
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        if (!editingLesson.lesson_date.trim() || !editingLesson.topic.trim()) {
-                                            alert("Iltimos, barcha maydonlarni to'ldiring!");
-                                            return;
-                                        }
-                                        try {
-                                            const { error } = await supabase!
-                                                .from('lessons')
-                                                .update({
-                                                    lesson_date: editingLesson.lesson_date.trim(),
-                                                    topic: editingLesson.topic.trim(),
-                                                    hours: editingLesson.hours
-                                                })
-                                                .eq('id', editingLesson.id);
+                            <button
+                                 type="button"
+                                 onClick={async () => {
+                                     if (!editingLesson.topic.trim()) {
+                                         showAlert("Iltimos, mavzuni kiriting!", "⚠️ Maydon bo'sh", "warning");
+                                         return;
+                                     }
+                                     if (!isValidDate(editingLesson.lesson_date)) {
+                                         showAlert(`Kiritilgan sana haqiqatda mavjud emas: "${editingLesson.lesson_date}".\nIltimos, haqiqiy kalendar sanasini kiriting (Masalan: 30.06.2026).`, "❌ Noto'g'ri sana", "error");
+                                         return;
+                                     }
+                                     if (isSunday(editingLesson.lesson_date)) {
+                                         showAlert(`Belgilangan sana yakshanba kuniga to'g'ri keladi: "${editingLesson.lesson_date}".\nYakshanba kuni dars kiritish mumkin emas!`, "❌ Yakshanba taqiqlanadi", "error");
+                                         return;
+                                     }
+                                     const hasDuplicate = lessons.some(l => l.id !== editingLesson.id && l.lesson_date && l.lesson_date.trim() === editingLesson.lesson_date.trim());
+                                     if (hasDuplicate && editingLesson.lesson_date.trim() !== "") {
+                                         showAlert(`Belgilangan sana bo'yicha dars allaqachon mavjud: "${editingLesson.lesson_date}".\nBitta sanada 2 marta dars yozish mumkin emas!`, "⚠️ Takroriy sana", "warning");
+                                         return;
+                                     }
+                                     try {
+                                         const { error } = await supabase!
+                                             .from('lessons')
+                                             .update({
+                                                 lesson_date: editingLesson.lesson_date.trim(),
+                                                 topic: editingLesson.topic.trim(),
+                                                 hours: editingLesson.hours,
+                                                 semester_id: editingLesson.semester_id
+                                             })
+                                             .eq('id', editingLesson.id);
 
-                                            if (error) {
-                                                alert(`Saqlashda xatolik: ${error.message}`);
-                                            } else {
-                                                setIsEditLessonOpen(false);
-                                                loadData();
-                                            }
-                                        } catch (err: any) {
-                                            alert(`Xatolik: ${err.message}`);
-                                        }
-                                    }}
-                                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
-                                >
-                                    Saqlash
-                                </button>
-                            </div>
+                                         if (error) {
+                                             showAlert(`Saqlashda xatolik: ${error.message}`, "❌ Saqlashda xato", "error");
+                                         } else {
+                                             setIsEditLessonOpen(false);
+                                             loadData();
+                                         }
+                                     } catch (err: any) {
+                                         showAlert(`Xatolik: ${err.message}`, "❌ Tizim xatosi", "error");
+                                     }
+                                 }}
+                                 className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
+                             >
+                                 Saqlash
+                             </button>
+
+                             <button
+                                 type="button"
+                                 onClick={async () => {
+                                     if (window.confirm("Haqiqatan ham ushbu darsni va unga tegishli barcha jurnal yozuvlarini o'chirib tashlamoqchimisiz?")) {
+                                         try {
+                                             const { error } = await supabase!
+                                                 .from('lessons')
+                                                 .delete()
+                                                 .eq('id', editingLesson.id);
+
+                                             if (error) {
+                                                 showAlert(`O'chirishda xatolik: ${error.message}`, "❌ O'chirishda xato", "error");
+                                             } else {
+                                                 setIsEditLessonOpen(false);
+                                                 loadData();
+                                                 showAlert("Dars muvaffaqiyatli o'chirildi!", "✅ O'chirildi", "success");
+                                             }
+                                         } catch (err: any) {
+                                             showAlert(`Xatolik: ${err.message}`, "❌ Tizim xatosi", "error");
+                                         }
+                                     }
+                                 }}
+                                 className="w-full mt-1 py-2.5 bg-rose-950/40 hover:bg-rose-900/30 border border-rose-900/50 text-rose-400 hover:text-rose-300 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                             >
+                                 🗑️ Darsni o'chirish (Olib tashlash)
+                             </button>
                         </div>
                     </div>
                 </div>
@@ -1266,7 +1522,7 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                 type="button"
                                 onClick={async () => {
                                     if (!targetGroupId) {
-                                        alert("Iltimos, guruhni tanlang!");
+                                        showAlert("Iltimos, guruhni tanlang!", "⚠️ Guruh tanlanmagan", "warning");
                                         return;
                                     }
                                     try {
@@ -1276,14 +1532,14 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             .eq('id', transferringStudent.id);
 
                                         if (error) {
-                                            alert(`O'tkazishda xatolik: ${error.message}`);
+                                            showAlert(`O'tkazishda xatolik: ${error.message}`, "❌ Xatolik", "error");
                                         } else {
                                             setIsTransferModalOpen(false);
-                                            alert("Talaba muvaffaqiyatli boshqa guruhga o'tkazildi!");
+                                            showAlert("Talaba muvaffaqiyatli boshqa guruhga o'tkazildi!", "✅ O'tkazildi", "success");
                                             loadData();
                                         }
                                     } catch (err: any) {
-                                        alert(`Xatolik: ${err.message}`);
+                                        showAlert(`Xatolik: ${err.message}`, "❌ Xatolik", "error");
                                     }
                                 }}
                                 className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
@@ -1298,7 +1554,16 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
             {/* MODAL 5: YANGI DARS QO'SHISH */}
             {isAddLessonOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-md shadow-2xl">
+                    <div className="relative bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-md shadow-2xl">
+                        {/* Windows style Close button */}
+                        <button
+                            onClick={() => setIsAddLessonOpen(false)}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center font-bold transition-all cursor-pointer"
+                            title="Yopish"
+                        >
+                            ✕
+                        </button>
+
                         <h3 className="text-lg font-black text-white mb-2">📅 Yangi dars qo'shish</h3>
                         <p className="text-xs text-slate-400 font-bold mb-4">
                             Guruh jurnaliga yangi dars mavzusi va sanasini qo'shish
@@ -1307,32 +1572,34 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                         <div className="space-y-4">
                             <div>
                                 <label className="text-xs font-bold text-slate-400 block mb-1">Dars sanasi</label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Kun.Oy.Yil (Masalan: 27.06.2026)"
-                                        value={newLessonDate}
-                                        onChange={(e) => setNewLessonDate(e.target.value)}
-                                        className="flex-1 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setNewLessonDate(getTodayFormatted())}
-                                        className="px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap"
-                                    >
-                                        📅 Bugun
-                                    </button>
-                                </div>
+                                <input
+                                    type="date"
+                                    value={toYYYYMMDD(newLessonDate)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val) {
+                                            const [y, m, d] = val.split('-');
+                                            setNewLessonDate(`${d}.${m}.${y}`);
+                                        } else {
+                                            setNewLessonDate("");
+                                        }
+                                    }}
+                                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500 shadow-inner cursor-pointer"
+                                    style={{ colorScheme: 'dark' }}
+                                />
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-slate-400 block mb-1">Mavzu</label>
+                                <label className="text-xs font-bold text-slate-400 block mb-1">Mavzu(lar)</label>
                                 <textarea
                                     value={newLessonTopic}
                                     onChange={(e) => setNewLessonTopic(e.target.value)}
-                                    rows={3}
-                                    placeholder="Dars mavzusini kiriting..."
+                                    rows={5}
+                                    placeholder="Dars mavzusini '#' bilan boshlang. Masalan:&#10;# Mavzu 1&#10;# Mavzu 2"
                                     className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-semibold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner resize-none"
                                 />
+                                <span className="text-[10px] text-slate-500 font-semibold mt-1 block leading-relaxed">
+                                    Mavzuni boshlanishi har doim **#** bilan boshlanishi kerak. Keyingi qatordan **#** bilan boshlangan matn keyingi yangi dars hisoblanadi.
+                                </span>
                             </div>
                             <div>
                                 <label className="text-xs font-bold text-slate-400 block mb-1">Dars soati</label>
@@ -1347,46 +1614,114 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                             </div>
                         </div>
 
-                        <div className="flex gap-3 mt-6">
-                            <button
-                                type="button"
-                                onClick={() => setIsAddLessonOpen(false)}
-                                className="flex-1 py-2.5 bg-slate-950/60 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-xl font-bold text-sm transition-all"
-                            >
-                                Bekor qilish
-                            </button>
+                        <div className="mt-6">
                             <button
                                 type="button"
                                 onClick={async () => {
                                     if (!newLessonDate.trim() || !newLessonTopic.trim()) {
-                                        alert("Iltimos, barcha maydonlarni to'ldiring!");
+                                        showAlert("Iltimos, barcha maydonlarni to'ldiring!", "⚠️ Maydon bo'sh", "warning");
                                         return;
                                     }
+                                    if (!isValidDate(newLessonDate)) {
+                                        showAlert(`Kiritilgan sana haqiqatda mavjud emas: "${newLessonDate}".\nIltimos, haqiqiy kalendar sanasini kiriting (Masalan: 30.06.2026).`, "❌ Noto'g'ri sana", "error");
+                                        return;
+                                    }
+                                    if (isSunday(newLessonDate)) {
+                                        showAlert(`Belgilangan sana yakshanba kuniga to'g'ri keladi: "${newLessonDate}".\nYakshanba kuni dars kiritish mumkin emas!`, "❌ Yakshanba taqiqlanadi", "error");
+                                        return;
+                                    }
+                                    const hasDuplicate = lessons.some(l => l.lesson_date && l.lesson_date.trim() === newLessonDate.trim());
+                                    if (hasDuplicate && newLessonDate.trim() !== "") {
+                                        showAlert(`Belgilangan sana bo'yicha dars allaqachon mavjud: "${newLessonDate}".\nBitta sanada 2 marta dars yozish mumkin emas!`, "⚠️ Takroriy sana", "warning");
+                                        return;
+                                    }
+
+                                    // Parse topics starting with '#'
+                                    const trimmedTopic = newLessonTopic.trim();
+                                    if (!trimmedTopic.startsWith('#')) {
+                                        showAlert("Mavzu har doim '#' belgisi bilan boshlanishi shart (Masalan: # Mavzu nomi)!", "⚠️ Xato format", "warning");
+                                        return;
+                                    }
+
+                                    const parsedTopics = trimmedTopic
+                                        .split('\n')
+                                        .map(line => line.trim())
+                                        .filter(line => line.length > 0);
+
+                                    const finalTopics: string[] = [];
+                                    for (const line of parsedTopics) {
+                                        if (line.startsWith('#')) {
+                                            finalTopics.push(line.substring(1).trim());
+                                        } else {
+                                            if (finalTopics.length > 0) {
+                                                finalTopics[finalTopics.length - 1] += " " + line;
+                                            } else {
+                                                showAlert("Mavzu har doim '#' belgisi bilan boshlanishi shart!", "⚠️ Xato format", "warning");
+                                                return;
+                                            }
+                                        }
+                                    }
+
                                     try {
+                                        const recordsToInsert = finalTopics.map(topicName => ({
+                                            group_id: parseInt(groupId!),
+                                            lesson_date: newLessonDate.trim(),
+                                            topic: topicName,
+                                            hours: newLessonHours,
+                                            subject_name: 'Tibbiyotda Axborot Texnologiyalari',
+                                            ...(selectedSemesterId !== null ? { semester_id: selectedSemesterId } : {})
+                                        }));
+
                                         const { error } = await supabase!
                                             .from('lessons')
-                                            .insert({
-                                                group_id: parseInt(groupId!),
-                                                lesson_date: newLessonDate.trim(),
-                                                topic: newLessonTopic.trim(),
-                                                hours: newLessonHours,
-                                                subject_name: 'Tibbiyotda Axborot Texnologiyalari',
-                                                ...(selectedSemesterId !== null ? { semester_id: selectedSemesterId } : {})
-                                            });
+                                            .insert(recordsToInsert);
 
                                         if (error) {
-                                            alert(`Qo'shishda xatolik: ${error.message}`);
+                                            showAlert(`Qo'shishda xatolik: ${error.message}`, "❌ Qo'shishda xato", "error");
                                         } else {
                                             setIsAddLessonOpen(false);
+                                            setNewLessonTopic("");
                                             loadData();
+                                            showAlert(`${finalTopics.length} ta dars mavzusi muvaffaqiyatli qo'shildi!`, "✅ Qo'shildi", "success");
                                         }
                                     } catch (err: any) {
-                                        alert(`Xatolik: ${err.message}`);
+                                        showAlert(`Xatolik: ${err.message}`, "❌ Tizim xatosi", "error");
                                     }
                                 }}
-                                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20"
+                                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
                             >
                                 Qo'shish
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* CUSTOM ALERT MODAL */}
+            {alertModal && alertModal.isOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-sm shadow-2xl transform scale-100 transition-all text-center">
+                        <div className="flex flex-col items-center gap-3">
+                            <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl font-black ${
+                                alertModal.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                                alertModal.type === 'error' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                                alertModal.type === 'warning' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
+                                'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                            }`}>
+                                {alertModal.type === 'success' ? '✅' :
+                                 alertModal.type === 'error' ? '❌' :
+                                 alertModal.type === 'warning' ? '⚠️' : 'ℹ️'}
+                            </div>
+                            <h3 className="text-lg font-black text-white mt-1">{alertModal.title}</h3>
+                            <p className="text-xs sm:text-sm text-slate-300 font-semibold leading-relaxed mt-1 whitespace-pre-line">
+                                {alertModal.message}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => setAlertModal(null)}
+                                className="w-full mt-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-sm transition-all border border-slate-700 hover:border-slate-600 cursor-pointer"
+                            >
+                                Yopish
                             </button>
                         </div>
                     </div>

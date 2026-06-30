@@ -4,6 +4,7 @@ import Link from 'next/link';
 import CreateGroup from '../components/CreateGroup';
 import EditGroup from '../components/EditGroup';
 import SemesterManager from '../components/SemesterManager';
+import MonthlyReport from '../components/MonthlyReport';
 
 export const dynamic = 'force-dynamic';
 
@@ -186,9 +187,12 @@ export default async function HomePage({ searchParams }: PageProps) {
                         Elektron Dars Jurnali Platformasi
                     </p>
 
-                    <div className={`inline-flex items-center gap-3 text-white px-6 py-3 rounded-2xl font-bold transition-all duration-300 transform hover:-translate-y-0.5 ${themeBtnClass}`}>
-                        <span className="text-xl">{themeBtnIcon}</span>
-                        <span>Fan: Tibbiyotda Axborot Texnologiyalari</span>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <div className={`inline-flex items-center gap-2.5 text-white px-5 h-[46px] rounded-2xl font-bold text-xs sm:text-sm transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98] ${themeBtnClass}`}>
+                            <span className="text-xl">{themeBtnIcon}</span>
+                            <span>Fan: Tibbiyotda Axborot Texnologiyalari</span>
+                        </div>
+                        <MonthlyReport techSchool={techSchool} />
                     </div>
 
                     {/* Custom PWA Install Button */}
