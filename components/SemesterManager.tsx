@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Calendar, AlertTriangle, X, Check } from './Icon';
+
+import { createPortal } from 'react-dom';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
@@ -36,6 +39,11 @@ export default function SemesterManager({ groupId, groupName, accentColor = 'blu
   const [newName, setNewName] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const accent = accentMap[accentColor];
 
@@ -137,39 +145,37 @@ export default function SemesterManager({ groupId, groupName, accentColor = 'blu
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2}
             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
-      </button>
-
-      {/* Modal */}
-      {isOpen && (
+      </button>      {/* Modal */}
+      {isOpen && mounted && createPortal(
         <div
           className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-[999] p-4"
           onClick={handleClose}
         >
           <div
-            className="bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-sm shadow-2xl text-left"
+            className="relative bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-sm shadow-2xl text-left"
             onClick={e => e.stopPropagation()}
           >
-            {/* Header */}
+            {/* Windows style Close button */}
+            <button
+              onClick={handleClose}
+              className="absolute top-4 right-4 text-rose-400 hover:text-white hover:bg-rose-600 rounded-xl w-8 h-8 flex items-center justify-center font-bold transition-all cursor-pointer z-10"
+              title="Yopish"
+            >
+              <X className="w-4 h-4" />
+            </button>
+             {/* Header */}
             <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-5">
-              <span className="text-2xl">📅</span>
+              <span className="text-blue-400"><Calendar className="w-6 h-6" /></span>
               <div className="flex-1 min-w-0">
                 <h2 className="text-base font-black text-white">Semestr boshqaruvi</h2>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">{groupName}</p>
               </div>
-              <button
-                onClick={handleClose}
-                className="flex-shrink-0 p-1.5 rounded-xl text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-all"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
             </div>
 
             {/* Error */}
             {error && (
-              <div className="p-3 bg-rose-950/20 border border-rose-900/50 rounded-xl text-rose-300 text-xs font-semibold mb-4">
-                ⚠️ {error}
+              <div className="p-3 bg-rose-950/20 border border-rose-900/50 rounded-xl text-rose-300 text-xs font-semibold mb-4 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
               </div>
             )}
 
@@ -199,7 +205,7 @@ export default function SemesterManager({ groupId, groupName, accentColor = 'blu
                         {sem.name}
                       </span>
                       {sem.status === 'active' && (
-                        <span className="flex-shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-600 text-white uppercase">Active</span>
+                        <span className="flex-shrink-0 text-[9px] font-black px-1.5 py-0.5 rounded-md bg-emerald-600 text-white uppercase">Faol</span>
                       )}
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
@@ -208,9 +214,10 @@ export default function SemesterManager({ groupId, groupName, accentColor = 'blu
                           <button
                             onClick={() => handleSetActive(sem.id)}
                             disabled={saving}
-                            className="px-2 py-1 text-[10px] font-bold bg-emerald-600/15 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-900/40 rounded-lg transition-all disabled:opacity-50"
+                            className="px-2.5 py-1 text-[10px] font-bold bg-emerald-600/15 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-900/40 rounded-lg transition-all disabled:opacity-50 flex items-center gap-1"
                           >
-                            ✓ Active
+                            <Check className="w-3 h-3" />
+                            <span>Faol qilish</span>
                           </button>
                           <button
                             onClick={() => handleDelete(sem.id)}
@@ -269,7 +276,8 @@ export default function SemesterManager({ groupId, groupName, accentColor = 'blu
               </button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

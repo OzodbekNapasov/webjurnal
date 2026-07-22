@@ -1,6 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Monitor, AlertTriangle, X } from './Icon';
+import CustomSelect from './CustomSelect';
+
+import { createPortal } from 'react-dom';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
@@ -25,6 +29,11 @@ export default function CreateGroup({
   const [direction, setDirection] = useState(defaultDirection);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const directions = [
     { label: 'Hamshiralik 3 yillik', value: '3 yillik' },
@@ -49,19 +58,20 @@ export default function CreateGroup({
       return;
     }
     
+    const chosen = directions.find(d => d.value === direction);
+    const fullName = `${groupName.trim()} (${chosen?.label.includes('Farmatsiya') ? 'farmatsiya' : chosen?.value})`;
+
     setLoading(true);
     setError(null);
     try {
-      const fullName = `${groupName.trim()} (${direction === 'farmatsiya' ? 'Farmatsiya' : direction === '2 yillik' ? '2 yillik' : '3 yillik'})`;
-      const { data, error: insertError } = await supabase.from('groups').insert({
-        name: fullName,
-        tech_school: techSchool
-      }).select();
+      const { error: insertError } = await supabase
+        .from('groups')
+        .insert([{ name: fullName, direction: direction, tech_school: techSchool }]);
+
       if (insertError) {
-        setError(`Yaratishda xatolik: ${insertError.message}`);
+        setError(`Qo'shishda xatolik: ${insertError.message}`);
         return;
       }
-      // Refresh the page to show new group
       window.location.reload();
     } catch (err: any) {
       setError(`Tizim xatoligi: ${err.message || String(err)}`);
@@ -72,21 +82,33 @@ export default function CreateGroup({
 
   return (
     <>
-      {/* Button */}
       <button
         onClick={handleOpen}
         className={buttonClassName}
       >
-        <span>➕</span>
+        <Plus className="w-4 h-4" />
         <span>{buttonText}</span>
       </button>
 
-      {/* Modal */}
-      {isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fadeIn p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl">
+      {isOpen && mounted && createPortal(
+        <div 
+          className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-[999] p-4"
+          onClick={() => setIsOpen(false)}
+        >
+          <div 
+            className="relative bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute top-4 right-4 text-rose-400 hover:text-white hover:bg-rose-600 rounded-xl w-8 h-8 flex items-center justify-center font-bold transition-all cursor-pointer z-10"
+              title="Yopish"
+            >
+              <X className="w-4 h-4" />
+            </button>
             <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-5">
-              <span className="text-2xl">🏫</span>
+              <span className="text-blue-400"><Monitor className="w-6 h-6" /></span>
               <div>
                 <h2 className="text-lg font-black text-white">Yangi guruh yaratish</h2>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tizimga yangi guruh qo'shish</p>
@@ -94,8 +116,8 @@ export default function CreateGroup({
             </div>
 
             {error && (
-              <div className="p-4 bg-rose-950/20 border border-rose-900/50 rounded-2xl text-rose-300 text-xs font-semibold mb-4">
-                ⚠️ {error}
+              <div className="p-4 bg-rose-950/20 border border-rose-900/50 rounded-2xl text-rose-300 text-xs font-semibold mb-4 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
               </div>
             )}
 
@@ -114,31 +136,18 @@ export default function CreateGroup({
 
               <div>
                 <label className="block text-xs font-bold text-slate-400 mb-1.5">Yo‘nalish / Bo'lim</label>
-                <select
+                <CustomSelect
+                  options={directions.map(d => ({ label: d.label, value: d.value }))}
                   value={direction}
-                  onChange={e => setDirection(e.target.value)}
-                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white font-bold focus:outline-none focus:border-blue-500 shadow-inner"
-                >
-                  {directions.map(d => (
-                    <option key={d.value} value={d.value} className="bg-slate-950 text-white font-semibold">
-                      {d.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={val => setDirection(val)}
+                />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6 border-t border-slate-800/60 pt-4">
-              <button
-                onClick={() => setIsOpen(false)}
-                className="flex-1 py-2.5 bg-slate-950/60 hover:bg-slate-950 border border-slate-800 text-slate-400 hover:text-slate-300 rounded-xl font-bold text-sm transition-all"
-                disabled={loading}
-              >
-                Bekor qilish
-              </button>
+            <div className="mt-6 border-t border-slate-800/60 pt-4">
               <button
                 onClick={handleCreate}
-                className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-1.5"
                 disabled={loading}
               >
                 {loading ? (
@@ -149,7 +158,8 @@ export default function CreateGroup({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

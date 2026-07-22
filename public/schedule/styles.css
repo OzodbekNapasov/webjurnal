@@ -1,0 +1,174 @@
+/* Material Symbols styling */
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    user-select: none;
+}
+
+.material-symbols-outlined.filled {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Hide scrollbar for horizontal day selector */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+/* Smooth transitions */
+.page-container {
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+/* Android home screen widget simulation background */
+.android-bg {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuB8sFiQzNVp8zyHRi-59H1ENX9AYxjN1NJB2Bc3h4Ayg0PbMhfyDUMTIKzsPx6f9FkeCvFOrh4w34RgY7xktrB67kjfJJKoa2nxHKQVJO5TWlWZezBrte3XfhMKPkEBDKSC6cO9zC4BvfIa_vPbX3sw0514j0nJfkJO36ioxFLIRV654HCQSBPT27pMmF7RfuiLgvPQKfSoMb-wdmW0zaiysZeJpu9FFIr9EUYxaaH0dcUBV4Tx7S31Yg);
+    background-size: cover;
+    background-position: center;
+}
+
+/* Material Design 3 Widget Radius & Shadows */
+.widget-radius {
+    border-radius: 28px;
+}
+
+.widget-shadow {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Progress bar dynamic transition */
+.progress-bar-fill {
+    transition: width 0.5s ease-out;
+}
+
+/* Add custom animations for transitions */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* ==========================================================================
+   PREMIUM GLOWING DARK BLUE THEME OVERRIDES (MATCHING THE UPLOADED DESIGN)
+   ========================================================================== */
+
+/* Dark Blue Radial Gradient Background */
+body {
+    background: radial-gradient(circle at 50% 50%, #0d1b3e 0%, #050a16 100%) !important;
+    color: #f1f5f9 !important;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* Glassmorphic Dark Navy Cards */
+.bg-surface-container-lowest,
+.bg-surface-container,
+.bg-surface-container-high,
+.bg-surface-container-low,
+.dark .bg-surface-dark,
+.dark .bg-surface-container-high,
+.dark .bg-surface-container-low,
+.dark .bg-surface-container {
+    background-color: rgba(13, 25, 51, 0.65) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(30, 47, 85, 0.5) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Sidebar, Mobile Header and Bottom Navigation Glassmorphism */
+aside, header, nav#bottom-nav-bar {
+    background-color: rgba(8, 16, 34, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-color: rgba(30, 47, 85, 0.5) !important;
+}
+
+/* Form Inputs, Selects and Textareas */
+input[type="text"], select, textarea {
+    background-color: rgba(20, 35, 66, 0.7) !important;
+    border: 1px solid rgba(40, 65, 115, 0.6) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease !important;
+}
+
+input[type="text"]:focus, select:focus, textarea:focus {
+    border-color: #00d2ff !important;
+    box-shadow: 0 0 12px rgba(0, 210, 255, 0.4) !important;
+    outline: none !important;
+}
+
+/* Dropdown select options styling */
+select option {
+    background-color: #0d1b3e !important;
+    color: #ffffff !important;
+}
+
+/* Buttons active/hover transitions */
+.bg-primary, button.bg-primary {
+    background: linear-gradient(135deg, #0088ff 0%, #00f0ff 100%) !important;
+    color: #040914 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3) !important;
+    border: none !important;
+    transition: all 0.3s ease !important;
+}
+.bg-primary:hover, button.bg-primary:hover {
+    box-shadow: 0 6px 20px rgba(0, 240, 255, 0.55) !important;
+    transform: translateY(-1px);
+}
+.bg-primary:active, button.bg-primary:active {
+    transform: translateY(1px);
+}
+
+/* Weekly Table Header and Day Labels */
+th.bg-surface-container, td.bg-surface-container-lowest {
+    background-color: rgba(18, 32, 64, 0.8) !important;
+    color: #ffffff !important;
+}
+
+/* Custom glow effects for headers and specific elements */
+h1, h2, h3, h4 {
+    text-shadow: 0 0 15px rgba(0, 210, 255, 0.15);
+}
+
+/* Navigation Transitions (Mobile and Desktop) */
+#bottom-nav-bar button, .desktop-sidenav a {
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+#bottom-nav-bar button span, .desktop-sidenav a span {
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Table Inputs inside Academic Graph Table cells */
+input.table-input {
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    color: inherit !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    text-align: center !important;
+}
+
+/* Table grid lines visibility override */
+#editor-grafik-container table th, 
+#editor-grafik-container table td,
+#schedule-weekly-container table th, 
+#schedule-weekly-container table td {
+    border: 1px solid rgba(50, 80, 150, 0.75) !important;
+}
+
+/* Ensure text utilizing dark:text-outline-variant is readable in dark mode */
+.dark .dark\:text-outline-variant {
+    color: #94a3b8 !important; /* text-slate-400 equivalent */
+}

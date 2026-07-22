@@ -1,0 +1,15 @@
+﻿{
+  "holidays": [
+    { "date": "01.01", "name": "Yangi yil", "emoji": "YY" },
+    { "date": "14.01", "name": "Vatanparvarlar kuni", "emoji": "UZ" },
+    { "date": "08.03", "name": "Xalqaro xotin-qizlar kuni", "emoji": "FL" },
+    { "date": "21.03", "name": "Navro'z bayrami", "emoji": "SP" },
+    { "date": "22.03", "name": "Navro'z bayrami (2-kun)", "emoji": "SP" },
+    { "date": "09.05", "name": "Xotira va qadrlash kuni", "emoji": "PG" },
+    { "date": "01.09", "name": "Mustaqillik kuni", "emoji": "UZ" },
+    { "date": "02.09", "name": "Mustaqillik kuni (2-kun)", "emoji": "CL" },
+    { "date": "01.10", "name": "O'qituvchi va murabbiylar kuni", "emoji": "AP" },
+    { "date": "08.12", "name": "O'zbekiston Konstitutsiyasi kuni", "emoji": "SC" }
+  ],
+  "customHolidays": []
+}

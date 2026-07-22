@@ -1,0 +1,337 @@
+{
+    "sections": [
+        {
+            "id": 1,
+            "name": "Tibbiyotda Axborot texnalogiyalari"
+        }
+    ],
+    "groups": [
+        {
+            "id": 6,
+            "name": "Chetlatilganlar",
+            "graphId": 1
+        },
+        {
+            "id": 7,
+            "name": "Akademik ta'til olganlar",
+            "graphId": 1
+        },
+        {
+            "id": 1,
+            "name": "25-16 (3 yillik)",
+            "graphId": 1
+        },
+        {
+            "id": 3,
+            "name": "25-18 (3 yillik)",
+            "graphId": 1
+        },
+        {
+            "id": 2,
+            "name": "25-17 (3 yillik)",
+            "graphId": 1
+        },
+        {
+            "id": 11,
+            "name": "25-23 (3 yillik)",
+            "graphId": 1
+        },
+        {
+            "id": 4,
+            "name": "25-22 (2 yillik)",
+            "graphId": 1
+        },
+        {
+            "id": 14,
+            "name": "25-19 (2 yillik)",
+            "graphId": 1
+        },
+        {
+            "id": 15,
+            "name": "25-20 (2 yillik)",
+            "graphId": 1
+        },
+        {
+            "id": 16,
+            "name": "25-21 (2 yillik)",
+            "graphId": 1
+        },
+        {
+            "id": 5,
+            "name": "24-14 (2 yillik)",
+            "graphId": 1
+        },
+        {
+            "id": 12,
+            "name": "24-15 (2 yillik)",
+            "graphId": 1
+        }
+    ],
+    "lessons": [
+        {
+            "id": 1,
+            "sectionId": 1,
+            "groupId": 1,
+            "weeks": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+            "dayOfWeek": 2,
+            "shift": 1,
+            "period": 1,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 2,
+            "sectionId": 1,
+            "groupId": 2,
+            "weeks": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+            "dayOfWeek": 2,
+            "shift": 1,
+            "period": 2,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 3,
+            "sectionId": 1,
+            "groupId": 3,
+            "weeks": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+            "dayOfWeek": 1,
+            "shift": 1,
+            "period": 3,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 4,
+            "sectionId": 1,
+            "groupId": 3,
+            "weeks": "17,18,19,20",
+            "dayOfWeek": 4,
+            "shift": 1,
+            "period": 1,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 5,
+            "sectionId": 1,
+            "groupId": 11,
+            "weeks": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+            "dayOfWeek": 3,
+            "shift": 1,
+            "period": 1,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 6,
+            "sectionId": 1,
+            "groupId": 11,
+            "weeks": "15,16",
+            "dayOfWeek": 5,
+            "shift": 1,
+            "period": 2,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 7,
+            "sectionId": 1,
+            "groupId": 14,
+            "weeks": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15",
+            "dayOfWeek": 4,
+            "shift": 1,
+            "period": 3,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 8,
+            "sectionId": 1,
+            "groupId": 14,
+            "weeks": "11,12,13,14",
+            "dayOfWeek": 4,
+            "shift": 1,
+            "period": 2,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 9,
+            "sectionId": 1,
+            "groupId": 15,
+            "weeks": "14,15,16",
+            "dayOfWeek": 2,
+            "shift": 1,
+            "period": 2,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 10,
+            "sectionId": 1,
+            "groupId": 15,
+            "weeks": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17",
+            "dayOfWeek": 3,
+            "shift": 1,
+            "period": 3,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 11,
+            "sectionId": 1,
+            "groupId": 16,
+            "weeks": "15,16,17",
+            "dayOfWeek": 4,
+            "shift": 2,
+            "period": 3,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 12,
+            "sectionId": 1,
+            "groupId": 16,
+            "weeks": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17",
+            "dayOfWeek": 5,
+            "shift": 2,
+            "period": 3,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 13,
+            "sectionId": 1,
+            "groupId": 4,
+            "weeks": "12,13,14",
+            "dayOfWeek": 5,
+            "shift": 1,
+            "period": 3,
+            "teacher": "Napasov O.",
+            "note": ""
+        },
+        {
+            "id": 14,
+            "sectionId": 1,
+            "groupId": 4,
+            "weeks": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17",
+            "dayOfWeek": 6,
+            "shift": 1,
+            "period": 3,
+            "teacher": "Napasov O.",
+            "note": ""
+        }
+    ],
+    "settings": {
+        "themeMode": "system",
+        "currentWeek": 1,
+        "teacherName": "Napasov O.",
+        "teacherSubject": "Tibbiyotda axborot texnologiyalari",
+        "widgetStyle": "full",
+        "semesterStartDate": "2026-09-07",
+        "bellSchedule": {
+            "1": {
+                "1": {
+                    "start": "08:30",
+                    "end": "09:50"
+                },
+                "2": {
+                    "start": "10:00",
+                    "end": "11:20"
+                },
+                "3": {
+                    "start": "11:40",
+                    "end": "13:00"
+                },
+                "4": {
+                    "start": "13:10",
+                    "end": "14:30"
+                },
+                "5": {
+                    "start": "14:40",
+                    "end": "16:00"
+                },
+                "6": {
+                    "start": "16:10",
+                    "end": "17:30"
+                }
+            },
+            "2": {
+                "1": {
+                    "start": "13:30",
+                    "end": "14:50"
+                },
+                "2": {
+                    "start": "15:00",
+                    "end": "16:20"
+                },
+                "3": {
+                    "start": "16:30",
+                    "end": "17:50"
+                },
+                "4": {
+                    "start": "18:00",
+                    "end": "19:20"
+                },
+                "5": {
+                    "start": "19:30",
+                    "end": "20:50"
+                },
+                "6": {
+                    "start": "21:00",
+                    "end": "22:20"
+                }
+            }
+        }
+    },
+    "academicGraphs": [
+        {
+            "id": 4,
+            "name": "201 - 206 Guruhlar",
+            "weeks": {
+                "2026-09-07": "1",
+                "2026-09-14": "2",
+                "2026-09-21": "3",
+                "2026-09-28": "4",
+                "2026-10-05": "5",
+                "2026-10-12": "6",
+                "2026-10-19": "7",
+                "2026-10-26": "8",
+                "2026-11-02": "9",
+                "2026-11-09": "10",
+                "2026-11-16": "11",
+                "2026-11-23": "12",
+                "2026-11-30": "13",
+                "2026-12-07": "14",
+                "2026-12-14": "15",
+                "2026-12-21": "16",
+                "2026-12-28": "T",
+                "2026-01-04": "T",
+                "2026-01-11": "18",
+                "2026-01-18": "19",
+                "2026-01-25": "20",
+                "2026-02-01": "1",
+                "2026-02-08": "2",
+                "2026-02-15": "3",
+                "2026-02-22": "4",
+                "2026-03-01": "5",
+                "2026-03-08": "6",
+                "2026-03-15": "7",
+                "2026-03-22": "8",
+                "2026-03-29": "9",
+                "2026-04-05": "10",
+                "2026-04-12": "11",
+                "2026-04-19": "12",
+                "2026-04-26": "13",
+                "2026-05-03": "14",
+                "2026-05-10": "15",
+                "2026-05-17": "16",
+                "2026-05-24": "17",
+                "2026-05-31": "18",
+                "2026-06-01": "19",
+                "2026-06-08": "20"
+            }
+        }
+    ]
+}

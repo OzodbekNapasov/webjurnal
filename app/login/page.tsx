@@ -2,9 +2,10 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { attemptLogin, storeSession } from '../../lib/auth';
+import { AlertCircle, CheckCircle, User, Lock } from '../../components/Icon';
 
 /* ─── Animated background blobs ─────────────────────────────────────── */
 function Blob({ className }: { className: string }) {
@@ -15,24 +16,10 @@ function Blob({ className }: { className: string }) {
   );
 }
 
-/* ─── Eye icon ───────────────────────────────────────────────────────── */
-function EyeIcon({ open }: { open: boolean }) {
-  return open ? (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-  ) : (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-    </svg>
-  );
-}
-
 /* ─── Spinner ────────────────────────────────────────────────────────── */
 function Spinner() {
   return (
-    <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
@@ -45,6 +32,7 @@ export default function LoginPage() {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -55,16 +43,6 @@ export default function LoginPage() {
   const [passwordError, setPasswordError] = useState('');
 
   const cardRef = useRef<HTMLDivElement>(null);
-
-  // Ripple effect state
-  const [ripple, setRipple] = useState<{ x: number; y: number; key: number } | null>(null);
-
-  /* Ripple on button click */
-  function addRipple(e: React.MouseEvent<HTMLButtonElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setRipple({ x: e.clientX - rect.left, y: e.clientY - rect.top, key: Date.now() });
-    setTimeout(() => setRipple(null), 600);
-  }
 
   /* Shake animation */
   function triggerShake() {
@@ -115,7 +93,7 @@ export default function LoginPage() {
       // Brief success delay then navigate
       setTimeout(() => {
         router.push(redirect);
-      }, 1000);
+      }, 800);
 
     } catch (err) {
       setLoading(false);
@@ -126,15 +104,14 @@ export default function LoginPage() {
 
   return (
     <>
-
-      {/* ── Background ── */}
+      {/* ── Custom Dark Ocean Background ── */}
       <div
         className="fixed inset-0 overflow-hidden"
         style={{
           background: 'linear-gradient(135deg, #020617 0%, #0a1628 35%, #041030 65%, #060a1a 100%)',
         }}
       >
-        {/* Blobs */}
+        {/* Glowing Ambient Blobs */}
         <div
           className="blob1 absolute top-[-15%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
           style={{
@@ -157,240 +134,160 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Subtle grid overlay */}
+        {/* Subtle grid pattern overlay */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none opacity-40"
           style={{
             backgroundImage:
-              'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
+              'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
             backgroundSize: '60px 60px',
           }}
         />
       </div>
 
-      {/* ── Centered Card ── */}
-      <div className="fixed inset-0 flex items-center justify-center p-4 z-10">
-        <div
-          ref={cardRef}
-          className={`card-anim w-full max-w-md ${shake ? 'card-shake' : ''} ${success ? 'success-ring' : ''}`}
-          style={{
-            background: 'rgba(255,255,255,0.05)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '1.5px solid rgba(255,255,255,0.10)',
-            borderRadius: '28px',
-            boxShadow:
-              '0 32px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset, 0 1px 0 rgba(255,255,255,0.08) inset',
-            padding: '48px 40px',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Card inner glow */}
+      {/* ── Centered Glass Card ── */}
+      <div className="fixed inset-0 flex items-center justify-center p-4 z-10 font-sans">
+        
+        {/* Card outer wrapper with spotlight ambient light */}
+        <div className="relative w-full max-w-md flex flex-col items-center">
+          
+          {/* Top spotlight glow beam */}
+          <div className="w-48 h-20 bg-cyan-400/20 blur-3xl rounded-full -mb-10 pointer-events-none" />
+
+          {/* Main Glass Card */}
           <div
-            className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(34,211,238,0.4), transparent)' }}
-          />
+            ref={cardRef}
+            className={`card-anim w-full ${shake ? 'card-shake' : ''} ${success ? 'success-ring' : ''}`}
+            style={{
+              background: 'rgba(15, 23, 42, 0.65)',
+              backdropFilter: 'blur(30px)',
+              WebkitBackdropFilter: 'blur(30px)',
+              border: '1.5px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '32px',
+              boxShadow: '0 30px 70px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08) inset',
+              padding: '40px 36px',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Top edge glow light */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent pointer-events-none" />
 
-          {/* ── Logo ── */}
-          <div className="flex flex-col items-center mb-8">
-            <div
-              className="w-20 h-20 rounded-3xl flex items-center justify-center mb-5 relative"
-              style={{
-                background: 'linear-gradient(135deg, rgba(6,182,212,0.2) 0%, rgba(99,102,241,0.2) 100%)',
-                border: '1.5px solid rgba(34,211,238,0.25)',
-                boxShadow: '0 8px 32px rgba(6,182,212,0.2)',
-              }}
-            >
-              {/* Stethoscope / medical icon */}
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="20" cy="20" r="20" fill="rgba(6,182,212,0.15)" />
-                <path d="M13 12C13 10.895 13.895 10 15 10H17C18.105 10 19 10.895 19 12V18C19 20.761 16.761 23 14 23C11.239 23 9 20.761 9 18V15" stroke="#22D3EE" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="14" cy="26" r="3" stroke="#22D3EE" strokeWidth="2" />
-                <path d="M14 29V32C14 33.657 15.343 35 17 35H23C24.657 35 26 33.657 26 32V22" stroke="#22D3EE" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="26" cy="19" r="3" stroke="#A5B4FC" strokeWidth="2" fill="rgba(165,180,252,0.1)" />
-                <path d="M24 12L27 10L30 12" stroke="#22D3EE" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <h1
-              className="text-2xl font-bold text-white mb-1"
-              style={{ letterSpacing: '-0.02em' }}
-            >
-              Xush kelibsiz
+            {/* Title: Tizimga Kirish */}
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white text-center mb-8 tracking-wide">
+              Tizimga Kirish
             </h1>
-            <p className="text-sm font-medium" style={{ color: 'rgba(148,163,184,0.9)' }}>
-              Davom etish uchun tizimga kiring
-            </p>
-          </div>
 
-          {/* ── Error Banner ── */}
-          {error && (
-            <div
-              className="error-msg flex items-center gap-3 mb-6 px-4 py-3 rounded-2xl"
-              style={{
-                background: 'rgba(239,68,68,0.12)',
-                border: '1px solid rgba(239,68,68,0.3)',
-              }}
-            >
-              <span className="text-red-400 text-lg">⚠</span>
-              <span className="text-red-300 text-sm font-medium">{error}</span>
-            </div>
-          )}
-
-          {/* ── Success Banner ── */}
-          {success && (
-            <div
-              className="error-msg flex items-center gap-3 mb-6 px-4 py-3 rounded-2xl"
-              style={{
-                background: 'rgba(34,211,238,0.12)',
-                border: '1px solid rgba(34,211,238,0.3)',
-              }}
-            >
-              <span className="text-cyan-400 text-lg">✓</span>
-              <span className="text-cyan-300 text-sm font-medium">Muvaffaqiyatli! Yo'naltirilmoqda…</span>
-            </div>
-          )}
-
-          {/* ── Form ── */}
-          <form onSubmit={handleLogin} noValidate>
-            {/* Username */}
-            <div className="mb-5">
-              <label
-                className="block text-xs font-semibold mb-2"
-                style={{ color: 'rgba(148,163,184,0.9)', letterSpacing: '0.06em', textTransform: 'uppercase' }}
-              >
-                Foydalanuvchi nomi
-              </label>
-              <div className="relative">
-                <span
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-                  style={{ color: 'rgba(148,163,184,0.5)' }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                  </svg>
-                </span>
-                <input
-                  id="username"
-                  type="text"
-                  autoComplete="username"
-                  value={username}
-                  onChange={(e) => { setUsername(e.target.value); setUsernameError(''); setError(''); }}
-                  placeholder="Username"
-                  className={`input-field ${usernameError ? 'error' : ''}`}
-                  style={{ paddingLeft: '44px' }}
-                  disabled={loading || success}
-                />
+            {/* Error Notification */}
+            {error && (
+              <div className="error-msg flex items-center gap-3 mb-6 px-4 py-3 rounded-2xl bg-rose-500/20 border border-rose-400/40 text-rose-200 text-xs font-bold">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-300" />
+                <span>{error}</span>
               </div>
-              {usernameError && (
-                <p className="error-msg mt-2 text-xs font-medium text-red-400">{usernameError}</p>
-              )}
-            </div>
+            )}
 
-            {/* Password */}
-            <div className="mb-7">
-              <label
-                className="block text-xs font-semibold mb-2"
-                style={{ color: 'rgba(148,163,184,0.9)', letterSpacing: '0.06em', textTransform: 'uppercase' }}
-              >
-                Parol
-              </label>
-              <div className="relative">
-                <span
-                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-                  style={{ color: 'rgba(148,163,184,0.5)' }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                  </svg>
-                </span>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); setPasswordError(''); setError(''); }}
-                  placeholder="••••••••"
-                  className={`input-field ${passwordError ? 'error' : ''}`}
-                  style={{ paddingLeft: '44px', paddingRight: '48px' }}
-                  disabled={loading || success}
-                />
+            {/* Success Notification */}
+            {success && (
+              <div className="error-msg flex items-center gap-3 mb-6 px-4 py-3 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-200 text-xs font-bold">
+                <CheckCircle className="w-4 h-4 shrink-0 text-cyan-300" />
+                <span>Muvaffaqiyatli! Yo'naltirilmoqda…</span>
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleLogin} noValidate className="space-y-5">
+              
+              {/* Username Input (Pill shape with icon on right, high-contrast dark glass) */}
+              <div>
+                <div className="relative">
+                  <input
+                    id="username"
+                    type="text"
+                    autoComplete="username"
+                    value={username}
+                    onChange={(e) => { setUsername(e.target.value); setUsernameError(''); setError(''); }}
+                    placeholder="Foydalanuvchi nomi"
+                    disabled={loading || success}
+                    className="w-full px-6 py-3.5 pr-12 bg-slate-950/60 hover:bg-slate-950/80 focus:bg-slate-950 border border-slate-700/80 focus:border-cyan-400 rounded-full text-white font-bold text-sm placeholder-slate-400 outline-none transition-all shadow-inner"
+                  />
+                  <span className="absolute right-5 top-1/2 -translate-y-1/2 text-cyan-300/70 pointer-events-none">
+                    <User className="w-5 h-5" />
+                  </span>
+                </div>
+                {usernameError && (
+                  <p className="error-msg mt-1.5 ml-4 text-xs font-semibold text-rose-300">{usernameError}</p>
+                )}
+              </div>
+
+              {/* Password Input (Pill shape with icon on right) */}
+              <div>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setPasswordError(''); setError(''); }}
+                    placeholder="Parol"
+                    disabled={loading || success}
+                    className="w-full px-6 py-3.5 pr-12 bg-slate-950/60 hover:bg-slate-950/80 focus:bg-slate-950 border border-slate-700/80 focus:border-cyan-400 rounded-full text-white font-bold text-sm placeholder-slate-400 outline-none transition-all shadow-inner"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-cyan-300/70 hover:text-cyan-200 transition-colors cursor-pointer"
+                    tabIndex={-1}
+                  >
+                    <Lock className="w-5 h-5" />
+                  </button>
+                </div>
+                {passwordError && (
+                  <p className="error-msg mt-1.5 ml-4 text-xs font-semibold text-rose-300">{passwordError}</p>
+                )}
+              </div>
+
+              {/* Remember me & Forgot Password (Uzbek text) */}
+              <div className="flex items-center justify-between text-xs font-semibold text-slate-300 px-2 pt-1 pb-2">
+                <label className="flex items-center gap-2 cursor-pointer select-none hover:text-white transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-600 bg-slate-900 accent-cyan-400 cursor-pointer"
+                  />
+                  <span>Eslab qolish</span>
+                </label>
                 <button
                   type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: showPassword ? 'rgba(34,211,238,0.8)' : 'rgba(148,163,184,0.4)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px' }}
-                  tabIndex={-1}
+                  onClick={() => alert("Parolni tiklash uchun tizim administratori bilan bog'laning: +998 90 123 45 67")}
+                  className="text-cyan-300/90 hover:text-cyan-200 hover:underline transition-all cursor-pointer"
                 >
-                  <EyeIcon open={showPassword} />
+                  Parolni unutdingizmi?
                 </button>
               </div>
-              {passwordError && (
-                <p className="error-msg mt-2 text-xs font-medium text-red-400">{passwordError}</p>
-              )}
-            </div>
 
-            {/* Login button */}
-            <button
-              id="login-btn"
-              type="submit"
-              onClick={(e) => { if (!loading && !success) addRipple(e); }}
-              disabled={loading || success}
-              className="relative w-full overflow-hidden rounded-2xl py-4 text-base font-bold text-white transition-all duration-300"
-              style={{
-                background: loading || success
-                  ? 'rgba(34,211,238,0.3)'
-                  : 'linear-gradient(135deg, #0891b2 0%, #6366f1 100%)',
-                boxShadow: loading || success
-                  ? 'none'
-                  : '0 8px 32px rgba(6,182,212,0.35), 0 2px 8px rgba(99,102,241,0.3)',
-                transform: loading || success ? 'scale(1)' : undefined,
-                cursor: loading || success ? 'not-allowed' : 'pointer',
-                letterSpacing: '0.01em',
-              }}
-              onMouseEnter={(e) => {
-                if (!loading && !success) {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow =
-                    '0 12px 40px rgba(6,182,212,0.45), 0 4px 12px rgba(99,102,241,0.4)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!loading && !success) {
-                  (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)';
-                  (e.currentTarget as HTMLButtonElement).style.boxShadow =
-                    '0 8px 32px rgba(6,182,212,0.35), 0 2px 8px rgba(99,102,241,0.3)';
-                }
-              }}
-            >
-              {/* Ripple */}
-              {ripple && (
-                <span
-                  key={ripple.key}
-                  className="ripple-span"
-                  style={{ left: ripple.x, top: ripple.y }}
-                />
-              )}
+              {/* Radiant Cyan Gradient Button (Replaced plain white with rich cyan gradient) */}
+              <button
+                id="login-btn"
+                type="submit"
+                disabled={loading || success}
+                className="w-full py-3.5 px-6 bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-extrabold rounded-full text-base transition-all shadow-[0_10px_25px_rgba(6,182,212,0.35)] hover:shadow-[0_15px_35px_rgba(6,182,212,0.5)] transform hover:-translate-y-0.5 active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {loading && !success ? (
+                  <Spinner />
+                ) : success ? (
+                  <span>Kirilmoqda...</span>
+                ) : (
+                  <span>Kirish</span>
+                )}
+              </button>
+            </form>
 
-              {/* Button content */}
-              <span className="flex items-center justify-center gap-2">
-                {loading && !success && <Spinner />}
-                {success
-                  ? '✓ Muvaffaqiyatli kirish'
-                  : loading
-                  ? 'Tekshirilmoqda…'
-                  : 'Kirish'}
-              </span>
-            </button>
-          </form>
-
-          {/* Footer */}
-          <p
-            className="mt-6 text-center text-xs"
-            style={{ color: 'rgba(100,116,139,0.8)' }}
-          >
-            Tibbiyot Texnikumlari · Elektron Dars Jurnali
-          </p>
+            {/* Footer / Subtext in Uzbek */}
+            <p className="mt-8 text-center text-xs font-medium text-slate-400">
+              Akkauntingiz yo'qmi? <span className="font-bold text-cyan-300 hover:underline cursor-pointer" onClick={() => alert("Ro'yxatdan o'tish va biriktirish uchun administratorga murojaat qiling.")}>Ro'yxatdan o'tish</span>
+            </p>
+          </div>
         </div>
       </div>
     </>

@@ -1,6 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { BarChart, Clipboard, FileText, Download, Printer, X } from './Icon';
+import CustomSelect from './CustomSelect';
+
 import { createClient } from '@supabase/supabase-js';
 import * as XLSX from 'xlsx';
 
@@ -34,6 +38,12 @@ interface GroupRow {
 
 export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const [selectedMonth, setSelectedMonth] = useState('05');
     const [selectedYear, setSelectedYear] = useState('2026');
     const [loading, setLoading] = useState(false);
@@ -241,41 +251,142 @@ export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
         XLSX.writeFile(wb, `Dars_Hisoboti_${techSchool}_${monthName}_${selectedYear}.xlsx`);
     };
 
-    const handleExportForm2Excel = () => {
+    const handleExportForm2Excel = async () => {
         if (groupRows.length === 0) return;
 
-        const workbook = XLSX.utils.book_new();
         const monthName = months.find(m => m.code === selectedMonth)?.name || selectedMonth;
         const schoolLabel = techSchool === 'ibn_sino' ? "Ibn Sino Tibbiyot Texnikumi" : "Shahrisabz Tibbiyot Texnikumi";
-        
-        const rawData: any[][] = [
-            [`"${schoolLabel}"ning Tibbiyotda axborot texnalogiyalari fani o'qituvchisi`],
-            [`Ozodbek Napasov ning ${monthName} oyida o'tgan dars soatlari`],
-            [],
-            ["№", "O'tilgan fan", "Guruh"]
-        ];
 
-        for (let d = 1; d <= daysCount; d++) {
-            rawData[3].push(d);
+        const ExcelJS = await import('exceljs');
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Forma-2", {
+            views: [{ showGridLines: true }]
+        });
+
+        // Title Row 1
+        worksheet.addRow([`"${schoolLabel}"ning Tibbiyotda axborot texnologiyalari fani o'qituvchisi`]);
+        // Title Row 2
+        worksheet.addRow([`Ozodbek Napasovning ${monthName} oyida o'tgan dars soatlari`]);
+        // Empty Row
+        worksheet.addRow([]);
+
+        // Merge title rows
+        const lastColIndex = 4 + daysCount; // 1 (№) + 1 (Fan) + 1 (Guruh) + daysCount + 1 (Jami)
+        worksheet.mergeCells(1, 1, 1, lastColIndex);
+        worksheet.mergeCells(2, 1, 2, lastColIndex);
+
+        // Format Title Row 1 & 2
+        const titleRow1 = worksheet.getRow(1);
+        titleRow1.getCell(1).font = { name: 'Times New Roman', size: 12, bold: true };
+        titleRow1.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+        titleRow1.height = 24;
+
+        const titleRow2 = worksheet.getRow(2);
+        titleRow2.getCell(1).font = { name: 'Times New Roman', size: 12, bold: true };
+        titleRow2.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+        titleRow2.height = 24;
+
+        // Headers: Row 4 & 5
+        const row4Values: any[] = ["№", "O'tilgan fan", "Guruh"];
+        for (let i = 0; i < daysCount; i++) {
+            row4Values.push(i === 0 ? "Kunlar" : "");
         }
-        rawData[3].push("Jami soat");
+        row4Values.push("Jami soat");
+        worksheet.addRow(row4Values); // Row 4
 
+        const row5Values: any[] = ["", "", ""];
+        for (let d = 1; d <= daysCount; d++) {
+            row5Values.push(d);
+        }
+        row5Values.push("");
+        worksheet.addRow(row5Values); // Row 5
+
+        // Merges for Headers
+        worksheet.mergeCells(4, 1, 5, 1); // №
+        worksheet.mergeCells(4, 2, 5, 2); // O'tilgan fan
+        worksheet.mergeCells(4, 3, 5, 3); // Guruh
+        worksheet.mergeCells(4, 4, 4, 3 + daysCount); // Kunlar header
+        worksheet.mergeCells(4, 4 + daysCount, 5, 4 + daysCount); // Jami soat
+
+        // Style Headers
+        const headerRows = [worksheet.getRow(4), worksheet.getRow(5)];
+        const thinBorder: any = {
+            top: { style: 'thin', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
+        };
+
+        headerRows.forEach(row => {
+            row.height = 20;
+            for (let c = 1; c <= lastColIndex; c++) {
+                const cell = row.getCell(c);
+                cell.font = { name: 'Times New Roman', size: 10, bold: true };
+                cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+                cell.border = thinBorder;
+            }
+        });
+
+        // Sunday shading in Row 5
+        for (let d = 1; d <= daysCount; d++) {
+            if (sundays.includes(d)) {
+                const cell = worksheet.getRow(5).getCell(3 + d);
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFCBD5E1' } // Light gray
+                };
+            }
+        }
+
+        // Add Body rows starting from Row 6
+        const bodyStartRow = 6;
         groupRows.forEach((row, index) => {
-            const rowData: any[] = [
+            const rNum = bodyStartRow + index;
+            const rValues: any[] = [
                 index + 1,
                 index === 0 ? "Tibbiyotda axborot texnologiyalari" : "",
                 row.groupName
             ];
             for (let d = 1; d <= daysCount; d++) {
-                rowData.push(row.dayHours[d] || "");
+                rValues.push(row.dayHours[d] || "");
             }
-            rowData.push(row.totalHours);
-            rawData.push(rowData);
-            rawData.pop();
-            rawData.push(rowData);
+            rValues.push(row.totalHours);
+            worksheet.addRow(rValues);
+
+            const excelRow = worksheet.getRow(rNum);
+            excelRow.height = 25;
+            for (let c = 1; c <= lastColIndex; c++) {
+                const cell = excelRow.getCell(c);
+                cell.font = { name: 'Times New Roman', size: 10, bold: c === 1 || c === 3 || c === lastColIndex };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.border = thinBorder;
+
+                // Color sundays
+                if (c >= 4 && c <= 3 + daysCount) {
+                    const d = c - 3;
+                    if (sundays.includes(d)) {
+                        cell.fill = {
+                            type: 'pattern',
+                            pattern: 'solid',
+                            fgColor: { argb: 'FFCBD5E1' }
+                        };
+                    }
+                }
+            }
         });
 
-        const totalRow: any[] = ["", "Jami", ""];
+        // Merge "O'tilgan fan" vertically
+        if (groupRows.length > 0) {
+            worksheet.mergeCells(bodyStartRow, 2, bodyStartRow + groupRows.length - 1, 2);
+            const mergedCell = worksheet.getRow(bodyStartRow).getCell(2);
+            mergedCell.font = { name: 'Times New Roman', size: 10, bold: true };
+            mergedCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        }
+
+        // Total Row
+        const totalRowNum = bodyStartRow + groupRows.length;
+        const totalRowValues: any[] = ["", "Jami", ""];
         let totalAll = 0;
         for (let d = 1; d <= daysCount; d++) {
             let daySum = 0;
@@ -283,19 +394,63 @@ export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
                 const vals = (row.dayHours[d] || '').split(' ').map(v => parseInt(v) || 0);
                 daySum += vals.reduce((a, b) => a + b, 0);
             });
-            totalRow.push(daySum || "");
+            totalRowValues.push(daySum || "");
             totalAll += daySum;
         }
-        totalRow.push(totalAll);
-        rawData.push(totalRow);
+        totalRowValues.push(totalAll);
+        worksheet.addRow(totalRowValues);
 
-        rawData.push([]);
-        rawData.push(["O'qituvchi:", "", "O.Z.Napasov"]);
-        rawData.push(["O'TBDO':", "", "B.B.Eshnayev"]);
+        worksheet.mergeCells(totalRowNum, 2, totalRowNum, 3);
+        const totalRow = worksheet.getRow(totalRowNum);
+        totalRow.height = 25;
+        for (let c = 1; c <= lastColIndex; c++) {
+            const cell = totalRow.getCell(c);
+            cell.font = { name: 'Times New Roman', size: 10, bold: true };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            cell.border = thinBorder;
 
-        const worksheet = XLSX.utils.aoa_to_sheet(rawData);
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Forma-2");
-        XLSX.writeFile(workbook, `Forma2_${techSchool}_${monthName}_${selectedYear}.xlsx`);
+            if (c >= 4 && c <= 3 + daysCount) {
+                const d = c - 3;
+                if (sundays.includes(d)) {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'FFCBD5E1' }
+                    };
+                }
+            }
+        }
+
+        // Footer Signatures
+        worksheet.addRow([]);
+        worksheet.addRow([]);
+        const sig1Row = totalRowNum + 3;
+        const sig2Row = totalRowNum + 4;
+
+        worksheet.getRow(sig1Row).getCell(2).value = "O'qituvchi: ____________________ O.Z.Napasov";
+        worksheet.getRow(sig1Row).getCell(2).font = { name: 'Times New Roman', size: 11, bold: true };
+        
+        worksheet.getRow(sig2Row).getCell(2).value = "O'TBDO': ____________________ B.B.Eshnayev";
+        worksheet.getRow(sig2Row).getCell(2).font = { name: 'Times New Roman', size: 11, bold: true };
+
+        // Set custom column widths
+        worksheet.getColumn(1).width = 5;   // №
+        worksheet.getColumn(2).width = 30;  // O'tilgan fan
+        worksheet.getColumn(3).width = 12;  // Guruh
+        for (let d = 1; d <= daysCount; d++) {
+            worksheet.getColumn(3 + d).width = 4; // Kunlar
+        }
+        worksheet.getColumn(4 + daysCount).width = 12; // Jami soat
+
+        // Generate and download
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Forma2_${techSchool}_${monthName}_${selectedYear}.xlsx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
     };
 
     const handlePrint = () => {
@@ -313,27 +468,34 @@ export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
                     setGroupRows([]);
                     setActiveSubTab('details');
                 }}
-                className="inline-flex items-center gap-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-5 h-[46px] rounded-2xl font-bold text-xs sm:text-sm transition-all duration-300 shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20 transform hover:-translate-y-0.5 active:scale-[0.98] cursor-pointer"
+                className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent cursor-pointer active:scale-[0.98] shrink-0"
             >
-                <span>📊</span> Oylik hisobot
+                <BarChart className="w-4 h-4 text-cyan-300 shrink-0" />
+                <span className="whitespace-nowrap">Oylik hisobot</span>
             </button>
 
-            {isOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn print:static print:bg-transparent print:p-0 print:backdrop-blur-none">
-                    <div className="relative bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-7xl max-h-[90vh] overflow-y-auto shadow-2xl text-left print:border-none print:bg-white print:text-black print:max-h-full print:overflow-visible print:shadow-none print:p-0">
+            {isOpen && mounted && createPortal(
+                <div 
+                    className="fixed inset-0 z-[999] flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-fadeIn print:static print:bg-transparent print:p-0 print:backdrop-blur-none"
+                    onClick={() => setIsOpen(false)}
+                >
+                    <div 
+                        className="relative bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 w-[95%] sm:w-full max-w-7xl max-h-[90vh] overflow-y-auto shadow-2xl text-left print:border-none print:bg-white print:text-black print:max-h-full print:overflow-visible print:shadow-none print:p-0"
+                        onClick={e => e.stopPropagation()}
+                    >
                         
                         {/* Close button - hidden in print */}
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="absolute top-4 right-4 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full w-8 h-8 flex items-center justify-center font-bold transition-all cursor-pointer print:hidden"
+                            className="absolute top-4 right-4 text-red-500 hover:text-white hover:bg-red-600 rounded-lg w-8 h-8 flex items-center justify-center font-bold transition-all cursor-pointer print:hidden z-10"
                             title="Yopish"
                         >
-                            ✕
+                            <X className="w-4 h-4" />
                         </button>
 
                         <div className="print:hidden">
                             <h3 className="text-lg sm:text-xl font-black text-white mb-2 flex items-center gap-2">
-                                <span>📊</span> Oylik hisobot va Forma-2
+                                <span className="text-blue-400"><BarChart className="w-5 h-5" /></span> Oylik hisobot va Forma-2
                             </h3>
                             <p className="text-xs text-slate-400 font-bold mb-6">
                                 Guruhlar bo'yicha oylik o'tilgan darslar hisoboti va Excel fayllarga eksport qilish
@@ -343,44 +505,31 @@ export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 bg-slate-950/40 p-4 rounded-2xl border border-slate-800/40">
                                 <div>
                                     <label className="text-xs font-bold text-slate-400 block mb-1.5">Hisobot oyi</label>
-                                    <select
+                                    <CustomSelect
+                                        options={months.map(m => ({ label: m.name, value: m.code }))}
                                         value={selectedMonth}
-                                        onChange={(e) => setSelectedMonth(e.target.value)}
-                                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white font-bold focus:outline-none focus:border-blue-500 cursor-pointer"
-                                    >
-                                        {months.map(m => (
-                                            <option key={m.code} value={m.code} className="bg-slate-950 text-white font-semibold">
-                                                {m.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        onChange={(val) => setSelectedMonth(val)}
+                                    />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-slate-400 block mb-1.5">Hisobot yili</label>
-                                    <select
+                                    <label className="text-xs font-bold text-slate-400 block mb-1.5">Yil</label>
+                                    <CustomSelect
+                                        options={[
+                                            { label: "2025", value: "2025" },
+                                            { label: "2026", value: "2026" },
+                                            { label: "2027", value: "2027" }
+                                        ]}
                                         value={selectedYear}
-                                        onChange={(e) => setSelectedYear(e.target.value)}
-                                        className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white font-bold focus:outline-none focus:border-blue-500 cursor-pointer"
-                                    >
-                                        <option value="2025" className="bg-slate-950 text-white font-semibold">2025</option>
-                                        <option value="2026" className="bg-slate-950 text-white font-semibold">2026</option>
-                                        <option value="2027" className="bg-slate-950 text-white font-semibold">2027</option>
-                                    </select>
+                                        onChange={(val) => setSelectedYear(val)}
+                                    />
                                 </div>
                                 <div className="flex items-end">
                                     <button
-                                        onClick={handleGenerateReport}
                                         disabled={loading}
-                                        className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white rounded-xl font-bold text-sm transition-all shadow-md cursor-pointer h-[38px] flex items-center justify-center gap-1.5"
+                                        onClick={handleGenerateReport}
+                                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
                                     >
-                                        {loading ? (
-                                            <>
-                                                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                                                Yuklanmoqda...
-                                            </>
-                                        ) : (
-                                            "Hisobotni shakllantirish"
-                                        )}
+                                        {loading ? "Yuklanmoqda..." : "Hisobotni shakllantirish"}
                                     </button>
                                 </div>
                             </div>
@@ -396,21 +545,21 @@ export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
                                 <div className="flex bg-slate-950/45 p-1 rounded-xl border border-slate-800/60 mb-6 max-w-sm">
                                     <button
                                         onClick={() => setActiveSubTab('details')}
-                                        className={`flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all text-center ${activeSubTab === 'details'
+                                        className={`flex items-center justify-center gap-1.5 flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all text-center ${activeSubTab === 'details'
                                                 ? "bg-blue-600 text-white shadow"
                                                 : "text-slate-400 hover:text-slate-200"
                                             }`}
                                     >
-                                        📋 Batafsil ro'yxat
+                                        <Clipboard className="w-3.5 h-3.5" /> Batafsil ro'yxat
                                     </button>
                                     <button
                                         onClick={() => setActiveSubTab('form2')}
-                                        className={`flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all text-center ${activeSubTab === 'form2'
+                                        className={`flex items-center justify-center gap-1.5 flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all text-center ${activeSubTab === 'form2'
                                                 ? "bg-violet-600 text-white shadow"
                                                 : "text-slate-400 hover:text-slate-200"
                                             }`}
                                     >
-                                        📄 Forma-2 (Tabel)
+                                        <FileText className="w-3.5 h-3.5" /> Forma-2 (Tabel)
                                     </button>
                                 </div>
                             )}
@@ -442,7 +591,7 @@ export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
                                                         onClick={handleExportToExcel}
                                                         className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
                                                     >
-                                                        <span>📥</span> Excel yuklab olish
+                                                        <Download className="w-4 h-4 shrink-0" /> Excel yuklab olish
                                                     </button>
                                                 </div>
                                             )}
@@ -512,13 +661,13 @@ export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
                                                 onClick={handlePrint}
                                                 className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                                             >
-                                                <span>🖨️</span> Chop etish / PDF saqlash
+                                                <Printer className="w-4 h-4" /> Chop etish / PDF saqlash
                                             </button>
                                             <button
                                                 onClick={handleExportForm2Excel}
                                                 className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
                                             >
-                                                <span>📥</span> Excel yuklab olish
+                                                <Download className="w-4 h-4" /> Excel yuklab olish
                                             </button>
                                         </div>
 
@@ -636,7 +785,8 @@ export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
                             </div>
                         )}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );

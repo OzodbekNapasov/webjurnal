@@ -1,14 +1,17 @@
 import React from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
+import { GraduationCap, Activity, Download, Calendar, Info, AlertTriangle, Stethoscope, Laptop, Users, Ban, BookOpen, Settings } from '../components/Icon';
 import CreateGroup from '../components/CreateGroup';
 import EditGroup from '../components/EditGroup';
 import SemesterManager from '../components/SemesterManager';
 import MonthlyReport from '../components/MonthlyReport';
+import fs from 'fs';
+import path from 'path';
+import DashboardClient from '../components/DashboardClient';
 
 export const dynamic = 'force-dynamic';
 
-// .env o'zgaruvchilarini o'qish (bo'shliq va carriage return belgilaridan tozalash)
 const envUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
 const envKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
 
@@ -24,7 +27,54 @@ export default async function HomePage({ searchParams }: PageProps) {
     let groups: any[] = [];
     let fetchError: string | null = null;
 
-    // .env ulanish holatini tekshirish
+    let scheduleData: any = null;
+    try {
+        const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+        if (fs.existsSync(filePath)) {
+            scheduleData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        }
+    } catch (e) {
+        console.error("Failed to read schedule data.json:", e);
+    }
+
+    function getAcademicWeek(startDateStr: string) {
+        if (!startDateStr) return 1;
+        const start = new Date(startDateStr);
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        const diffTime = now.getTime() - start.getTime();
+        if (diffTime < 0) return 1;
+        const diffWeeks = Math.floor(diffTime / (7 * 24 * 60 * 60 * 1000)) + 1;
+        return Math.min(20, Math.max(1, diffWeeks));
+    }
+
+    const todayDate = new Date();
+    let dayOfWeek = todayDate.getDay();
+    if (dayOfWeek === 0) dayOfWeek = 7;
+
+    const currentWeek = scheduleData?.settings?.semesterStartDate
+        ? getAcademicWeek(scheduleData.settings.semesterStartDate)
+        : (scheduleData?.settings?.currentWeek || 1);
+
+    const todayLessons: any[] = [];
+    if (scheduleData && Array.isArray(scheduleData.lessons)) {
+        scheduleData.lessons.forEach((l: any) => {
+            if (Number(l.dayOfWeek) === dayOfWeek) {
+                const weeks = (l.weeks || '').split(',').map(Number);
+                if (weeks.includes(currentWeek)) {
+                    todayLessons.push(l);
+                }
+            }
+        });
+    }
+
+    const periodTimes: { [key: number]: { start: string, end: string } } = {
+        1: { start: "08:30", end: "09:50" },
+        2: { start: "10:00", end: "11:20" },
+        3: { start: "11:30", end: "12:50" },
+        4: { start: "13:00", end: "14:20" }
+    };
+
     const hasUrl = !!envUrl;
     const hasKey = !!envKey;
     const isClientCreated = hasUrl && hasKey;
@@ -51,14 +101,25 @@ export default async function HomePage({ searchParams }: PageProps) {
                 });
             }
         } catch (err: any) {
-            fetchError = `Ulanish xatoligi (Failed to fetch). Tarmoq o'chirilgan yoki Supabase domeni bloklangan bo'lishi mumkin. Batafsil xato: ${err.message || String(err)}`;
+            fetchError = `Ulanish xatoligi (Failed to fetch). Tarmoq o'chirilgan yoki Supabase domeni bloklangan bo'lishi mumkin. Batafsil xatolik: ${err.message || String(err)}`;
             console.error(fetchError);
         }
     } else if (!isClientCreated && techSchool === 'shahrisabz') {
         fetchError = "Supabase sozlamalari (.env/Vercel) topilmadi. Iltimos, NEXT_PUBLIC_SUPABASE_URL va NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY kalitlarini tekshiring.";
     }
 
-    // Guruhlarni nomi bo'yicha ajratish (chetlat va akadem guruhlar maxsus bo'limga)
+    const todayLessonsWithGroup = todayLessons.map((l: any) => {
+        const group = groups.find((g: any) => g.id === l.groupId);
+        const section = scheduleData?.sections?.find((s: any) => s.id === l.sectionId);
+        return {
+            ...l,
+            groupName: group ? group.name : null,
+            groupTechSchool: group ? (group.tech_school || 'shahrisabz') : null,
+            sectionName: section ? section.name : 'Tibbiyotda Axborot Texnologiyalari'
+        };
+    }).filter(l => l.groupName !== null)
+      .sort((a, b) => Number(a.period) - Number(b.period));
+
     function isSpecial(g: any) {
         const id = Number(g.id);
         const n = g.name?.toLowerCase() || '';
@@ -73,24 +134,24 @@ export default async function HomePage({ searchParams }: PageProps) {
     // 1. LANDING PAGE: Texnikumni tanlash sahifasi
     if (!techSchool || (techSchool !== 'shahrisabz' && techSchool !== 'ibn_sino')) {
         return (
-            <div className="min-h-screen bg-gradient-to-tr from-slate-950 via-slate-900 to-zinc-950 py-16 px-4 sm:px-6 lg:px-8 text-slate-100 antialiased flex flex-col justify-center items-center">
+            <div className="min-h-screen bg-gradient-to-br from-[#051336] via-[#083a6b] to-[#04597b] py-16 px-4 sm:px-6 lg:px-8 text-white antialiased flex flex-col justify-center items-center relative overflow-hidden font-sans">
+                {/* Ambient Radial Background Glows */}
+                <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_50%_20%,rgba(56,189,248,0.2),transparent_70%)] pointer-events-none"></div>
+                <div className="fixed top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-gradient-to-r from-cyan-500/20 to-blue-600/20 blur-[130px] rounded-full -z-10 pointer-events-none animate-pulse"></div>
+
                 <div className="max-w-4xl w-full">
                     {/* Hero Header */}
                     <div className="text-center mb-16 relative">
-                        <div className="absolute inset-0 -top-12 flex justify-center -z-10 opacity-10">
-                            <div className="w-[500px] h-[250px] bg-gradient-to-r from-blue-500 to-indigo-500 blur-3xl rounded-full"></div>
-                        </div>
-
-                        <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white mb-3 bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-blue-400">
+                        <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white mb-3 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
                             Tibbiyot Texnikumlari
                         </h1>
-                        <p className="text-md sm:text-lg font-medium text-slate-400 uppercase tracking-widest mb-6">
+                        <p className="text-sm sm:text-base font-bold text-cyan-200/90 uppercase tracking-widest mb-6">
                             Elektron Dars Jurnali Platformasi
                         </p>
 
-                        <div className="inline-flex items-center gap-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-900/40 px-6 py-3 rounded-2xl font-bold transition-all duration-300">
-                            <span className="text-xl">🩺</span>
-                            <span>Tibbiyotda Axborot Texnologiyalari fani jurnallari</span>
+                        <div className="inline-flex items-center gap-3 bg-white/15 backdrop-blur-xl border border-white/30 text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-cyan-950/40">
+                            <Stethoscope className="w-5 h-5 text-cyan-300" />
+                            <span className="text-xs sm:text-sm">Tibbiyotda Axborot Texnologiyalari fani jurnallari</span>
                         </div>
                     </div>
 
@@ -100,24 +161,22 @@ export default async function HomePage({ searchParams }: PageProps) {
                         {/* Shahrisabz Card */}
                         <Link
                             href="/?techSchool=shahrisabz"
-                            className="group relative bg-slate-900/40 backdrop-blur-md p-8 rounded-3xl border border-slate-800/60 hover:border-blue-500/50 hover:shadow-[0_0_40px_rgba(59,130,246,0.15)] transition-all duration-300 flex flex-col justify-between items-center text-center h-[340px]"
+                            className="group relative bg-white/10 backdrop-blur-2xl p-8 rounded-3xl border border-white/20 hover:border-white/40 hover:bg-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:shadow-[0_25px_60px_rgba(56,189,248,0.35)] transition-all duration-300 flex flex-col justify-between items-center text-center h-[340px]"
                         >
-                            <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl -z-10"></div>
-
-                            <div className="w-16 h-16 rounded-2xl bg-blue-950/50 border border-blue-900/40 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300">
-                                🏛️
+                            <div className="w-16 h-16 rounded-2xl bg-white/15 border border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                                <GraduationCap className="w-8 h-8 text-cyan-300" />
                             </div>
 
                             <div className="my-4">
-                                <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-blue-400 transition-colors duration-200">
+                                <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-cyan-300 transition-colors duration-200">
                                     Shahrisabz Tibbiyot Texnikumi
                                 </h2>
-                                <p className="text-xs sm:text-sm text-slate-400 font-semibold mt-2.5 leading-relaxed">
+                                <p className="text-xs sm:text-sm text-cyan-100/80 font-medium mt-2.5 leading-relaxed">
                                     Shahrisabz filiali guruhlari, talabalar ro'yxati va dars jurnali platformasi.
                                 </p>
                             </div>
 
-                            <span className="w-full py-3 bg-blue-600 group-hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-colors shadow-lg shadow-blue-500/10 text-center">
+                            <span className="w-full py-3.5 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-2xl font-extrabold text-sm transition-all shadow-md text-center backdrop-blur-md">
                                 Kirish →
                             </span>
                         </Link>
@@ -125,24 +184,22 @@ export default async function HomePage({ searchParams }: PageProps) {
                         {/* Ibn Sino Card */}
                         <Link
                             href="/?techSchool=ibn_sino"
-                            className="group relative bg-slate-900/40 backdrop-blur-md p-8 rounded-3xl border border-slate-800/60 hover:border-emerald-500/50 hover:shadow-[0_0_40px_rgba(16,185,129,0.15)] transition-all duration-300 flex flex-col justify-between items-center text-center h-[340px]"
+                            className="group relative bg-white/10 backdrop-blur-2xl p-8 rounded-3xl border border-white/20 hover:border-white/40 hover:bg-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:shadow-[0_25px_60px_rgba(52,211,153,0.35)] transition-all duration-300 flex flex-col justify-between items-center text-center h-[340px]"
                         >
-                            <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl -z-10"></div>
-
-                            <div className="w-16 h-16 rounded-2xl bg-emerald-950/50 border border-emerald-900/40 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300">
-                                🌿
+                            <div className="w-16 h-16 rounded-2xl bg-white/15 border border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                                <Activity className="w-8 h-8 text-emerald-300" />
                             </div>
 
                             <div className="my-4">
-                                <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-emerald-400 transition-colors duration-200">
+                                <h2 className="text-xl sm:text-2xl font-black text-white group-hover:text-emerald-300 transition-colors duration-200">
                                     IBN SINO Tibbiyot Texnikumi
                                 </h2>
-                                <p className="text-xs sm:text-sm text-slate-400 font-semibold mt-2.5 leading-relaxed">
+                                <p className="text-xs sm:text-sm text-emerald-100/80 font-medium mt-2.5 leading-relaxed">
                                     Ibn Sino filiali guruhlari, talabalar ro'yxati va dars jurnali platformasi.
                                 </p>
                             </div>
 
-                            <span className="w-full py-3 bg-emerald-600 group-hover:bg-emerald-500 text-white rounded-2xl font-bold text-sm transition-colors shadow-lg shadow-emerald-500/10 text-center">
+                            <span className="w-full py-3.5 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-2xl font-extrabold text-sm transition-all shadow-md text-center backdrop-blur-md">
                                 Kirish →
                             </span>
                         </Link>
@@ -152,77 +209,157 @@ export default async function HomePage({ searchParams }: PageProps) {
         );
     }
 
-    // Define dynamic properties based on the selected school
     const isIbnSino = techSchool === 'ibn_sino';
     const schoolTitle = isIbnSino ? "Ibn Sino Tibbiyot Texnikumi" : "Shahrisabz Tibbiyot Texnikumi";
-    const headerBgGradient = isIbnSino ? "from-emerald-500 to-teal-500" : "from-blue-500 to-indigo-500";
-    const titleTextGradient = isIbnSino ? "from-white via-slate-200 to-emerald-400" : "from-white via-slate-200 to-blue-400";
-    const themeBtnClass = isIbnSino ? "bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20" : "bg-blue-600 hover:bg-blue-700 shadow-blue-500/20";
-    const themeBtnIcon = isIbnSino ? "🌿" : "💻";
 
     // 2. UNIFIED DYNAMIC DASHBOARD
     return (
-        <div className="min-h-screen bg-gradient-to-tr from-slate-950 via-slate-900 to-zinc-950 py-12 px-4 sm:px-6 lg:px-8 text-slate-100 antialiased">
+        <div className="min-h-screen bg-gradient-to-br from-[#051336] via-[#083a6b] to-[#04597b] py-12 px-4 sm:px-6 lg:px-8 text-white antialiased relative overflow-hidden font-sans">
+            {/* Ambient Mesh Glows */}
+            <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_50%_15%,rgba(56,189,248,0.2),transparent_70%)] pointer-events-none"></div>
+            <div className="fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-r from-cyan-500/20 to-blue-600/20 blur-[130px] rounded-full -z-10 pointer-events-none animate-pulse"></div>
+
             <div className="max-w-6xl mx-auto">
 
                 {/* Hero Header */}
                 <div className="text-center mb-12 relative flex flex-col items-center">
-                    <div className="absolute inset-0 -top-12 flex justify-center -z-10 opacity-10">
-                        <div className={`w-[500px] h-[250px] bg-gradient-to-r ${headerBgGradient} blur-3xl rounded-full`}></div>
-                    </div>
 
                     {/* Logo */}
                     <div className="mb-6 flex justify-center">
                         <img
                             src="/images/Logo.png"
                             alt="Logo"
-                            className="h-48 w-auto object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-transform duration-300 hover:scale-105"
+                            className="h-44 sm:h-48 w-auto object-contain drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:scale-105"
                         />
                     </div>
 
-                    <h1 className={`text-4xl sm:text-5xl font-black tracking-tight text-white mb-3 bg-clip-text text-transparent bg-gradient-to-r ${titleTextGradient}`}>
+                    <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-2 drop-shadow-md">
                         {schoolTitle}
                     </h1>
-                    <p className="text-md sm:text-lg font-medium text-slate-400 uppercase tracking-widest mb-6">
+                    <p className="text-xs sm:text-sm font-bold text-cyan-200/90 uppercase tracking-widest mb-8">
                         Elektron Dars Jurnali Platformasi
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                        <div className={`inline-flex items-center gap-2.5 text-white px-5 h-[46px] rounded-2xl font-bold text-xs sm:text-sm transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98] ${themeBtnClass}`}>
-                            <span className="text-xl">{themeBtnIcon}</span>
-                            <span>Fan: Tibbiyotda Axborot Texnologiyalari</span>
+                    {/* UNIFORM Floating Glass Dock Bar */}
+                    <div className="inline-flex items-center justify-center gap-1 sm:gap-1.5 p-1.5 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_15px_35px_rgba(0,0,0,0.35)] max-w-full overflow-x-auto">
+                        
+                        {/* Item 1: Fan Nomi */}
+                        <div className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent shrink-0 cursor-default">
+                            <Laptop className="w-4 h-4 text-cyan-300 shrink-0" />
+                            <span className="whitespace-nowrap">Fan: Tibbiyotda Axborot Texnologiyalari</span>
                         </div>
+
+                        {/* Item 2: Oylik hisobot */}
                         <MonthlyReport techSchool={techSchool} />
+
+                        {/* Item 3: Dars Jadvali */}
+                        <Link
+                            href="/schedule"
+                            className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent active:scale-[0.98] shrink-0"
+                        >
+                            <Calendar className="w-4 h-4 text-cyan-300 shrink-0" />
+                            <span className="whitespace-nowrap">Dars Jadvali</span>
+                        </Link>
+
+                        {/* Item 4: Sozlamalar */}
+                        <Link
+                            href="/settings"
+                            className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent active:scale-[0.98] shrink-0"
+                            title="Bayram kunlari va sozlamalar"
+                        >
+                            <Settings className="w-4 h-4 text-cyan-300 shrink-0" />
+                            <span className="whitespace-nowrap">Sozlamalar</span>
+                        </Link>
                     </div>
 
                     {/* Custom PWA Install Button */}
-                    <div id="pwa-install-container" className="hidden mt-4">
+                    <div id="pwa-install-container" className="hidden mt-5">
                         <button 
                             id="pwa-install-btn"
-                            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-95 cursor-pointer"
+                            className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white border border-white/30 px-6 py-3 rounded-full font-extrabold text-xs sm:text-sm transition-all shadow-xl backdrop-blur-xl active:scale-95 cursor-pointer"
                         >
-                            <span>📥</span>
+                            <Download className="w-4 h-4 text-cyan-300" />
                             <span>Dastur sifatda o'rnatish</span>
                         </button>
                     </div>
                 </div>
 
+                {/* Bugungi Darslar Paneli (Liquid Glass Card) */}
+                {techSchool && (
+                    <div className="mb-10 bg-white/10 backdrop-blur-2xl p-6 sm:p-8 rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+                        <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-6">
+                            <div className="flex items-center gap-2.5">
+                                <span className="p-2 rounded-xl bg-white/15 border border-white/20"><Calendar className="w-5 h-5 text-cyan-300" /></span>
+                                <h3 className="font-extrabold text-base sm:text-lg text-white">Bugungi darslaringiz ({currentWeek}-hafta)</h3>
+                            </div>
+                            <span className="text-[10px] sm:text-xs bg-white/20 text-white font-extrabold px-3 py-1 rounded-full border border-white/30 uppercase tracking-wider backdrop-blur-md">
+                                {dayOfWeek === 1 ? "Dushanba" : dayOfWeek === 2 ? "Seshanba" : dayOfWeek === 3 ? "Chorshanba" : dayOfWeek === 4 ? "Payshanba" : dayOfWeek === 5 ? "Juma" : dayOfWeek === 6 ? "Shanba" : "Yakshanba"}
+                            </span>
+                        </div>
+
+                        {todayLessonsWithGroup.length === 0 ? (
+                            <div className="text-center py-8 text-cyan-100/70 text-xs sm:text-sm font-semibold italic flex items-center justify-center gap-2">
+                                <Info className="w-4 h-4 text-cyan-300 shrink-0" /> Bugun siz uchun rejalashtirilgan faol darslar yo'q. Hordiq oling!
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {todayLessonsWithGroup.map((l: any, idx: number) => {
+                                    const bell = scheduleData?.settings?.bellSchedule?.[l.shift.toString()]?.[l.period] || 
+                                                 scheduleData?.settings?.bellSchedule?.["1"]?.[l.period] || 
+                                                 periodTimes[l.period] || 
+                                                 { start: "08:30", end: "09:50" };
+                                    
+                                    const romanNumerals = ["I", "II", "III", "IV", "V", "VI"];
+                                    const roman = romanNumerals[l.period - 1] || l.period;
+
+                                    return (
+                                        <Link
+                                            key={idx}
+                                            href={`/journal?groupId=${l.groupId}&groupName=${encodeURIComponent(l.groupName)}`}
+                                            className="group relative bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-2xl p-4 shadow-md backdrop-blur-xl transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]"
+                                        >
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className="inline-block px-2.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-wider border border-cyan-400/30">
+                                                    {roman}-para
+                                                </span>
+                                                <span className="text-[10px] text-cyan-100/70 font-bold">
+                                                    {bell.start} - {bell.end}
+                                                </span>
+                                            </div>
+                                            <h4 className="font-extrabold text-sm sm:text-base text-white group-hover:text-cyan-300 transition-colors truncate">
+                                                {l.groupName}
+                                            </h4>
+                                            <p className="text-[11px] text-cyan-100/70 font-semibold mt-1 truncate">
+                                                {l.sectionName}
+                                            </p>
+                                            <div className="mt-3 flex items-center justify-between text-[11px] text-cyan-300 font-extrabold border-t border-white/15 pt-2.5">
+                                                <span>Jurnalni ochish</span>
+                                                <span className="group-hover:translate-x-1 transition-transform">→</span>
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Error Banner */}
                 {fetchError && (
-                    <div className="mb-10 p-6 bg-rose-950/20 border border-rose-900/50 rounded-3xl text-rose-200 text-sm shadow-sm">
+                    <div className="mb-10 p-6 bg-rose-950/30 border border-rose-500/40 rounded-3xl text-rose-100 text-sm shadow-xl backdrop-blur-xl">
                         <h3 className="font-extrabold text-rose-300 text-base mb-1 flex items-center gap-1.5">
-                            ⚠️ Ma'lumotlar bazasidan guruhlarni yuklab bo'lmadi
+                            <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" /> Ma'lumotlar bazasidan guruhlarni yuklab bo'lmadi
                         </h3>
-                        <p className="font-semibold text-rose-400/90 mb-4">{fetchError}</p>
+                        <p className="font-semibold text-rose-300/90 mb-4">{fetchError}</p>
 
-                        <div className="bg-slate-950/40 p-4 rounded-2xl border border-rose-900/30 space-y-2 text-xs text-rose-300 leading-relaxed font-semibold">
-                            <p className="text-rose-200 font-bold">Diagnostika bo'yicha tavsiyalar:</p>
+                        <div className="bg-black/30 p-4 rounded-2xl border border-rose-500/30 space-y-2 text-xs text-rose-200 leading-relaxed font-semibold">
+                            <p className="text-rose-100 font-bold">Diagnostika bo'yicha tavsiyalar:</p>
                             <ul className="list-disc pl-5 space-y-1">
                                 <li>
                                     Server tomonida ma'lumotlarni olishda xatolik yuz berdi. Supabase loyihangiz faol holatdaligini va ulanish kalitlari to'g'riligini tekshiring.
                                 </li>
                                 <li>
-                                    Loyiha terminalini butunlay o'chirib, <code className="bg-slate-900 px-1 py-0.5 rounded font-mono font-bold text-slate-200 text-[10px]">npm run dev</code> ni qaytadan ishga tushiring.
+                                    Loyiha terminalini me'yorda qaytadan ishga tushiring.
                                 </li>
                             </ul>
                         </div>
@@ -231,144 +368,150 @@ export default async function HomePage({ searchParams }: PageProps) {
 
                 {/* Guruhlar ro'yxati sarlavhasi */}
                 <div className="flex items-center gap-3 mb-8">
-                    <div className="h-6 w-1.5 bg-blue-500 rounded-full"></div>
-                    <h2 className="text-xl font-extrabold text-white">Guruhlar ro'yxati</h2>
+                    <div className="h-6 w-1.5 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(56,189,248,0.8)]"></div>
+                    <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">Guruhlar ro'yxati</h2>
                 </div>
 
-                {/* 3 Columns Grid */}
+                {/* Distinct Rich Color Glass Grid Columns */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
-                    {/* Column 1: Hamshiralik 3 yillik */}
-                    <div className="bg-slate-900/40 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-slate-800/60 hover:border-blue-500/40 hover:shadow-blue-500/5 transition-all duration-300">
-                        <div className="flex items-center justify-between border-b border-slate-800/60 pb-4 mb-5">
-                            <h3 className="font-extrabold text-blue-400 text-base">Hamshiralik ishi (3 yilliklar)</h3>
-                            <span className="bg-blue-950/40 text-blue-300 text-xs px-2.5 py-1 rounded-full font-bold border border-blue-900/40">
-                                {hamshiralik3.length} guruh
-                            </span>
+                    {/* Column 1: Hamshiralik 3 yillik (Cyan Sky Glass Theme) */}
+                    <div className="bg-cyan-950/20 backdrop-blur-2xl p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-cyan-400/30 hover:border-cyan-400/60 hover:shadow-[0_25px_60px_rgba(56,189,248,0.25)] transition-all duration-300 flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center justify-between border-b border-cyan-400/20 pb-4 mb-5">
+                                <h3 className="font-extrabold text-cyan-300 text-base">Hamshiralik ishi (3 yilliklar)</h3>
+                                <span className="bg-cyan-500/20 text-cyan-200 text-xs px-3 py-1 rounded-full font-extrabold border border-cyan-400/30 backdrop-blur-md">
+                                    {hamshiralik3.length} guruh
+                                </span>
+                            </div>
+                            <div className="space-y-3">
+                                {hamshiralik3.length > 0 ? (
+                                    hamshiralik3.map((g: any) => (
+                                        <div key={g.id} className="flex items-center gap-2">
+                                            <Link
+                                                href={`/journal?groupId=${g.id}&groupName=${encodeURIComponent(g.name)}`}
+                                                className="flex-1 flex items-center justify-between p-3.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/20 hover:border-cyan-400/40 rounded-2xl font-bold text-sm transition-all duration-200 text-white hover:text-cyan-300 shadow-sm hover:shadow group backdrop-blur-md"
+                                            >
+                                                <span className="flex items-center gap-2.5">
+                                                    <Users className="w-4 h-4 text-cyan-300 group-hover:scale-110 transition-transform" />
+                                                    {g.name}
+                                                </span>
+                                                <span className="text-xs text-cyan-200/70 group-hover:text-cyan-300 transition-colors">→</span>
+                                            </Link>
+                                            <SemesterManager groupId={g.id} groupName={g.name} accentColor="blue" />
+                                            <EditGroup group={g} accentColor="blue" />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-xs text-cyan-100/60 text-center py-4 font-medium">Guruhlar topilmadi</p>
+                                )}
+                            </div>
                         </div>
-                        <div className="space-y-3">
-                            {hamshiralik3.length > 0 ? (
-                                hamshiralik3.map((g: any) => (
-                                    <div key={g.id} className="flex items-center gap-1.5">
-                                        <Link
-                                            href={`/journal?groupId=${g.id}&groupName=${encodeURIComponent(g.name)}`}
-                                            className="flex-1 flex items-center justify-between p-3.5 bg-slate-950/40 hover:bg-blue-950/20 border border-slate-800/60 hover:border-blue-900/50 rounded-2xl font-bold text-sm transition-all duration-200 text-slate-300 hover:text-blue-400 shadow-sm hover:shadow group"
-                                        >
-                                            <span className="flex items-center gap-2.5">
-                                                <span className="text-base group-hover:scale-110 transition-transform">👥</span>
-                                                {g.name}
-                                            </span>
-                                            <span className="text-xs text-slate-500 group-hover:text-blue-400 transition-colors">→</span>
-                                        </Link>
-                                        <SemesterManager groupId={g.id} groupName={g.name} accentColor="blue" />
-                                        <EditGroup group={g} accentColor="blue" />
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-xs text-slate-500 text-center py-4 font-medium">Guruhlar topilmadi</p>
-                            )}
-                        </div>
-                        <div className="mt-5 pt-4 border-t border-slate-800/40">
+                        <div className="mt-6 pt-4 border-t border-cyan-400/20">
                             <CreateGroup
                                 defaultDirection="3 yillik"
                                 techSchool={techSchool}
                                 buttonText="Guruh qo'shish"
-                                buttonClassName="w-full py-3 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 hover:text-blue-300 border border-blue-900/40 hover:border-blue-500/50 rounded-2xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-sm hover:shadow"
+                                buttonClassName="w-full py-3 bg-cyan-500/15 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/30 rounded-2xl font-extrabold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md backdrop-blur-md cursor-pointer"
                             />
                         </div>
                     </div>
 
-                    {/* Column 2: Hamshiralik 2 yillik */}
-                    <div className="bg-slate-900/40 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-slate-800/60 hover:border-indigo-500/40 hover:shadow-indigo-500/5 transition-all duration-300">
-                        <div className="flex items-center justify-between border-b border-slate-800/60 pb-4 mb-5">
-                            <h3 className="font-extrabold text-indigo-400 text-base">Hamshiralik ishi (2 yilliklar)</h3>
-                            <span className="bg-indigo-950/40 text-indigo-300 text-xs px-2.5 py-1 rounded-full font-bold border border-indigo-900/40">
-                                {hamshiralik2.length} guruh
-                            </span>
+                    {/* Column 2: Hamshiralik 2 yillik (Electric Purple Glass Theme) */}
+                    <div className="bg-purple-950/20 backdrop-blur-2xl p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-purple-400/30 hover:border-purple-400/60 hover:shadow-[0_25px_60px_rgba(168,85,247,0.25)] transition-all duration-300 flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center justify-between border-b border-purple-400/20 pb-4 mb-5">
+                                <h3 className="font-extrabold text-purple-300 text-base">Hamshiralik ishi (2 yilliklar)</h3>
+                                <span className="bg-purple-500/20 text-purple-200 text-xs px-3 py-1 rounded-full font-extrabold border border-purple-400/30 backdrop-blur-md">
+                                    {hamshiralik2.length} guruh
+                                </span>
+                            </div>
+                            <div className="space-y-3">
+                                {hamshiralik2.length > 0 ? (
+                                    hamshiralik2.map((g: any) => (
+                                        <div key={g.id} className="flex items-center gap-2">
+                                            <Link
+                                                href={`/journal?groupId=${g.id}&groupName=${encodeURIComponent(g.name)}`}
+                                                className="flex-1 flex items-center justify-between p-3.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-400/20 hover:border-purple-400/40 rounded-2xl font-bold text-sm transition-all duration-200 text-white hover:text-purple-300 shadow-sm hover:shadow group backdrop-blur-md"
+                                            >
+                                                <span className="flex items-center gap-2.5">
+                                                    <Users className="w-4 h-4 text-purple-300 group-hover:scale-110 transition-transform" />
+                                                    {g.name}
+                                                </span>
+                                                <span className="text-xs text-purple-200/70 group-hover:text-purple-300 transition-colors">→</span>
+                                            </Link>
+                                            <SemesterManager groupId={g.id} groupName={g.name} accentColor="indigo" />
+                                            <EditGroup group={g} accentColor="indigo" />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-xs text-purple-100/60 text-center py-4 font-medium">Guruhlar topilmadi</p>
+                                )}
+                            </div>
                         </div>
-                        <div className="space-y-3">
-                            {hamshiralik2.length > 0 ? (
-                                hamshiralik2.map((g: any) => (
-                                    <div key={g.id} className="flex items-center gap-1.5">
-                                        <Link
-                                            href={`/journal?groupId=${g.id}&groupName=${encodeURIComponent(g.name)}`}
-                                            className="flex-1 flex items-center justify-between p-3.5 bg-slate-950/40 hover:bg-indigo-950/20 border border-slate-800/60 hover:border-indigo-900/50 rounded-2xl font-bold text-sm transition-all duration-200 text-slate-300 hover:text-indigo-400 shadow-sm hover:shadow group"
-                                        >
-                                            <span className="flex items-center gap-2.5">
-                                                <span className="text-base group-hover:scale-110 transition-transform">👥</span>
-                                                {g.name}
-                                            </span>
-                                            <span className="text-xs text-slate-500 group-hover:text-indigo-400 transition-colors">→</span>
-                                        </Link>
-                                        <SemesterManager groupId={g.id} groupName={g.name} accentColor="indigo" />
-                                        <EditGroup group={g} accentColor="indigo" />
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-xs text-slate-500 text-center py-4 font-medium">Guruhlar topilmadi</p>
-                            )}
-                        </div>
-                        <div className="mt-5 pt-4 border-t border-slate-800/40">
+                        <div className="mt-6 pt-4 border-t border-purple-400/20">
                             <CreateGroup
                                 defaultDirection="2 yillik"
                                 techSchool={techSchool}
                                 buttonText="Guruh qo'shish"
-                                buttonClassName="w-full py-3 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 hover:text-indigo-300 border border-indigo-900/40 hover:border-indigo-500/50 rounded-2xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-sm hover:shadow"
+                                buttonClassName="w-full py-3 bg-purple-500/15 hover:bg-purple-500/30 text-purple-200 border border-purple-400/30 rounded-2xl font-extrabold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md backdrop-blur-md cursor-pointer"
                             />
                         </div>
                     </div>
 
-                    {/* Column 3: Farmatsiya */}
-                    <div className="bg-slate-900/40 backdrop-blur-md p-6 rounded-3xl shadow-xl border border-slate-800/60 hover:border-emerald-500/40 hover:shadow-emerald-500/5 transition-all duration-300">
-                        <div className="flex items-center justify-between border-b border-slate-800/60 pb-4 mb-5">
-                            <h3 className="font-extrabold text-emerald-400 text-base">Farmatsiya</h3>
-                            <span className="bg-emerald-950/40 text-emerald-300 text-xs px-2.5 py-1 rounded-full font-bold border border-emerald-900/40">
-                                {farmatsiya.length} guruh
-                            </span>
+                    {/* Column 3: Farmatsiya (Mint Emerald Glass Theme) */}
+                    <div className="bg-emerald-950/20 backdrop-blur-2xl p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-emerald-400/30 hover:border-emerald-400/60 hover:shadow-[0_25px_60px_rgba(16,185,129,0.25)] transition-all duration-300 flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center justify-between border-b border-emerald-400/20 pb-4 mb-5">
+                                <h3 className="font-extrabold text-emerald-300 text-base">Farmatsiya</h3>
+                                <span className="bg-emerald-500/20 text-emerald-200 text-xs px-3 py-1 rounded-full font-extrabold border border-emerald-400/30 backdrop-blur-md">
+                                    {farmatsiya.length} guruh
+                                </span>
+                            </div>
+                            <div className="space-y-3">
+                                {farmatsiya.length > 0 ? (
+                                    farmatsiya.map((g: any) => (
+                                        <div key={g.id} className="flex items-center gap-2">
+                                            <Link
+                                                href={`/journal?groupId=${g.id}&groupName=${encodeURIComponent(g.name)}`}
+                                                className="flex-1 flex items-center justify-between p-3.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-400/20 hover:border-emerald-400/40 rounded-2xl font-bold text-sm transition-all duration-200 text-white hover:text-emerald-300 shadow-sm hover:shadow group backdrop-blur-md"
+                                            >
+                                                <span className="flex items-center gap-2.5">
+                                                    <Users className="w-4 h-4 text-emerald-300 group-hover:scale-110 transition-transform" />
+                                                    {g.name}
+                                                </span>
+                                                <span className="text-xs text-emerald-200/70 group-hover:text-emerald-300 transition-colors">→</span>
+                                            </Link>
+                                            <SemesterManager groupId={g.id} groupName={g.name} accentColor="emerald" />
+                                            <EditGroup group={g} accentColor="emerald" />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-xs text-emerald-100/60 text-center py-4 font-medium">Guruhlar topilmadi</p>
+                                )}
+                            </div>
                         </div>
-                        <div className="space-y-3">
-                            {farmatsiya.length > 0 ? (
-                                farmatsiya.map((g: any) => (
-                                    <div key={g.id} className="flex items-center gap-1.5">
-                                        <Link
-                                            href={`/journal?groupId=${g.id}&groupName=${encodeURIComponent(g.name)}`}
-                                            className="flex-1 flex items-center justify-between p-3.5 bg-slate-950/40 hover:bg-emerald-950/20 border border-slate-800/60 hover:border-emerald-900/50 rounded-2xl font-bold text-sm transition-all duration-200 text-slate-300 hover:text-emerald-400 shadow-sm hover:shadow group"
-                                        >
-                                            <span className="flex items-center gap-2.5">
-                                                <span className="text-base group-hover:scale-110 transition-transform">👥</span>
-                                                {g.name}
-                                            </span>
-                                            <span className="text-xs text-slate-500 group-hover:text-emerald-400 transition-colors">→</span>
-                                        </Link>
-                                        <SemesterManager groupId={g.id} groupName={g.name} accentColor="emerald" />
-                                        <EditGroup group={g} accentColor="emerald" />
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-xs text-slate-500 text-center py-4 font-medium">Guruhlar topilmadi</p>
-                            )}
-                        </div>
-                        <div className="mt-5 pt-4 border-t border-slate-800/40">
+                        <div className="mt-6 pt-4 border-t border-emerald-400/20">
                             <CreateGroup
                                 defaultDirection="farmatsiya"
                                 techSchool={techSchool}
                                 buttonText="Guruh qo'shish"
-                                buttonClassName="w-full py-3 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 border border-emerald-900/40 hover:border-emerald-500/50 rounded-2xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-sm hover:shadow"
+                                buttonClassName="w-full py-3 bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 rounded-2xl font-extrabold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md backdrop-blur-md cursor-pointer"
                             />
                         </div>
                     </div>
 
                 </div>
 
-                {/* Maxsus bo'limlar */}
+                {/* Maxsus bo'limlar (Rose & Amber Themes) */}
                 <div className="mt-12">
                     <div className="flex items-center gap-3 mb-8">
-                        <div className="h-6 w-1.5 bg-rose-500 rounded-full"></div>
-                        <h2 className="text-xl font-extrabold text-white">Maxsus bo'limlar</h2>
+                        <div className="h-6 w-1.5 bg-rose-400 rounded-full shadow-[0_0_10px_rgba(251,113,133,0.8)]"></div>
+                        <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">Maxsus bo'limlar</h2>
                     </div>
 
                     {maxsusGroups.length === 0 ? (
-                        <div className="text-center py-10 text-slate-500 text-sm font-medium bg-slate-900/30 rounded-3xl border border-slate-800/40">
+                        <div className="text-center py-10 text-cyan-100/60 text-sm font-medium bg-white/10 rounded-3xl border border-white/15 backdrop-blur-xl">
                             Maxsus guruhlar mavjud emas. "Yangi guruh qo'shish" tugmasidan foydalaning.
                         </div>
                     ) : (
@@ -380,42 +523,40 @@ export default async function HomePage({ searchParams }: PageProps) {
                                 return (
                                     <div
                                         key={g.id}
-                                        className={`backdrop-blur-md p-6 rounded-3xl shadow-xl border transition-all duration-300 ${isChetlat
-                                            ? 'bg-rose-950/10 border-rose-900/40 hover:border-rose-500/50 hover:shadow-rose-500/5'
-                                            : 'bg-amber-950/10 border-amber-900/40 hover:border-amber-500/50 hover:shadow-amber-500/5'
+                                        className={`backdrop-blur-2xl p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border transition-all duration-300 ${isChetlat
+                                            ? 'bg-rose-950/25 border-rose-400/30 hover:border-rose-400/60 hover:shadow-[0_25px_60px_rgba(244,63,94,0.25)]'
+                                            : 'bg-amber-950/25 border-amber-400/30 hover:border-amber-400/60 hover:shadow-[0_25px_60px_rgba(245,158,11,0.25)]'
                                             }`}
                                     >
-                                        {/* Karta sarlavhasi */}
-                                        <div className={`flex items-center justify-between border-b pb-4 mb-5 ${isChetlat ? 'border-rose-900/40' : 'border-amber-900/40'
+                                        <div className={`flex items-center justify-between border-b pb-4 mb-5 ${isChetlat ? 'border-rose-400/20' : 'border-amber-400/20'
                                             }`}>
                                             <div className="flex items-center gap-3">
-                                                <span className="text-xl">{isChetlat ? '🚫' : '📚'}</span>
-                                                <h3 className={`font-extrabold text-base ${isChetlat ? 'text-rose-400' : 'text-amber-400'
+                                                <span>{isChetlat ? <Ban className="w-5 h-5 text-rose-400" /> : <BookOpen className="w-5 h-5 text-amber-400" />}</span>
+                                                <h3 className={`font-extrabold text-base ${isChetlat ? 'text-rose-300' : 'text-amber-300'
                                                     }`}>{g.name}</h3>
                                             </div>
-                                            <span className={`text-xs px-2.5 py-1 rounded-full font-bold border ${isChetlat
-                                                ? 'bg-rose-950/40 text-rose-300 border-rose-900/40'
-                                                : 'bg-amber-950/40 text-amber-300 border-amber-900/40'
+                                            <span className={`text-xs px-3 py-1 rounded-full font-extrabold border backdrop-blur-md ${isChetlat
+                                                ? 'bg-rose-500/20 text-rose-200 border-rose-400/30'
+                                                : 'bg-amber-500/20 text-amber-200 border-amber-400/30'
                                                 }`}>
                                                 {isChetlat ? "Chetlatilganlar" : "Akademik ta'til"}
                                             </span>
                                         </div>
 
-                                        {/* Guruhga kirish tugmasi */}
                                         <div className="space-y-3">
-                                            <div className="flex items-center gap-1.5">
+                                            <div className="flex items-center gap-2">
                                                 <Link
                                                     href={`/journal?groupId=${g.id}&groupName=${encodeURIComponent(g.name)}`}
-                                                    className={`flex-1 flex items-center justify-between p-3.5 border rounded-2xl font-bold text-sm transition-all duration-200 shadow-sm hover:shadow group ${isChetlat
-                                                        ? 'bg-slate-950/40 hover:bg-rose-950/20 border-slate-800/60 hover:border-rose-900/50 text-slate-300 hover:text-rose-400'
-                                                        : 'bg-slate-950/40 hover:bg-amber-950/20 border-slate-800/60 hover:border-amber-900/50 text-slate-300 hover:text-amber-400'
+                                                    className={`flex-1 flex items-center justify-between p-3.5 border rounded-2xl font-bold text-sm transition-all duration-200 shadow-sm hover:shadow group backdrop-blur-md ${isChetlat
+                                                        ? 'bg-rose-500/10 hover:bg-rose-500/20 border-rose-400/20 hover:border-rose-400/40 text-white hover:text-rose-300'
+                                                        : 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-400/20 hover:border-amber-400/40 text-white hover:text-amber-300'
                                                         }`}
                                                 >
                                                     <span className="flex items-center gap-2.5">
-                                                        <span className="text-base group-hover:scale-110 transition-transform">👥</span>
+                                                        <Users className={`w-4 h-4 group-hover:scale-110 transition-transform ${isChetlat ? 'text-rose-300' : 'text-amber-300'}`} />
                                                         Talabalar ro'yxatini ko'rish
                                                     </span>
-                                                    <span className={`text-xs transition-colors ${isChetlat ? 'text-slate-500 group-hover:text-rose-400' : 'text-slate-500 group-hover:text-amber-400'
+                                                    <span className={`text-xs transition-colors ${isChetlat ? 'text-rose-300' : 'text-amber-300'
                                                         }`}>→</span>
                                                 </Link>
                                                 <SemesterManager groupId={g.id} groupName={g.name} accentColor={isChetlat ? 'rose' : 'amber'} />
@@ -428,6 +569,10 @@ export default async function HomePage({ searchParams }: PageProps) {
                         </div>
                     )}
                 </div>
+
+                {techSchool && (
+                    <DashboardClient />
+                )}
 
             </div>
             
