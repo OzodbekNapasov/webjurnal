@@ -4,8 +4,6 @@ import React, { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import LoadingScreen from '../../components/LoadingScreen';
 
-export const dynamic = 'force-dynamic';
-
 function ScheduleContent() {
   const searchParams = useSearchParams();
   const [techSchool, setTechSchool] = useState('shahrisabz');

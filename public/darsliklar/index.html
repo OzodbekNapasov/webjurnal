@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="LOGO.png">
+  <title>Elektron Darsliklar Mundarijasi</title>
+  <meta name="description" content="Windows operatsion tizimi va MS Office dasturlari bo'yicha elektron interaktiv darsliklar portali hamda mundarijasi.">
+  
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Google Fonts: Poppins (headings), Montserrat (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0f172a;           /* Slate 900 */
+      --secondary-bg: #1e293b;         /* Slate 800 */
+      --text-main: #ffffff;            /* Pure white */
+      --text-muted: #cbd5e1;           /* Slate 300 */
+      --text-light: #f8fafc;           /* Slate 50 */
+      --card-bg: rgba(30, 41, 59, 0.7); /* Translucent Slate 800 */
+      --border-color: rgba(255, 255, 255, 0.12);
+      --accent: #38bdf8;               /* Sky Blue */
+      --accent-glow: rgba(56, 189, 248, 0.25);
+      --primary-cyan: #06b6d4;         /* Cyan */
+      --primary-cyan-glow: rgba(6, 182, 212, 0.3);
+      --accent-green: #10b981;        /* Premium Emerald Green */
+      --accent-green-glow: rgba(16, 185, 129, 0.3);
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;           /* Light Slate */
+      --secondary-bg: #ffffff;
+      --text-main: #0f172a;            /* Very dark slate */
+      --text-muted: #475569;           /* Slate 600 */
+      --text-light: #1e293b;           /* Slate 800 */
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --border-color: rgba(15, 23, 42, 0.08);
+      --accent: #0284c7;
+      --accent-glow: rgba(2, 132, 199, 0.15);
+      --primary-cyan: #0891b2;
+      --primary-cyan-glow: rgba(8, 145, 178, 0.15);
+      --accent-green: #059669;
+      --accent-green-glow: rgba(5, 150, 105, 0.15);
+      --shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+    }
+
+    /* Core Styles */
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: 'Montserrat', sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Background Wrapper to prevent infinite scroll */
+    .bg-blobs-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Moving background light blobs for premium visual depth */
+    .bg-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      z-index: -1;
+      opacity: 0.25;
+      pointer-events: none;
+      animation: floatBlobs 20s infinite alternate ease-in-out;
+    }
+
+    .blob-1 {
+      width: 400px;
+      height: 400px;
+      background: var(--primary-cyan);
+      top: -100px;
+      left: -100px;
+    }
+
+    .blob-2 {
+      width: 500px;
+      height: 500px;
+      background: var(--accent-green);
+      bottom: -150px;
+      right: -100px;
+      animation-delay: -5s;
+    }
+
+    @keyframes floatBlobs {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(60px, 40px) scale(1.1); }
+      100% { transform: translate(-30px, -50px) scale(0.95); }
+    }
+
+    /* Top Accent Line */
+    .top-accent-bar {
+      height: 4px;
+      width: 100%;
+      background: linear-gradient(90deg, var(--primary-cyan), var(--accent), var(--accent-green));
+      box-shadow: 0 2px 10px var(--primary-cyan-glow);
+    }
+
+    /* Floating Capsule Glassmorphic Navbar */
+    .navbar {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      margin: 20px 24px 0 24px;
+      padding: 10px 0;
+      transition: var(--transition-smooth);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      position: sticky;
+      top: 20px;
+      z-index: 1000;
+    }
+
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        margin: 12px 16px 0 16px;
+        border-radius: 16px;
+        top: 12px;
+      }
+    }
+
+    .logo-img {
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+      transition: var(--transition-smooth);
+    }
+    .logo-img:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: 0.03em;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-text {
+      background: linear-gradient(135deg, var(--primary-cyan) 0%, var(--accent-green) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+
+    /* Premium badge */
+    .author-badge {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(56, 189, 248, 0.03) 100%);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 9999px;
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(6, 182, 212, 0.05), inset 0 0 10px rgba(6, 182, 212, 0.02);
+      backdrop-filter: blur(8px);
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .author-badge {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.06) 0%, rgba(3, 105, 161, 0.02) 100%);
+      border: 1px solid rgba(2, 132, 199, 0.2);
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.02);
+    }
+
+    .author-badge:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px var(--primary-cyan-glow);
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(56, 189, 248, 0.08) 100%);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulseDot 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(0.85); opacity: 0.6; box-shadow: 0 0 6px var(--accent); }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 12px var(--accent); }
+    }
+
+    .author-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent) !important;
+      letter-spacing: 0.05em;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      text-align: center;
+      padding: 60px 0 35px 0;
+      animation: fadeUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .badge-top {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.08em;
+      padding: 8px 18px;
+      border-radius: 50px;
+      margin-bottom: 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.1);
+      transition: var(--transition-smooth);
+    }
+
+    .badge-top i {
+      color: var(--primary-cyan);
+    }
+
+    .badge-top:hover {
+      border-color: var(--accent-green);
+      box-shadow: 0 0 20px var(--accent-green-glow);
+      transform: translateY(-1px);
+    }
+
+    [data-theme="light"] .badge-top {
+      background: linear-gradient(135deg, rgba(8, 145, 178, 0.08) 0%, rgba(5, 150, 105, 0.03) 100%);
+      border: 1px solid rgba(8, 145, 178, 0.25);
+      color: var(--primary-cyan);
+    }
+
+    .hero-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 3.2rem;
+      font-weight: 800;
+      line-height: 1.25;
+      background: linear-gradient(135deg, var(--text-main) 20%, var(--primary-cyan) 60%, var(--accent-green) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.2rem;
+      }
+      .hero-section {
+        padding: 40px 0 25px 0;
+      }
+    }
+
+    .hero-subtitle {
+      max-width: 720px;
+      margin: 0 auto;
+      color: var(--text-muted);
+      font-size: 1.12rem;
+      font-weight: 400;
+      line-height: 1.7;
+    }
+
+    /* Darslik Modullari Grid Cards */
+    .modules-container {
+      margin-bottom: 60px;
+    }
+
+    .module-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 24px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: var(--transition-smooth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .module-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--card-accent-1, var(--primary-cyan)), var(--card-accent-2, var(--accent)));
+      opacity: 0.8;
+    }
+
+    /* Glow effect on hover */
+    .module-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 25px 50px var(--card-glow, var(--primary-cyan-glow));
+    }
+
+    .module-icon-box {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #ffffff;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .module-icon-box::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 14px;
+      top: 0;
+      left: 0;
+      background: inherit;
+      filter: blur(8px);
+      opacity: 0.5;
+      z-index: -1;
+    }
+
+    .module-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    .module-description {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+      line-height: 1.6;
+      flex-grow: 1;
+    }
+
+    /* Accordion Topic List */
+    .topic-list-header {
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--card-accent-1, var(--primary-cyan));
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+    }
+
+    .topic-list-header::-webkit-details-marker {
+      display: none;
+    }
+
+    .topic-items {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 15px 0;
+    }
+
+    .topic-item {
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: start;
+      color: var(--text-light);
+    }
+
+    .topic-item i {
+      margin-top: 4px;
+      font-size: 0.85rem;
+      color: var(--card-accent-1, var(--primary-cyan));
+      flex-shrink: 0;
+    }
+
+    /* Search Box & Details Styling */
+    .search-box-container { margin: 24px auto 30px auto; max-width: 680px; }
+    .search-box {
+      position: relative;
+      background: rgba(30, 41, 59, 0.45);
+      border: 1px solid var(--border-color);
+      border-radius: 50px;
+      padding: 2px 20px 2px 50px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    [data-theme="light"] .search-box {
+      background: rgba(255, 255, 255, 0.65);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+    .search-box:focus-within {
+      border-color: var(--primary-cyan);
+      box-shadow: 0 0 25px var(--primary-cyan-glow), 0 12px 30px rgba(0, 0, 0, 0.15);
+      transform: scale(1.02);
+    }
+    .search-icon {
+      position: absolute;
+      left: 20px;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      pointer-events: none;
+    }
+    .search-input {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      color: var(--text-main) !important;
+      padding: 12px 0;
+      font-size: 1rem;
+      width: 100%;
+    }
+    .search-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+    .clear-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 5px;
+      transition: var(--transition-smooth);
+    }
+    .clear-btn:hover {
+      color: var(--primary-cyan);
+    }
+
+    /* Portal Highlights / Key Stats Section */
+    .portal-highlights {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 10px auto 0 auto;
+      flex-wrap: wrap;
+      max-width: 800px;
+    }
+
+    .highlight-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(30, 41, 59, 0.35);
+      border: 1px solid var(--border-color);
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-light);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transition: var(--transition-smooth);
+      cursor: default;
+    }
+
+    [data-theme="light"] .highlight-item {
+      background: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.02);
+    }
+
+    .highlight-item:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      background: rgba(30, 41, 59, 0.55);
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    [data-theme="light"] .highlight-item:hover {
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 6px 15px rgba(2, 132, 199, 0.08);
+    }
+
+    .highlight-item i {
+      font-size: 0.95rem;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+
+    .topics-details {
+      margin-bottom: 15px;
+    }
+    .topics-details[open] .chevron-icon {
+      transform: rotate(180deg);
+    }
+    .chevron-icon {
+      transition: transform 0.3s ease;
+    }
+
+    /* Button custom hover */
+    .btn-module {
+      background: linear-gradient(135deg, var(--card-accent-1, var(--primary-cyan)), var(--card-accent-2, var(--accent)));
+      color: #ffffff !important;
+      border: none;
+      border-radius: 16px;
+      padding: 14px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      transition: var(--transition-smooth);
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    .btn-module::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 100%);
+      opacity: 0;
+      transition: var(--transition-smooth);
+      z-index: -1;
+    }
+
+    .btn-module:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px var(--card-glow, var(--primary-cyan-glow));
+    }
+
+    .btn-module:hover::after {
+      opacity: 1;
+    }
+
+    .btn-module i {
+      transition: transform 0.3s ease;
+    }
+
+    .btn-module:hover i {
+      transform: translateX(5px);
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .theme-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .theme-toggle-btn {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    [data-theme="light"] .theme-toggle-btn:hover {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    /* Footer styling */
+    footer {
+      background: rgba(15, 23, 42, 0.85);
+      border-top: 1px solid var(--border-color);
+      padding: 30px 0;
+      margin-top: auto;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    [data-theme="light"] footer {
+      background: rgba(241, 245, 249, 0.95);
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .footer-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .footer-author {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+  
+    /* Login Overlay Styling */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    [data-theme="light"] .login-overlay {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white;
+      font-size: 1.7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px var(--primary-cyan-glow);
+    }
+
+    .login-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .login-input-wrapper i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.4) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 50px;
+      padding: 12px 20px 12px 50px;
+      color: var(--text-main) !important;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .login-input {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 15px var(--primary-cyan-glow);
+    }
+
+    .login-error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white !important;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--primary-cyan-glow);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-cyan-glow);
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+  
+    /* Category Filter Tabs Styling */
+    .filter-tabs-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 15px auto 25px auto;
+      max-width: 1000px;
+    }
+    .filter-tab {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 10px 22px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: var(--transition-smooth);
+    }
+    .filter-tab:hover, .filter-tab.active {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border-color: var(--primary-cyan);
+      color: #ffffff !important;
+      box-shadow: 0 4px 20px var(--primary-cyan-glow);
+    }
+    .category-section {
+      margin-bottom: 50px;
+      padding-bottom: 30px;
+      border-bottom: 1px dashed rgba(6, 182, 212, 0.15);
+    }
+    .category-header {
+      background: linear-gradient(135deg, rgba(16, 27, 38, 0.8) 0%, rgba(22, 27, 38, 0.4) 100%);
+      border: 1px solid var(--border-color);
+      border-left: 5px solid var(--primary-cyan);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 25px;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+    }
+    .category-number-badge {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent-green));
+      color: #0b0f19;
+      font-weight: 800;
+      font-size: 0.82rem;
+      padding: 4px 12px;
+      border-radius: 50px;
+      letter-spacing: 0.05em;
+    }
+    .category-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .category-subtitle {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+
+    /* Widescreen Cabin Style Cards Design */
+    .module-card {
+      background: rgba(22, 27, 38, 0.95) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 32px !important;
+      padding: 0 !important; /* Flush layout */
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      position: relative;
+      overflow: hidden;
+    }
+    .module-card:hover {
+      transform: translateY(-8px) scale(1.02) !important;
+      border-color: rgba(6, 182, 212, 0.4) !important;
+      box-shadow: 0 30px 60px rgba(6, 182, 212, 0.2) !important;
+    }
+    .card-cover-wrapper {
+      width: 100%;
+      height: 220px;
+      overflow: hidden;
+      position: relative;
+      background: #0f172a;
+    }
+    .card-cover-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .module-card:hover .card-cover-img {
+      transform: scale(1.08);
+    }
+    .card-gradient-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 70%;
+      background: linear-gradient(to bottom, transparent 0%, rgba(22, 27, 38, 0.98) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .step-number-pill {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(11, 15, 25, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 50px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+    }
+    .card-body-content {
+      padding: 24px !important;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      position: relative;
+      z-index: 2;
+    }
+    .module-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      line-height: 1.4;
+      color: #ffffff;
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .verified-icon {
+      color: #10b981;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+      margin-top: 3px;
+      filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.5));
+    }
+    .module-description {
+      color: #94a3b8;
+      font-size: 0.88rem;
+      margin-bottom: 20px;
+      line-height: 1.6;
+      flex-grow: 1;
+    }
+    .card-tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .card-tag-badge {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn-module-pill {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      padding: 12px;
+      border-radius: 50px;
+      text-align: center;
+      text-decoration: none !important;
+      display: block;
+      border: none;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-top: auto;
+    }
+    .btn-module-pill:hover {
+      background: #06b6d4 !important;
+      color: #ffffff !important;
+      box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4);
+      transform: translateY(-2px);
+    }
+
+</style>
+</head>
+<body>
+
+  <!-- Login Overlay -->
+  <div id="loginOverlay" class="login-overlay" style="display: none;">
+    <div class="login-card">
+      <div class="login-icon">
+        <i class="fa-solid fa-user-lock"></i>
+      </div>
+      <h3 class="login-title">Tizimga kirish</h3>
+      <p class="login-subtitle">Darsliklar portaliga kirish uchun loginingizni kiriting:</p>
+      <div class="login-input-wrapper">
+        <i class="fa-solid fa-user"></i>
+        <input type="text" id="loginInput" class="login-input" placeholder="Login..." onkeydown="if(event.key === 'Enter') handleLoginSubmit()">
+      </div>
+      <div id="loginErrorMsg" class="login-error-msg">
+        <i class="fa-solid fa-circle-exclamation me-1"></i> Login noto'g'ri!
+      </div>
+      <button onclick="handleLoginSubmit()" class="login-btn">
+        Kirish <i class="fa-solid fa-right-to-bracket ms-2"></i>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- Top Accent Bar -->
+  <div class="top-accent-bar"></div>
+
+  <!-- Background Animated Blobs Wrapper -->
+  <div class="bg-blobs-wrapper">
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid px-xxl-5 px-lg-4 px-3 mx-auto" style="max-width: 1750px;">
+      <a class="navbar-brand d-flex align-items-center gap-3" href="#" id="navBrand">
+        <img src="LOGO.png" alt="Logo" class="logo-img">
+        <span class="logo-text d-none d-sm-inline">Axborot texnologiyalari</span>
+      </a>
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <a href="https://t.me/Ozodbek_Napasov" target="_blank" class="author-badge d-none d-md-flex text-decoration-none">
+          <span class="pulse-dot"></span>
+          <span class="author-name">Muallif: {{AUTHOR}}</span>
+          <i class="fab fa-telegram ms-1" style="color: var(--accent); font-size: 0.95rem;"></i>
+        </a>
+                <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        <button class="theme-toggle-btn" id="themeToggler" onclick="toggleTheme()" title="Rejimni o'zgartirish" id="themeBtn">
+          <i class="fa-solid fa-sun" id="themeIcon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container-fluid flex-grow-1 d-flex flex-column justify-content-center px-xxl-5 px-lg-4 px-3 mx-auto" style="max-width: 1750px;">
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <span class="badge-top"><i class="fas fa-graduation-cap"></i> Elektron Darsliklar Portali</span>
+      <h1 class="hero-title" id="mainTitle">Mundarija</h1>
+      <p class="hero-subtitle">
+        "Tibbiyotda axborot texnologiyalari" fani doirasida o'quv modullarini tanlang va chuqurlashtirilgan interaktiv mashg'ulotlar orqali o'rganishni boshlang.
+      </p>
+      
+      <!-- Search Box Container -->
+      <div class="search-box-container">
+        <div class="search-box">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Mavzular yoki darsliklarni izlash..." onkeyup="filterModules()">
+          <button class="clear-btn" id="clearSearchBtn" onclick="clearSearch()" style="display: none;">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Portal Highlights -->
+      <div class="portal-highlights">
+        <div class="highlight-item" title="Jami mavjud darslik modullari">
+          <i class="fas fa-book-open"></i>
+          <span>14 ta O'quv Moduli</span>
+        </div>
+        <div class="highlight-item" title="Interaktiv dars simulyatorlari">
+          <i class="fas fa-gamepad"></i>
+          <span>Interaktiv Simulyatorlar</span>
+        </div>
+        <div class="highlight-item" title="O'zlashtirishni tekshirish uchun testlar">
+          <i class="fas fa-square-poll-vertical"></i>
+          <span>Amaliy Testlar</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Cards Grid -->
+
+    <!-- Categorized Learning Modules Section -->
+    <section class="modules-container">
+
+      <!-- ================= 1-MODUL: AKT va Tibbiyotda Raqamlashtirish Asoslari ================= -->
+      <div class="category-section" data-category="mod1">
+        <div class="category-header">
+          <div class="d-flex align-items-center gap-3">
+            <span class="category-number-badge">1-MODUL</span>
+            <h3 class="category-title mb-0"><i class="fas fa-heart-pulse text-info me-2"></i> AKT va Tibbiyotda Raqamlashtirish Asoslari</h3>
+          </div>
+          <p class="category-subtitle mb-0 mt-2">Kompyuter savodxonligi, axborot turlari hamda shifoxonada raqamli DMED va EMK tizimlari o'rni.</p>
+        </div>
+        <div class="row g-4">
+
+          <!-- 01-Dars: Kelajak shifokori va hamshirasi uchun kompyuter nima sababdan muhim? -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="kelajak shifokori va hamshirasi uchun kompyuter dmed shprits">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">01-Dars</span>
+                <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&auto=format&fit=crop&q=80" alt="Kelajak shifokori va hamshirasi uchun kompyuter nima sababdan muhim?" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>Kelajak shifokori va hamshirasi uchun kompyuter nima sababdan muhim?</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Raqamli shifoxonalar, DMED elektron tizimi, Microsoft Word va Excel dasturlarining tibbiyotdagi roli.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 20 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/medical_computer_importance_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- 02-Dars: Axborot va Axborot Texnologiyalari Asoslari -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="axborot va axborot texnologiyalari asoslari">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">02-Dars</span>
+                <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&auto=format&fit=crop&q=80" alt="Axborot va Axborot Texnologiyalari Asoslari" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>Axborot va Axborot Texnologiyalari Asoslari</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Axborot tushunchasi, xususiyatlari, turlari (matn, son, EKG, audio, video) va IT rivojlanishi.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/information_basics_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- 03-Dars: Axborot turlari, Sanoq sistemalari va Texnika xavfsizligi -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="axborot turlari sanoq sistemalari texnika xavfsizligi">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">03-Dars</span>
+                <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?w=600&auto=format&fit=crop&q=80" alt="Axborot turlari, Sanoq sistemalari va Texnika xavfsizligi" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>Axborot turlari, Sanoq sistemalari va Texnika xavfsizligi</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Axborot turlari, sanoq sistemalari (10, 2, 8, 16) real-time konvertori va TB qoidalari.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/info_systems_safety_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- 04-Dars: Kompyuter qurilmalari va dasturiy ta'minoti -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="kompyuter qurilmalari va dasturiy ta'minoti hardware software">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">04-Dars</span>
+                <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80" alt="Kompyuter qurilmalari va dasturiy ta'minoti" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>Kompyuter qurilmalari va dasturiy ta'minoti</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Kompyuterning ichki/tashqi qurilmalari (Hardware) hamda tizimli va amaliy dasturiy ta'minot.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/hardware_software_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 2-MODUL: Operatsion Tizim va Boshlang'ich Ko'nikmalar ================= -->
+      <div class="category-section" data-category="mod2">
+        <div class="category-header">
+          <div class="d-flex align-items-center gap-3">
+            <span class="category-number-badge">2-MODUL</span>
+            <h3 class="category-title mb-0"><i class="fas fa-desktop text-info me-2"></i> Operatsion Tizim va Boshlang'ich Ko'nikmalar</h3>
+          </div>
+          <p class="category-subtitle mb-0 mt-2">Windows 10/11 interfeysi, sichqoncha va klaviatura mashqlari hamda matn nusxalash amallari.</p>
+        </div>
+        <div class="row g-4">
+
+          <!-- 05-Dars: Kompyuterni to'g'ri yoqish, Sichqoncha va Klaviatura -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="kompyuterni yoqish o'chirish sichqoncha klaviatura">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">05-Dars</span>
+                <img src="https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80" alt="Kompyuterni to'g'ri yoqish, Sichqoncha va Klaviatura" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>Kompyuterni to'g'ri yoqish, Sichqoncha va Klaviatura</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Boshlang'ich ko'nikmalar: yoqish/o'chirish, sichqoncha click/scroll, drag-and-drop o'yini va klaviatura.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 20 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/computer_basics_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- 06-Dars: Windows operatsion tizimi va texnik xizmat ko'rsatish -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="windows operatsion tizimi va texnik xizmat ko'rsatish">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">06-Dars</span>
+                <img src="https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=600&auto=format&fit=crop&q=80" alt="Windows operatsion tizimi va texnik xizmat ko'rsatish" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>Windows operatsion tizimi va texnik xizmat ko'rsatish</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Windows operatsion tizimi, interfeysi, sozlamalari va unga texnik xizmat ko'rsatish asoslari.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/windows_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- 07-Dars: Matnni belgilash, nusxalash (Ctrl+C) va joylashtirish (Ctrl+V) -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="matnni belgilash nusxalash joylashtirish ctrl+c ctrl+v">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">07-Dars</span>
+                <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80" alt="Matnni belgilash, nusxalash (Ctrl+C) va joylashtirish (Ctrl+V)" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>Matnni belgilash, nusxalash (Ctrl+C) va joylashtirish (Ctrl+V)</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Belgilash, Ctrl+C, Ctrl+V, Ctrl+X va Clipboard tushunchalari hamda MS Word amaliy simulyatori.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/text_operations_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 3-MODUL: MS Office Dasturlari va Hujjatlarni Chop Etish ================= -->
+      <div class="category-section" data-category="mod3">
+        <div class="category-header">
+          <div class="d-flex align-items-center gap-3">
+            <span class="category-number-badge">3-MODUL</span>
+            <h3 class="category-title mb-0"><i class="fas fa-file-lines text-info me-2"></i> MS Office Dasturlari va Hujjatlarni Chop Etish</h3>
+          </div>
+          <p class="category-subtitle mb-0 mt-2">Microsoft Word, Excel, Access va ularni printerdan bosmaga chiqarish sozalamalari.</p>
+        </div>
+        <div class="row g-4">
+
+          <!-- 08-Dars: MS Office dasturlari va vazifalari -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="ms office dasturlari va vazifalari word excel powerpoint">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">08-Dars</span>
+                <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80" alt="MS Office dasturlari va vazifalari" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>MS Office dasturlari va vazifalari</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">MS Office (Word, Excel, PowerPoint, Access) dasturlari va ularning tibbiyotda qo'llanilishi.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/office_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- 09-Dars: MS Word dasturida printerdan bosmaga chiqarish -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="ms word dasturida printerdan bosmaga chiqarish print">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">09-Dars</span>
+                <img src="https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=600&auto=format&fit=crop&q=80" alt="MS Word dasturida printerdan bosmaga chiqarish" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>MS Word dasturida printerdan bosmaga chiqarish</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Microsoft Word dasturida printer turlari, chop etish parametrlari va interaktiv simulyatorlar.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/word_print_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- 10-Dars: MS Excel dasturida printerdan bosmaga chiqarish -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="ms excel dasturida printerdan bosmaga chiqarish print">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">10-Dars</span>
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&auto=format&fit=crop&q=80" alt="MS Excel dasturida printerdan bosmaga chiqarish" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>MS Excel dasturida printerdan bosmaga chiqarish</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Microsoft Excel elektron jadvallarini chop etishga sozlash, sarlavhalar va kolontitullar.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/excel_print_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= 4-MODUL: Tarmoq, Internet, Telegram va PDF Hujjatlar ================= -->
+      <div class="category-section" data-category="mod4">
+        <div class="category-header">
+          <div class="d-flex align-items-center gap-3">
+            <span class="category-number-badge">4-MODUL</span>
+            <h3 class="category-title mb-0"><i class="fas fa-globe text-info me-2"></i> Tarmoq, Internet, Telegram va PDF Hujjatlar</h3>
+          </div>
+          <p class="category-subtitle mb-0 mt-2">Kompyuterni tarmoqqa ulash, brauzerlar, Telegram messenjeri va PDF formatida pechat qilish.</p>
+        </div>
+        <div class="row g-4">
+
+          <!-- 11-Dars: Kompyuterni internetga ulash -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="kompyuterni internetga ulash noutbuk va shaxsiy kompyuterlar">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">11-Dars</span>
+                <img src="https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=600&auto=format&fit=crop&q=80" alt="Kompyuterni internetga ulash" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>Kompyuterni internetga ulash</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Kompyuterlarni tarmoqqa ulash, Wi-Fi, Ethernet, IP/DNS hamda tarmoq diagnostikasi.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/internet_connection_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- 12-Dars: Web brauzerlar bilan ishlash -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="web brauzerlar bilan ishlash chrome edge firefox">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">12-Dars</span>
+                <img src="https://images.unsplash.com/photo-1484807352052-23338990c6c6?w=600&auto=format&fit=crop&q=80" alt="Web brauzerlar bilan ishlash" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>Web brauzerlar bilan ishlash</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Saytlar va URL manzil tuzilishi, brauzer oynasi elementlari, xatcho'p va tarix tizimi.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/web_browsers_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- 13-Dars: Telegram messenjeri bilan ishlash -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="telegram messenjeri bilan ishlash botlar kanallar">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">13-Dars</span>
+                <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&auto=format&fit=crop&q=80" alt="Telegram messenjeri bilan ishlash" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>Telegram messenjeri bilan ishlash</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">Telegram Desktop va Mobile ilovalari, ro'yxatdan o'tish, chat hamda tibbiy botlar va kanallar.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/telegram_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+          <!-- 14-Dars: PDF hujjatlarni printerdan bosmaga chiqarish -->
+          <div class="col-xl-3 col-lg-6 col-md-6 col-12 module-card-wrapper" data-title="pdf hujjatlarni printerdan bosmaga chiqarish acrobat reader">
+            <div class="module-card">
+              <div class="card-cover-wrapper">
+                <span class="step-number-pill">14-Dars</span>
+                <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&auto=format&fit=crop&q=80" alt="PDF hujjatlarni printerdan bosmaga chiqarish" class="card-cover-img">
+                <div class="card-gradient-overlay"></div>
+              </div>
+              <div class="card-body-content">
+                <h2 class="module-title">
+                  <span>PDF hujjatlarni printerdan bosmaga chiqarish</span>
+                  <i class="fas fa-circle-check verified-icon" title="Tasdiqlangan Interaktiv Darslik"></i>
+                </h2>
+                <p class="module-description">PDF hujjatlarini Adobe Acrobat Reader darchasida masshtablash va chop etish rejimlarida sozlash.</p>
+                <div class="card-tags-container">
+                  <span class="card-tag-badge"><i class="fas fa-file-signature text-accent me-1"></i> 15 Test</span>
+                  <span class="card-tag-badge"><i class="fas fa-gamepad text-emerald me-1"></i> 3D Sim</span>
+                </div>
+                <a href="pages/pdf_print_darslik.html" class="btn-module-pill">
+                  Darsni boshlash
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+</main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container-fluid px-xxl-5 px-lg-4 px-3 mx-auto" style="max-width: 1750px;">
+      <div class="footer-text">
+        &copy; 2026 Axborot Texnologiyalari Elektron Darsliklar Portali. Barcha huquqlar himoyalangan.
+      </div>
+      <a href="https://t.me/Ozodbek_Napasov" target="_blank" class="footer-author text-decoration-none">
+        Muallif: {{AUTHOR}}
+      </a>
+    </div>
+  </footer>
+
+  <!-- Theme switching script -->
+  <script>
+    // Theme switching logic
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const targetTheme = currentTheme === 'light' ? 'dark' : 'light';
+      
+      document.documentElement.setAttribute('data-theme', targetTheme);
+      localStorage.setItem('darslik-theme', targetTheme);
+      updateThemeIcon(targetTheme);
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('themeIcon');
+      if (icon) {
+        if (theme === 'light') {
+          icon.className = 'fa-solid fa-moon';
+        } else {
+          icon.className = 'fa-solid fa-sun';
+        }
+      }
+    }
+
+    // Initialize theme from storage
+    window.addEventListener('DOMContentLoaded', () => {
+      checkLoginState();
+      const savedTheme = localStorage.getItem('darslik-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+    });
+
+    // Search Filtering and Highlighting Logic
+    function filterModules() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const clearBtn = document.getElementById('clearSearchBtn');
+      const cards = document.querySelectorAll('.modules-container [class*="col-lg-"]');
+      
+      if (query.length > 0) {
+        clearBtn.style.display = 'block';
+      } else {
+        clearBtn.style.display = 'none';
+      }
+      
+      cards.forEach(card => {
+        const title = card.querySelector('.module-title').textContent.toLowerCase();
+        const description = card.querySelector('.module-description').textContent.toLowerCase();
+        
+        // Check topics
+        const topics = Array.from(card.querySelectorAll('.topic-item')).map(item => item.textContent.toLowerCase());
+        
+        const matchesTitle = title.includes(query);
+        const matchesDescription = description.includes(query);
+        const matchesTopics = topics.some(topic => topic.includes(query));
+        
+        const details = card.querySelector('details');
+        
+        if (matchesTitle || matchesDescription || matchesTopics) {
+          card.style.display = '';
+          
+          if (query && matchesTopics) {
+            details.open = true;
+          } else if (!query) {
+            details.open = false;
+          }
+          
+          // Highlight match in topics list
+          card.querySelectorAll('.topic-item').forEach(item => {
+            const text = item.textContent.toLowerCase();
+            const span = item.querySelector('span');
+            if (!span) return;
+            
+            if (query && text.includes(query)) {
+              // Highlight the topic item text
+              const originalText = span.textContent;
+              const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+              span.innerHTML = originalText.replace(regex, '<mark style="background: rgba(16, 185, 129, 0.3); color: var(--text-main); border-radius: 4px; padding: 0 4px;">$1</mark>');
+            } else {
+              // Reset highlighting
+              span.innerHTML = span.textContent;
+            }
+          });
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+    
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      filterModules();
+    }
+    
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+  
+    // Login System Logic
+    function checkLoginState() {
+      const savedLogin = localStorage.getItem('darslik_login');
+      const overlay = document.getElementById('loginOverlay');
+      
+      if (savedLogin === 'Napasov' || savedLogin === 'Umirov') {
+        if (overlay) overlay.style.display = 'none';
+        document.body.style.overflow = '';
+        applyAuthorName(savedLogin);
+      } else {
+        if (overlay) overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function handleLoginSubmit() {
+      const input = document.getElementById('loginInput');
+      const errorMsg = document.getElementById('loginErrorMsg');
+      const loginVal = input.value.trim();
+      
+      let loginName = '';
+      if (loginVal.toLowerCase() === 'napasov') {
+        loginName = 'Napasov';
+      } else if (loginVal.toLowerCase() === 'umirov') {
+        loginName = 'Umirov';
+      }
+      
+      if (loginName) {
+        localStorage.setItem('darslik_login', loginName);
+        errorMsg.style.display = 'none';
+        checkLoginState();
+        window.location.reload();
+      } else {
+        errorMsg.style.display = 'flex';
+        input.focus();
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.reload();
+    }
+
+        function applyAuthorName(loginName) {
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+  </script>
+</body>
+</html>

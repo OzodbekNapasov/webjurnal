@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html class="dark" lang="uz">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Dars Jadvali - O'qituvchi Portali</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+    <!-- Custom Styles -->
+    <link href="styles.css" rel="stylesheet" />
+
+    <!-- SheetJS Library for Excel Export -->
+    <script src="xlsx.full.min.js"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Tailwind CSS Config -->
+    <script id="tailwind-config">
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#38bdf8",
+                        "on-primary": "#0f172a",
+                        "primary-container": "#0c4a6e",
+                        "on-primary-container": "#e0f2fe",
+                        "secondary": "#4ade80",
+                        "on-secondary": "#0f172a",
+                        "secondary-container": "#14532d",
+                        "on-secondary-container": "#dcfce7",
+                        "tertiary": "#2dd4bf",
+                        "on-tertiary": "#0f172a",
+                        "tertiary-container": "#115e59",
+                        "on-tertiary-container": "#ccfbf1",
+                        "error": "#f87171",
+                        "on-error": "#7f1d1d",
+                        "error-container": "#7f1d1d",
+                        "on-error-container": "#fca5a5",
+                        "background": "#050a16",
+                        "on-background": "#f8fafc",
+                        "surface": "#0d1b3e",
+                        "on-surface": "#ffffff",
+                        "surface-variant": "#142850",
+                        "on-surface-variant": "#cbd5e1",
+                        "outline": "#1e2f55",
+                        "outline-variant": "#2a4278",
+                        "surface-dim": "#081022",
+                        "surface-bright": "#0d1b3e",
+                        "surface-container-lowest": "#050a16",
+                        "surface-container-low": "#081022",
+                        "surface-container": "#0d1b3e",
+                        "surface-container-high": "#12254f",
+                        "surface-container-highest": "#18326a",
+                        "surface-dark": "#050a16",
+                        "primary-fixed": "#bae6fd",
+                        "primary-fixed-dim": "#7dd3fc",
+                        "on-primary-fixed": "#0369a1",
+                        "on-primary-fixed-variant": "#0284c7",
+                        "secondary-fixed": "#bbf7d0",
+                        "secondary-fixed-dim": "#86efac",
+                        "on-secondary-fixed": "#15803d",
+                        "on-secondary-fixed-variant": "#16a34a",
+                        "tertiary-fixed": "#99f6e4",
+                        "tertiary-fixed-dim": "#5eead4",
+                        "on-tertiary-fixed": "#0f766e",
+                        "on-tertiary-fixed-variant": "#0d9488",
+                        "dept-sage": "#4ade80",
+                        "dept-coral": "#38bdf8",
+                        "dept-slate": "#2dd4bf",
+                        "dept-gold": "#60a5fa"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "margin-mobile": "1rem",
+                        "margin-desktop": "2rem",
+                        "gutter": "1rem",
+                        "stack-sm": "0.5rem",
+                        "stack-md": "1rem",
+                        "stack-lg": "1.5rem"
+                    },
+                    fontFamily: {
+                        "body-md": ["Inter", "sans-serif"],
+                        "body-lg": ["Inter", "sans-serif"],
+                        "title-md": ["Inter", "sans-serif"],
+                        "title-lg": ["Inter", "sans-serif"],
+                        "label-md": ["Inter", "sans-serif"],
+                        "label-lg": ["Inter", "sans-serif"],
+                        "headline-sm": ["Space Grotesk", "sans-serif"],
+                        "headline-md": ["Space Grotesk", "sans-serif"],
+                        "headline-lg": ["Space Grotesk", "sans-serif"]
+                    }
+                }
+            }
+        }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Custom Floating Glass Scrollbar */
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(56, 189, 248, 0.3) transparent;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 9999px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.12);
+            border-radius: 9999px;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+
+        body:hover::-webkit-scrollbar-thumb,
+        html:hover::-webkit-scrollbar-thumb,
+        div:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(56, 189, 248, 0.4);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(56, 189, 248, 0.85) !important;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background dark:bg-surface-dark dark:text-white flex flex-col md:flex-row antialiased">
+
+    <!-- Desktop Sidebar Navigation (Hidden on Mobile) -->
+    <aside class="hidden md:flex flex-col items-center w-20 bg-surface-container-low dark:bg-surface-dark border-r border-outline-variant/30 h-screen sticky top-0 shrink-0 py-8 px-2 gap-8 z-30">
+        <div class="flex items-center justify-center mb-4">
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-3xl font-bold">school</span>
+        </div>
+        
+        <nav class="flex flex-col items-center gap-4 desktop-sidenav">
+            <a href="/" id="back-to-journal-btn" class="w-11 h-11 rounded-full bg-[#1e2f55]/60 text-primary flex items-center justify-center transition-all duration-300 hover:bg-primary hover:text-[#050a16] mb-2" title="Jurnalga qaytish">
+                <span class="material-symbols-outlined text-[22px]">arrow_back</span>
+            </a>
+            <a href="#" data-tab="home" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white" title="Bosh sahifa">
+                <span class="material-symbols-outlined text-[22px]">home</span>
+            </a>
+            <a href="#" data-tab="schedule" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white" title="Dars jadvali">
+                <span class="material-symbols-outlined text-[22px]">calendar_month</span>
+            </a>
+            <a href="#" data-tab="editor" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white" title="Tahrirlagich">
+                <span class="material-symbols-outlined text-[22px]">edit</span>
+            </a>
+            <a href="#" data-tab="widgets" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white" title="Vidjetlar">
+                <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
+            </a>
+            <a href="#" data-tab="generator" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white" title="AI Generator">
+                <span class="material-symbols-outlined text-[22px]">smart_toy</span>
+            </a>
+            <a href="#" data-tab="settings" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white" title="Sozlamalar">
+                <span class="material-symbols-outlined text-[22px]">settings</span>
+            </a>
+        </nav>
+
+        <div class="mt-auto flex flex-col items-center justify-center p-2 bg-[#0a1122]/60 rounded-full border border-white/5 w-12 h-12 relative group" title="Sinxronizatsiya holati">
+            <span id="offline-badge-dot" class="w-3 h-3 rounded-full bg-[#00d2ff] animate-pulse"></span>
+            <!-- Tooltip showing status text on hover -->
+            <span id="offline-badge-text" class="absolute left-16 bg-slate-900 border border-slate-700 text-white text-[10px] px-2.5 py-1 rounded-md whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">Yuklanmoqda...</span>
+        </div>
+    </aside>
+
+    <!-- Mobile Top Header (Hidden on Desktop) -->
+    <header class="w-full top-0 sticky bg-surface dark:bg-surface-dark border-b border-outline-variant/20 flex justify-between items-center px-margin-mobile h-16 md:hidden z-20 shadow-sm">
+        <div class="flex items-center gap-3">
+            <a href="/" id="back-to-journal-mobile" class="w-10 h-10 flex items-center justify-center rounded-full text-primary hover:bg-surface-container-low transition-colors" title="Jurnalga qaytish">
+                <span class="material-symbols-outlined text-2xl">arrow_back</span>
+            </a>
+            <h1 class="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed">Jadvalim</h1>
+        </div>
+        <button onclick="navigateToTab('settings')" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors active:scale-95">
+            <span class="material-symbols-outlined">settings</span>
+        </button>
+    </header>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="flex-grow w-full max-w-full mx-auto px-margin-mobile md:px-margin-desktop py-6 md:py-8 flex flex-col pb-28 md:pb-8 overflow-x-hidden">
+
+
+        <!-- ========================================== -->
+        <!-- A. BOSH SAHIFA (HOME SCREEN) -->
+        <!-- ========================================== -->
+        <section id="home-screen" class="tab-content hidden flex flex-col gap-stack-lg animate-fade-in">
+            <!-- Header Section -->
+            <div class="flex flex-row justify-between items-end mb-2">
+                <div>
+                    <p class="font-body-md text-body-md text-on-surface-variant dark:text-slate-400 uppercase tracking-wider mb-1">Bugun</p>
+                    <h2 id="home-today-date" class="font-headline-md text-headline-md text-on-background dark:text-white">...</h2>
+                    <p id="home-start-date-label" class="text-xs text-on-surface-variant dark:text-slate-400 mt-1">...</p>
+                </div>
+                <div id="home-week-badge" class="bg-tertiary-container text-on-tertiary-container px-3 py-1.5 rounded-lg font-label-md text-label-md flex items-center shadow-sm">
+                    1-hafta
+                </div>
+            </div>
+
+            <!-- Title -->
+            <div>
+                <h3 class="font-title-lg text-title-lg text-on-surface dark:text-white font-bold border-b border-outline-variant/20 pb-2">Bugungi darslar</h3>
+            </div>
+
+            <!-- Dynamic Lessons Row (Current & Next) -->
+            <div id="home-lessons-container" class="grid grid-cols-4 md:grid-cols-12 gap-gutter min-h-[220px]">
+                <!-- Populated dynamically via app.js -->
+            </div>
+
+            <!-- Teacher Info Card -->
+            <div class="bg-surface-container-low dark:bg-surface-container-high rounded-2xl p-6 shadow-sm border border-outline-variant/20">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-full bg-primary/10 dark:bg-primary-fixed/20 flex items-center justify-center text-primary dark:text-primary-fixed">
+                        <span class="material-symbols-outlined text-3xl">person</span>
+                    </div>
+                    <div>
+                        <p class="font-label-md text-label-md text-on-surface-variant dark:text-outline-variant uppercase tracking-wider">O'qituvchi</p>
+                        <h4 id="home-teacher-name" class="font-title-lg text-title-lg text-on-surface dark:text-white font-bold">Ozodbek Napasov</h4>
+                        <p id="home-teacher-subject" class="font-body-md text-body-md text-on-surface-variant dark:text-outline-variant">Axborot Texnologiyalari</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- B. DARS JADVALI (SCHEDULE SCREEN) -->
+        <!-- ========================================== -->
+        <section id="schedule-screen" class="tab-content hidden flex flex-col gap-stack-lg animate-fade-in">
+            <!-- View Mode Switcher -->
+            <div class="flex justify-between items-center border-b border-outline-variant/20 pb-3">
+                <div class="flex items-center gap-3">
+                    <h3 class="font-title-lg text-title-lg text-on-surface dark:text-white font-bold">Dars jadvali</h3>
+                    <button onclick="clearLessonForm(); selectEditorSubTab('lessons'); navigateToTab('editor'); document.getElementById('lesson_day_select').value = state.scheduleSelectedDay;" 
+                            class="flex items-center justify-center w-8 h-8 rounded-full bg-[#0088ff] text-white hover:scale-[1.08] active:scale-95 transition-all shadow-[0_0_10px_rgba(0,136,255,0.4)] cursor-pointer" 
+                            title="Dars qo'shish">
+                        <span class="material-symbols-outlined text-lg font-bold">add</span>
+                    </button>
+                </div>
+                <div class="flex bg-surface-container dark:bg-surface-container-high rounded-xl p-1 border border-outline-variant/30">
+                    <button id="schedule-view-daily" onclick="setScheduleViewMode('daily')" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-surface text-on-surface dark:bg-surface-dark dark:text-white shadow-sm transition-all">Kunlik</button>
+                    <button id="schedule-view-weekly" onclick="setScheduleViewMode('weekly')" class="px-4 py-1.5 rounded-lg text-xs transition-all text-on-surface-variant dark:text-outline-variant hover:bg-surface/30">Haftalik Jadval</button>
+                    <button id="schedule-view-grafik" onclick="setScheduleViewMode('grafik')" class="px-4 py-1.5 rounded-lg text-xs transition-all text-on-surface-variant dark:text-outline-variant hover:bg-surface/30">Grafik</button>
+                </div>
+            </div>
+
+            <!-- Daily View Container -->
+            <div id="schedule-daily-container" class="flex flex-col gap-stack-lg">
+                <!-- Day Selector -->
+                <div>
+                    <div id="schedule-day-selector" class="flex w-full gap-2 pb-2">
+                        <!-- Days list Du, Se, Chor, Pay, Jum, Shan (populated via JS) -->
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-on-surface-variant dark:text-outline-variant">
+                        <span id="schedule-week-label" class="font-label-md text-label-md">1-hafta</span>
+                        <span class="font-label-md text-label-md text-primary dark:text-primary-fixed font-bold">Bugun</span>
+                    </div>
+                </div>
+
+                <!-- Lessons list container -->
+                <div id="schedule-lessons-list" class="space-y-stack-md">
+                    <!-- Lessons populated via JS -->
+                </div>
+            </div>
+
+            <!-- Weekly Grid Table Container -->
+            <div id="schedule-weekly-container" class="hidden bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-2xl shadow-sm p-4 animate-fade-in">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                    <h4 class="text-xs sm:text-sm font-bold text-on-surface dark:text-slate-300 uppercase tracking-wider">Haftalik o'quv dars jadvali</h4>
+                    <button onclick="exportWeeklyToExcel()" class="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#0088ff] text-white hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,136,255,0.3)] hover:shadow-[0_4px_20px_rgba(0,136,255,0.5)] cursor-pointer">
+                        <span class="material-symbols-outlined text-base">download_for_offline</span>
+                        Excelga eksport (.xlsx)
+                    </button>
+                </div>
+                <div class="overflow-x-auto w-full">
+                    <table class="min-w-full divide-y divide-outline-variant/30 text-left text-sm border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-low dark:bg-surface-container-high text-on-surface dark:text-white font-bold text-xs uppercase tracking-wider">
+                                <th class="px-4 py-3 border border-outline-variant/30 text-center">Kun</th>
+                                <th class="px-3 py-3 border border-outline-variant/30 w-16 text-center">Para</th>
+                                <th class="px-4 py-3 border border-outline-variant/30 w-32 text-center">Vaqti</th>
+                                <th class="px-5 py-3 border border-outline-variant/30">Fanlar nomi (Haftalari)</th>
+                                <th class="px-5 py-3 border border-outline-variant/30 text-center">Guruh</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-weekly-tbody" class="divide-y divide-outline-variant/20 dark:text-gray-200">
+                            <!-- Populated dynamically via app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Grafik Matrix Table Container -->
+            <div id="schedule-grafik-container" class="hidden bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-2xl shadow-sm p-4 animate-fade-in">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+                    <h4 class="text-xs sm:text-sm font-bold text-on-surface dark:text-slate-300 uppercase tracking-wider">O'quv grafik jadvali (Matrix)</h4>
+                    <button onclick="exportGrafikToExcel()" class="flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#0088ff] text-white hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,136,255,0.3)] hover:shadow-[0_4px_20px_rgba(0,136,255,0.5)] cursor-pointer">
+                        <span class="material-symbols-outlined text-base">download_for_offline</span>
+                        Excelga eksport (.xlsx)
+                    </button>
+                </div>
+                <div class="overflow-x-auto w-full">
+                    <table id="schedule-matrix-table" class="min-w-full divide-y divide-outline-variant/30 text-left text-sm border-collapse text-on-surface dark:text-white">
+                        <thead id="schedule-matrix-thead">
+                            <!-- Populated dynamically via JS -->
+                        </thead>
+                        <tbody id="schedule-matrix-tbody" class="divide-y divide-outline-variant/20 dark:text-gray-200">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- C. MUHARRIR (EDITOR SCREEN) -->
+        <!-- ========================================== -->
+        <section id="editor-screen" class="tab-content hidden flex flex-col gap-stack-lg animate-fade-in">
+            <div class="flex flex-col gap-1 border-b border-outline-variant/20 pb-4">
+                <h2 class="font-headline-md text-headline-md text-on-surface dark:text-white">O'quv dasturi tahrirlagichi</h2>
+                <p class="font-body-md text-body-md text-on-surface-variant dark:text-outline-variant">Fanlar, guruhlar va dars jadvalini boshqaring.</p>
+            </div>
+
+            <!-- Sub-Tabs Manager -->
+            <div class="flex w-full bg-surface-container-low/50 dark:bg-surface-dark border border-outline-variant/20 rounded-2xl p-1 gap-1 mb-6">
+                <button onclick="selectEditorSubTab('sections')" data-editor-tab="sections" class="editor-tab-btn flex-1 py-3 text-center rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-surface-container-low/40 font-semibold select-none cursor-pointer">Fanlar (Bo'limlar)</button>
+                <button onclick="selectEditorSubTab('groups')" data-editor-tab="groups" class="editor-tab-btn flex-1 py-3 text-center rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-surface-container-low/40 font-semibold select-none cursor-pointer">Guruhlar</button>
+                <button onclick="selectEditorSubTab('lessons')" data-editor-tab="lessons" class="editor-tab-btn flex-1 py-3 text-center rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-surface-container-low/40 font-semibold select-none cursor-pointer">Dars Jadvali</button>
+                <button onclick="selectEditorSubTab('grafik')" data-editor-tab="grafik" class="editor-tab-btn flex-1 py-3 text-center rounded-xl transition-all duration-200 text-slate-400 hover:text-white hover:bg-surface-container-low/40 font-semibold select-none cursor-pointer">O'quv grafigi</button>
+            </div>
+
+            <!-- Sub-tab 1: Fanlar (Sections) -->
+            <div id="editor-sections-container" class="hidden flex flex-col gap-6">
+                <div class="bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-2xl p-6 shadow-sm">
+                    <h3 class="font-title-lg text-title-lg text-on-surface dark:text-white mb-4">Yangi fan qo'shish</h3>
+                    <form id="section-form" class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-grow relative">
+                            <input type="text" id="section_name_input" required placeholder="Fanning nomi (masalan: Matematika)" 
+                                   class="w-full px-4 py-3 rounded-xl border border-outline focus:border-primary dark:focus:border-primary-fixed focus:ring-0 bg-transparent font-body-lg text-body-lg text-on-surface dark:text-white outline-none transition-colors" />
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-6 py-3 rounded-full font-label-lg text-label-lg flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
+                                <span class="material-symbols-outlined text-lg">save</span>
+                                <span id="section-submit-btn-text">Bo'lim qo'shish</span>
+                            </button>
+                            <button type="button" id="section-cancel-btn" onclick="cancelSectionEdit()" class="hidden border border-outline text-on-surface-variant dark:text-outline-variant px-5 py-3 rounded-full font-label-lg text-label-lg active:scale-95 transition-all">
+                                Bekor qilish
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="flex flex-col gap-3">
+                    <h4 class="font-title-md text-title-md text-on-surface-variant dark:text-outline-variant px-1">Mavjud fanlar ro'yxati</h4>
+                    <div id="editor-sections-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Sections list loaded via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-tab 2: Guruhlar (Groups) -->
+            <div id="editor-groups-container" class="hidden flex flex-col gap-6">
+                <div class="bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-2xl p-6 shadow-sm">
+                    <h3 class="font-title-lg text-title-lg text-on-surface dark:text-white mb-4">Yangi guruh qo'shish</h3>
+                    <form id="group-form" class="flex flex-col md:flex-row gap-4 items-end md:items-center">
+                        <div class="flex-grow flex flex-col md:flex-row gap-4 w-full">
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold text-slate-300 mb-1" for="group_name_input">Guruh nomi</label>
+                                <input type="text" id="group_name_input" required placeholder="Guruh nomi (masalan: 25-20)" 
+                                       class="w-full px-4 py-3 rounded-xl border border-outline focus:border-primary dark:focus:border-primary-fixed focus:ring-0 bg-transparent font-body-lg text-body-lg text-on-surface dark:text-white outline-none transition-colors" />
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-xs font-semibold text-slate-300 mb-1" for="group_graph_select">Tegishli o'quv grafigi</label>
+                                <select id="group_graph_select" required class="w-full px-4 py-3 rounded-xl border border-outline focus:border-primary dark:focus:border-primary-fixed bg-transparent font-body-lg text-body-lg text-on-surface dark:text-white outline-none cursor-pointer">
+                                    <!-- Loaded via JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 w-full md:w-auto shrink-0 mt-3 md:mt-0">
+                            <button type="submit" class="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-6 py-3 rounded-full font-label-lg text-label-lg flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
+                                <span class="material-symbols-outlined text-lg">save</span>
+                                <span id="group-submit-btn-text">Guruh qo'shish</span>
+                            </button>
+                            <button type="button" id="group-cancel-btn" onclick="cancelGroupEdit()" class="hidden border border-outline text-on-surface-variant dark:text-outline-variant px-5 py-3 rounded-full font-label-lg text-label-lg active:scale-95 transition-all">
+                                Bekor qilish
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <h4 class="font-title-md text-title-md text-on-surface-variant dark:text-outline-variant px-1">Mavjud guruhlar ro'yxati</h4>
+                    <div id="editor-groups-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Groups list loaded via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sub-tab 3: Dars Jadvali Form (Lessons) -->
+            <div id="editor-lessons-container" class="hidden bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-2xl p-6 shadow-sm flex flex-col gap-6">
+                <div class="flex justify-between items-center border-b border-outline-variant/20 pb-4">
+                    <h3 class="font-title-lg text-title-lg text-on-surface dark:text-white">Dars jadvalini shakllantirish</h3>
+                    <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-2xl">event</span>
+                </div>
+
+                <form class="flex flex-col gap-5" onsubmit="event.preventDefault();">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <!-- Subject dropdown -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="font-label-md text-label-md text-on-surface-variant dark:text-outline-variant" for="lesson_section_select">Fanni tanlang</label>
+                            <select id="lesson_section_select" class="w-full px-4 py-3 rounded-xl border border-outline focus:border-primary dark:focus:border-primary-fixed bg-transparent font-body-lg text-body-lg text-on-surface dark:text-white outline-none cursor-pointer">
+                                <!-- Loaded via JS -->
+                            </select>
+                        </div>
+
+                        <!-- Group dropdown -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="font-label-md text-label-md text-on-surface-variant dark:text-outline-variant" for="lesson_group_select">Guruhni tanlang</label>
+                            <select id="lesson_group_select" class="w-full px-4 py-3 rounded-xl border border-outline focus:border-primary dark:focus:border-primary-fixed bg-transparent font-body-lg text-body-lg text-on-surface dark:text-white outline-none cursor-pointer">
+                                <!-- Loaded via JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <!-- Day selector -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="font-label-md text-label-md text-on-surface-variant dark:text-outline-variant" for="lesson_day_select">Hafta kuni</label>
+                            <select id="lesson_day_select" class="w-full px-4 py-3 rounded-xl border border-outline focus:border-primary dark:focus:border-primary-fixed bg-transparent font-body-lg text-body-lg text-on-surface dark:text-white outline-none cursor-pointer">
+                                <option value="">Kunni tanlang</option>
+                                <option value="1">Dushanba</option>
+                                <option value="2">Seshanba</option>
+                                <option value="3">Chorshanba</option>
+                                <option value="4">Payshanba</option>
+                                <option value="5">Juma</option>
+                                <option value="6">Shanba</option>
+                            </select>
+                        </div>
+
+                        <!-- Smena selector -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="font-label-md text-label-md text-on-surface-variant dark:text-outline-variant" for="lesson_shift_select">Smena</label>
+                            <select id="lesson_shift_select" class="w-full px-4 py-3 rounded-xl border border-outline focus:border-primary dark:focus:border-primary-fixed bg-transparent font-body-lg text-body-lg text-on-surface dark:text-white outline-none cursor-pointer">
+                                <option value="1">1-smena</option>
+                                <option value="2">2-smena</option>
+                            </select>
+                        </div>
+
+                        <!-- Para selector -->
+                        <div class="flex flex-col gap-1.5">
+                            <label class="font-label-md text-label-md text-on-surface-variant dark:text-outline-variant" for="lesson_period_select">Para</label>
+                            <select id="lesson_period_select" class="w-full px-4 py-3 rounded-xl border border-outline focus:border-primary dark:focus:border-primary-fixed bg-transparent font-body-lg text-body-lg text-on-surface dark:text-white outline-none cursor-pointer">
+                                <option value="1">1-para</option>
+                                <option value="2">2-para</option>
+                                <option value="3">3-para</option>
+                                <option value="4">4-para</option>
+                                <option value="5">5-para</option>
+                                <option value="6">6-para</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Note Input Only (Room number removed) -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="font-label-md text-label-md text-on-surface-variant dark:text-outline-variant" for="lesson_note_input">Qo'shimcha izoh (ixtiyoriy)</label>
+                        <input type="text" id="lesson_note_input" placeholder="Masalan: Masofaviy, Laboratoriya mashg'uloti va hk." 
+                               class="w-full px-4 py-3 rounded-xl border border-outline focus:border-primary dark:focus:border-primary-fixed bg-transparent font-body-lg text-body-lg text-on-surface dark:text-white outline-none" />
+                    </div>
+
+                    <!-- Active Weeks Checklist -->
+                    <div class="flex flex-col gap-3 mt-2">
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
+                            <label class="font-label-lg text-label-lg text-on-surface dark:text-white font-bold">Faol haftalarni tanlang (1-20)</label>
+                            <!-- Shortcuts -->
+                            <div class="flex flex-wrap gap-1">
+                                <button type="button" onclick="handleWeeksShortcut('all')" class="px-2.5 py-1 text-xs rounded bg-surface-container hover:bg-surface-container-highest text-on-surface-variant transition-colors">Barchasi</button>
+                                <button type="button" onclick="handleWeeksShortcut('odd')" class="px-2.5 py-1 text-xs rounded bg-surface-container hover:bg-surface-container-highest text-on-surface-variant transition-colors">Toq</button>
+                                <button type="button" onclick="handleWeeksShortcut('even')" class="px-2.5 py-1 text-xs rounded bg-surface-container hover:bg-surface-container-highest text-on-surface-variant transition-colors">Juft</button>
+                                <button type="button" onclick="handleWeeksShortcut('first_half')" class="px-2.5 py-1 text-xs rounded bg-surface-container hover:bg-surface-container-highest text-on-surface-variant transition-colors">1-10</button>
+                                <button type="button" onclick="handleWeeksShortcut('second_half')" class="px-2.5 py-1 text-xs rounded bg-surface-container hover:bg-surface-container-highest text-on-surface-variant transition-colors">11-20</button>
+                                <button type="button" onclick="handleWeeksShortcut('clear')" class="px-2.5 py-1 text-xs rounded bg-error-container text-on-error-container transition-colors">Tozalash</button>
+                            </div>
+                        </div>
+
+                        <!-- Checkbox Grid -->
+                        <div id="editor-week-selectors-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                            <!-- Dynamic checkboxes via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Buttons Row -->
+                    <div class="flex gap-3 mt-4">
+                        <button type="button" id="save-lesson-btn" class="flex-grow bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container font-title-md text-title-md py-4 rounded-full flex justify-center items-center gap-2 transition-all active:scale-95 shadow-md font-semibold">
+                            <span class="material-symbols-outlined">save</span>
+                            <span id="lesson-submit-btn-text">Darsni saqlash</span>
+                        </button>
+                        <button type="button" id="lesson-cancel-btn" onclick="clearLessonForm()" class="hidden border border-outline text-on-surface-variant dark:text-outline-variant px-6 py-4 rounded-full font-title-md text-title-md active:scale-95 transition-all">
+                            Bekor qilish
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- All Lessons List -->
+            <div class="flex flex-col gap-3 mt-8">
+                <h4 class="font-title-md text-title-md text-on-surface dark:text-white px-1 font-bold">Barcha darslar ro'yxati (Bitta oynada)</h4>
+                <div id="editor-lessons-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Lessons list loaded via JS -->
+                </div>
+            </div>
+
+            <!-- Sub-tab 4: O'quv Grafigi (Academic Graph) -->
+            <div id="editor-grafik-container" class="hidden flex flex-col gap-6">
+                <div class="bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-2xl p-6 shadow-sm flex flex-col gap-5">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-outline-variant/20 pb-4 gap-3">
+                        <div>
+                            <h3 class="font-title-lg text-title-lg text-on-surface dark:text-white font-bold">O'quv rejasining ishchi grafigi (Kalendar)</h3>
+                            <p class="text-xs text-slate-400 mt-1">Sentyabr - May oylaridagi barcha dars va ta'til haftalari jadvali.</p>
+                        </div>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <input type="text" id="new_graph_name_input" placeholder="Grafik nomi (masalan: 201)" 
+                                   class="px-4 py-2 text-sm rounded-xl border border-outline bg-transparent text-on-surface dark:text-white outline-none flex-grow md:flex-grow-0" />
+                            <button onclick="handleAddAcademicGraph()" class="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1 active:scale-95 transition-all shadow-sm shrink-0">
+                                <span class="material-symbols-outlined text-sm">add</span>
+                                Yangi Grafik
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Scrollable Table Container -->
+                    <div class="w-full overflow-x-auto rounded-xl border border-outline-variant/30 no-scrollbar bg-surface-dark relative">
+                        <table class="w-full border-collapse text-xs select-none min-w-[1200px]">
+                            <thead id="grafik-table-thead">
+                                <!-- Generated via app.js -->
+                            </thead>
+                            <tbody id="grafik-table-tbody">
+                                <!-- Generated via app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center gap-4 text-[11px] mt-2 border-t border-outline-variant/20 pt-4">
+                        <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-primary-container/20 border border-primary/30"></span> <span>O'quv haftasi (1-20)</span></div>
+                        <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-error-container/40 border border-error/50"></span> <span>T - Ta'til (O'quv darslari yo'q)</span></div>
+                        <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-surface-container-low dark:bg-surface-container-high border border-outline-variant/30"></span> <span>- (O'quv rejasidan tashqari)</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- D. VIDJETLAR KO'RINISHI (WIDGETS SCREEN) -->
+        <!-- ========================================== -->
+        <section id="widgets-screen" class="tab-content hidden flex flex-col gap-stack-lg animate-fade-in relative min-h-[500px]">
+            <!-- Simulation Background Canvas -->
+            <div class="absolute inset-0 android-bg -z-10 opacity-30 dark:opacity-10 rounded-2xl"></div>
+
+            <div class="p-6">
+                <div class="mb-6">
+                    <h2 class="font-headline-md text-headline-md text-on-surface dark:text-white mb-1">Bosh ekran vidjetlari</h2>
+                    <p class="font-body-lg text-body-lg text-on-surface-variant dark:text-outline-variant">Vidjetlar smartfoningiz bosh ekranida qanday ko'rinishini sozlang va kuzating.</p>
+                </div>
+
+                <!-- Widget Controls -->
+                <div class="bg-surface-container/60 dark:bg-surface-container-high/60 backdrop-blur-md rounded-2xl p-6 flex flex-row items-center justify-between shadow-sm border border-outline-variant/20 mb-8">
+                    <div class="flex items-center gap-4">
+                        <span class="font-title-md text-title-md text-on-surface dark:text-white font-semibold">Uslub:</span>
+                        <div class="flex bg-surface-variant dark:bg-surface-container rounded-xl p-1 border border-outline-variant/30">
+                            <button id="widget-style-full" onclick="setWidgetStyle('full')" class="px-4 py-2 rounded text-sm font-semibold transition-all">To'liq</button>
+                            <button id="widget-style-transparent" onclick="setWidgetStyle('transparent')" class="px-4 py-2 rounded text-sm transition-all">Shaffof</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start mt-4">
+                    <!-- Small Widget (2x2) -->
+                    <div class="flex flex-col gap-3">
+                        <h3 class="font-title-md text-title-md text-on-surface dark:text-white pl-2">Kichik (2x2)</h3>
+                        <div id="widget-small-preview">
+                            <!-- Dynamic preview generated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Medium Widget (4x2) -->
+                    <div class="flex flex-col gap-3">
+                        <h3 class="font-title-md text-title-md text-on-surface dark:text-white pl-2">O'rtacha (4x2)</h3>
+                        <div id="widget-medium-preview">
+                            <!-- Dynamic preview generated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Large Widget (4x3) -->
+                    <div class="flex flex-col gap-3">
+                        <h3 class="font-title-md text-title-md text-on-surface dark:text-white pl-2">Katta (4x3)</h3>
+                        <div id="widget-large-preview">
+                            <!-- Dynamic preview generated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- E. SOZLAMALAR (SETTINGS SCREEN) -->
+        <!-- ========================================== -->
+        <section id="settings-screen" class="tab-content hidden flex flex-col gap-stack-lg animate-fade-in">
+            <!-- Preferences Section -->
+            <div class="flex flex-col gap-stack-sm">
+                <h2 class="font-title-md text-title-md text-primary dark:text-primary-fixed px-4 font-semibold uppercase tracking-wider text-sm">Afzalliklar</h2>
+                <div class="bg-surface-container-lowest dark:bg-surface-dark rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
+
+
+                    <!-- Current Week Setting -->
+                    <div onclick="openWeekDialog()" class="flex items-center justify-between p-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer border-b border-outline-variant/20">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-secondary dark:text-slate-300 text-2xl">view_week</span>
+                            <div>
+                                <h3 class="font-body-lg text-body-lg text-on-surface dark:text-white font-medium">Joriy hafta jadvali</h3>
+                                <p id="settings-week-label" class="font-body-md text-body-md text-on-surface-variant dark:text-slate-400">1-hafta</p>
+                            </div>
+                        </div>
+                        <span class="material-symbols-outlined text-on-surface-variant dark:text-slate-400">chevron_right</span>
+                    </div>
+
+                    <!-- Semester Start Date Setting -->
+                    <div class="flex items-center justify-between p-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors border-b border-outline-variant/20">
+                        <div class="flex items-center gap-4 flex-grow mr-4">
+                            <span class="material-symbols-outlined text-secondary dark:text-slate-300 text-2xl">calendar_month</span>
+                            <div class="flex-grow">
+                                <h3 class="font-body-lg text-body-lg text-on-surface dark:text-white font-medium">1-hafta boshlanish sanasi</h3>
+                                <p class="font-body-md text-body-md text-on-surface-variant dark:text-slate-400">Semestr boshlanish sanasi bo'yicha joriy hafta avtomat hisoblanadi</p>
+                            </div>
+                        </div>
+                        <input type="date" id="settings-start-date-input" onchange="saveSemesterStartDate()" class="px-3 py-1.5 text-sm rounded-xl border border-outline bg-transparent dark:text-white focus:ring-0 outline-none" />
+                    </div>
+
+                    <!-- Bell Schedule Setting -->
+                    <div onclick="openBellDialog()" class="flex items-center justify-between p-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer border-b border-outline-variant/20">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-secondary dark:text-slate-300 text-2xl">notifications_active</span>
+                            <div>
+                                <h3 class="font-body-lg text-body-lg text-on-surface dark:text-white font-medium">Qo'ng'iroqlar jadvali (Smena va Paralar)</h3>
+                                <p class="font-body-md text-body-md text-on-surface-variant dark:text-slate-400">Smena va paralar soat vaqtlarini tahrirlash</p>
+                            </div>
+                        </div>
+                        <span class="material-symbols-outlined text-on-surface-variant dark:text-slate-400">chevron_right</span>
+                    </div>
+
+                    <!-- Profile Setting -->
+                    <div onclick="openProfileDialog()" class="flex items-center justify-between p-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-secondary dark:text-slate-300 text-2xl">account_circle</span>
+                            <div>
+                                <h3 class="font-body-lg text-body-lg text-on-surface dark:text-white font-medium">Profil ma'lumotlari</h3>
+                                <p class="font-body-md text-body-md text-on-surface-variant dark:text-slate-400"><span id="settings-teacher-name-label">Ozodbek Napasov</span> • <span id="settings-teacher-subject-label">Axborot Texnologiyalari</span></p>
+                            </div>
+                        </div>
+                        <span class="material-symbols-outlined text-on-surface-variant dark:text-slate-400">edit</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Management Section -->
+            <div class="flex flex-col gap-stack-sm">
+                <h2 class="font-title-md text-title-md text-primary dark:text-primary-fixed px-4 font-semibold uppercase tracking-wider text-sm">Ma'lumotlarni boshqarish</h2>
+                <div class="bg-surface-container-lowest dark:bg-surface-dark rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
+                    <!-- Backup -->
+                    <div onclick="exportDataBackup()" class="flex items-center justify-between p-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer border-b border-outline-variant/20">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-secondary dark:text-outline-variant text-2xl">cloud_download</span>
+                            <div>
+                                <h3 class="font-body-lg text-body-lg text-on-surface dark:text-white font-medium">Zaxiralash (Yuklab olish)</h3>
+                                <p class="font-body-md text-body-md text-on-surface-variant dark:text-outline-variant">Jadval ma'lumotlarini JSON faylida zaxiralash</p>
+                            </div>
+                        </div>
+                        <span class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant">download</span>
+                    </div>
+
+                    <!-- Restore -->
+                    <div onclick="triggerImportFileInput()" class="flex items-center justify-between p-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-secondary dark:text-outline-variant text-2xl">cloud_upload</span>
+                            <div>
+                                <h3 class="font-body-lg text-body-lg text-on-surface dark:text-white font-medium">Zaxiradan qayta tiklash</h3>
+                                <p class="font-body-md text-body-md text-on-surface-variant dark:text-outline-variant">JSON zaxira faylidan jadvalni qayta tiklash</p>
+                            </div>
+                        </div>
+                        <span class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant">upload_file</span>
+                        <!-- Hidden input for file upload -->
+                        <input type="file" id="backup-file-input" class="hidden" accept=".json" onchange="handleImportFile(event)" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="flex flex-col gap-stack-sm">
+                <h2 class="font-title-md text-title-md text-primary dark:text-primary-fixed px-4 font-semibold uppercase tracking-wider text-sm">Haqida</h2>
+                <div class="bg-surface-container-lowest dark:bg-surface-dark rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
+                    <div class="flex items-center justify-between p-4 border-b border-outline-variant/20">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-secondary dark:text-outline-variant text-2xl">info</span>
+                            <div>
+                                <h3 class="font-body-lg text-body-lg text-on-surface dark:text-white font-medium">Versiya</h3>
+                                <p class="font-body-md text-body-md text-on-surface-variant dark:text-outline-variant">1.0.0 (Build 2026.Web)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-4">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-secondary dark:text-outline-variant text-2xl">copyright</span>
+                            <div>
+                                <h3 class="font-body-lg text-body-lg text-on-surface dark:text-white font-medium">Dastur Huquqlari</h3>
+                                <p class="font-body-md text-body-md text-on-surface-variant dark:text-outline-variant">© 2026 Ozodbek Napasov</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- F. AI JADVAL GENERATOR (GENERATOR SCREEN) -->
+        <!-- ========================================== -->
+        <section id="generator-screen" class="tab-content hidden flex flex-col gap-stack-lg animate-fade-in max-w-4xl mx-auto w-full pb-32">
+            <div class="border-b border-outline-variant/20 pb-3 flex justify-between items-center">
+                <div>
+                    <h3 class="font-title-lg text-title-lg text-on-surface dark:text-white font-bold">AI Dars Jadvali Generator</h3>
+                    <p class="text-xs text-slate-400">Guruhlar, fanlar va o'qituvchilar dars jadvalini to'qnashuvlarsiz generatsiya qilish uchun qo'llanma.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Instructions / Info Card -->
+                <div class="flex flex-col gap-4 p-6 bg-gradient-to-tr from-[#0a1122]/60 to-[#12254f]/40 backdrop-blur-md border border-[#1e2f55]/40 rounded-3xl shadow-lg">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="material-symbols-outlined text-primary text-3xl font-bold">psychology</span>
+                        <h4 class="text-white text-base font-bold">Qanday ishlaydi?</h4>
+                    </div>
+                    <ul class="text-xs text-slate-300 space-y-3 list-decimal pl-4 leading-relaxed">
+                        <li>Guruhlar, o'qituvchilar, dars soatlari va dars paralarini chat orqali menga (AI ga) yuboring.</li>
+                        <li>Men ularni paralel va to'qnashuvlarsiz dars jadvali formatiga o'tkazaman.</li>
+                        <li>Sizga dars jadvali uchun maxsus zaxira fayl (JSON) matnini beraman.</li>
+                        <li>O'sha matnni o'ng tarafdagi kiritish maydoniga joylab <strong>"Yuklash"</strong> tugmasini bossangiz, yangi dars jadvali ushbu dasturga o'rnatiladi.</li>
+                    </ul>
+                    <div class="mt-4 p-3 bg-primary/10 rounded-xl border border-primary/20">
+                        <p class="text-[11px] text-[#00d2ff] leading-snug">⚠️ <strong>Eslatma:</strong> Jadvalni yuklaganingizda, hozirgi ma'lumotlaringiz o'rniga yangi jadval o'rnatiladi. Yuklashdan oldin Sozlamalardan hozirgi jadvalingizni zaxiralab olishingiz tavsiya etiladi.</p>
+                    </div>
+                </div>
+
+                <!-- Input / Load JSON Card -->
+                <div class="flex flex-col gap-4 p-6 bg-gradient-to-tr from-[#0a1122]/60 to-[#12254f]/40 backdrop-blur-md border border-[#1e2f55]/40 rounded-3xl shadow-lg">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="material-symbols-outlined text-primary text-3xl font-bold">terminal</span>
+                        <h4 class="text-white text-base font-bold">Yaratilgan jadvalni yuklash</h4>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-normal">AI tomonidan tayyorlab berilgan JSON formatidagi dars jadvali matnini bu yerga joylashtiring:</p>
+                    
+                    <textarea id="ai-generator-json-input" class="w-full h-32 px-4 py-3 bg-[#050a16]/80 text-white rounded-2xl border border-[#1e2f55] text-xs font-mono focus:outline-none focus:border-primary/50 transition-colors resize-none placeholder-slate-600" placeholder='{ "sections": [], "groups": [], ... }'></textarea>
+                    
+                    <button onclick="loadGeneratedAiSchedule()" class="w-full flex items-center justify-center gap-2 py-3 bg-[#0088ff] text-white rounded-2xl font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_4px_15px_rgba(0,136,255,0.4)] cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">publish</span>
+                        Dasturga o'rnatish
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar (Hidden on Desktop) -->
+    <nav class="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[360px] h-16 rounded-full bg-[#0a1122]/65 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] z-50 flex items-center justify-around px-2" id="bottom-nav-bar">
+        <button data-tab="home" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white">
+            <span class="material-symbols-outlined text-[22px]">home</span>
+        </button>
+        <button data-tab="schedule" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white">
+            <span class="material-symbols-outlined text-[22px]">calendar_month</span>
+        </button>
+        <button data-tab="editor" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white">
+            <span class="material-symbols-outlined text-[22px]">edit</span>
+        </button>
+        <button data-tab="widgets" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white">
+            <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
+        </button>
+        <button data-tab="generator" class="w-11 h-11 rounded-full bg-transparent text-slate-400 flex items-center justify-center transition-all duration-300 hover:text-white" title="AI Generator">
+            <span class="material-symbols-outlined text-[22px]">smart_toy</span>
+        </button>
+    </nav>
+
+    <!-- TOAST NOTIFICATION BANNER -->
+    <div id="toast-notification" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-inverse-surface text-inverse-on-surface px-6 py-3 rounded-full shadow-lg transition-transform duration-300 transform translate-y-24 hidden flex items-center gap-2">
+        <span class="material-symbols-outlined text-lg">check_circle</span>
+        <span id="toast-text" class="text-sm font-medium">Muvaffaqiyatli saqlandi!</span>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL DIALOGS -->
+    <!-- ========================================== -->
+
+    <!-- Week Choice Dialog -->
+    <div id="week-dialog" class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-3xl p-6 w-full max-w-md shadow-xl animate-fade-in text-on-surface dark:text-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-title-lg text-title-lg font-bold">Joriy haftani tanlang</h3>
+                <button onclick="closeWeekDialog()" class="p-1 rounded-full hover:bg-surface-container-low"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            
+            <div id="dialog-weeks-grid" class="grid grid-cols-4 gap-2.5 max-h-[320px] overflow-y-auto pr-1 no-scrollbar">
+                <!-- Loaded via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bell Schedule Choice Dialog -->
+    <div id="bell-dialog" class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-3xl p-6 w-full max-w-2xl shadow-xl animate-fade-in text-on-surface dark:text-white flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 border-b border-outline-variant/20 pb-3">
+                <h3 class="font-title-lg text-title-lg font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">notifications_active</span>
+                    Qo'ng'iroqlar jadvali (Smena va Paralar)
+                </h3>
+                <button onclick="closeBellDialog()" class="p-1 rounded-full hover:bg-surface-container-low"><span class="material-symbols-outlined">close</span></button>
+            </div>
+            
+            <div class="flex-grow overflow-y-auto pr-1 no-scrollbar space-y-6">
+                <!-- 1-smena grid -->
+                <div>
+                    <h4 class="font-title-md text-title-md text-primary dark:text-primary-fixed mb-3 font-semibold">1-Smena</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="bell-smena1-grid">
+                        <!-- Generated via JS -->
+                    </div>
+                </div>
+                <!-- 2-smena grid -->
+                <div>
+                    <h4 class="font-title-md text-title-md text-primary dark:text-primary-fixed mb-3 font-semibold">2-Smena</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="bell-smena2-grid">
+                        <!-- Generated via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-6 border-t border-outline-variant/20 pt-3">
+                <button onclick="closeBellDialog()" class="px-5 py-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-full font-label-lg">Bekor qilish</button>
+                <button onclick="saveBellSchedule()" class="px-6 py-2.5 bg-primary text-on-primary rounded-full font-label-lg font-semibold shadow-sm">Saqlash</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Profile Edit Dialog -->
+    <div id="profile-dialog" class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-3xl p-6 w-full max-w-sm shadow-xl animate-fade-in text-on-surface dark:text-white">
+            <h3 class="font-title-lg text-title-lg mb-4 font-bold">Profil ma'lumotlarini tahrirlash</h3>
+            
+            <form class="flex flex-col gap-4" onsubmit="event.preventDefault(); saveProfileSettings();">
+                <div class="flex flex-col gap-1.5">
+                    <label class="font-label-md text-label-md text-on-surface-variant" for="edit_teacher_name">Ism familiya</label>
+                    <input type="text" id="edit_teacher_name" required class="w-full px-4 py-2.5 rounded-xl border border-outline focus:border-primary bg-transparent font-body-lg text-on-surface dark:text-white outline-none" />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="font-label-md text-label-md text-on-surface-variant" for="edit_teacher_subject">Asosiy fani</label>
+                    <input type="text" id="edit_teacher_subject" required class="w-full px-4 py-2.5 rounded-xl border border-outline focus:border-primary bg-transparent font-body-lg text-on-surface dark:text-white outline-none" />
+                </div>
+
+                <div class="flex justify-end gap-2 mt-4">
+                    <button type="button" onclick="closeProfileDialog()" class="px-5 py-2.5 text-on-surface-variant hover:bg-surface-container-low rounded-full font-label-lg">Bekor qilish</button>
+                    <button type="submit" class="px-6 py-2.5 bg-primary text-on-primary rounded-full font-label-lg font-semibold shadow-sm">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Dialog -->
+    <div id="custom-confirm-dialog" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-fade-in text-on-surface dark:text-white">
+            <h3 id="confirm-title" class="font-title-lg text-title-lg font-bold mb-3">Tasdiqlash</h3>
+            <p id="confirm-message" class="text-sm text-slate-300 mb-6 leading-relaxed">Haqiqatdan ham ushbu amalni bajarmoqchimisiz?</p>
+            <div class="flex justify-end gap-3">
+                <button id="confirm-cancel-btn" class="px-5 py-2.5 text-on-surface-variant dark:text-slate-400 hover:bg-slate-800 rounded-full font-label-lg transition-colors">Bekor qilish</button>
+                <button id="confirm-ok-btn" class="px-6 py-2.5 bg-primary text-on-primary rounded-full font-label-lg font-bold shadow-md active:scale-95 transition-all">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert Dialog -->
+    <div id="custom-alert-dialog" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-surface-container-lowest dark:bg-surface-dark border border-outline-variant/30 rounded-3xl p-6 w-full max-w-sm shadow-2xl animate-fade-in text-on-surface dark:text-white">
+            <h3 id="alert-title" class="font-title-lg text-title-lg font-bold mb-3">Diqqat</h3>
+            <p id="alert-message" class="text-sm text-slate-300 mb-6 leading-relaxed"></p>
+            <div class="flex justify-end">
+                <button id="alert-ok-btn" class="px-6 py-2.5 bg-primary text-on-primary rounded-full font-label-lg font-bold shadow-md active:scale-95 transition-all">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>

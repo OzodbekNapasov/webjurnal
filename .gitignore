@@ -31,6 +31,6 @@ yarn-error.log*
 next-env.d.ts
 
 # local launch helpers
-index.html
+/index.html
 index.bat
 
