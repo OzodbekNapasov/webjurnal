@@ -28,7 +28,7 @@ export default function LogoutButton() {
     }
   }, []);
 
-  if (pathname === '/login') return null;
+  if (pathname !== '/') return null;
   if (!userInfo) return null;
 
   function handleLogout() {

@@ -255,12 +255,36 @@ async function initDb() {
         if (response.ok) {
             const data = await response.json();
             if (data.sections && data.groups && data.lessons && data.settings) {
+                // Preserve local user settings if saved in browser
+                const localSettingsRaw = localStorage.getItem("dars_settings");
+                let mergedSettings = data.settings;
+                if (localSettingsRaw) {
+                    try {
+                        const parsedSettings = JSON.parse(localSettingsRaw);
+                        if (parsedSettings && typeof parsedSettings === 'object') {
+                            mergedSettings = { ...data.settings, ...parsedSettings };
+                        }
+                    } catch (e) {}
+                }
+
+                // Preserve local user lessons if saved in browser
+                const localLessonsRaw = localStorage.getItem("dars_lessons");
+                let mergedLessons = data.lessons;
+                if (localLessonsRaw) {
+                    try {
+                        const parsedLessons = JSON.parse(localLessonsRaw);
+                        if (Array.isArray(parsedLessons) && parsedLessons.length > 0) {
+                            mergedLessons = parsedLessons;
+                        }
+                    } catch (e) {}
+                }
+
                 state.sections = data.sections;
                 
                 // Use Supabase groups if available, otherwise fallback
                 state.groups = supabaseGroups && supabaseGroups.length > 0 ? supabaseGroups : data.groups;
-                state.lessons = data.lessons;
-                state.settings = data.settings;
+                state.lessons = mergedLessons;
+                state.settings = mergedSettings;
                 state.academicGraphs = data.academicGraphs || DEFAULT_ACADEMIC_GRAPHS;
                 
                 // Map/Upgrade groups to make sure they have graphId mapped (fallback to 1)
