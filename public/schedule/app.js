@@ -243,111 +243,86 @@ function setupBackButtons() {
 
 // Initialize Database from Server (data.json) or LocalStorage fallback
 async function initDb() {
-    let serverDataLoaded = false;
-    
     setupBackButtons();
     
     // Fetch Supabase groups dynamically
     const supabaseGroups = await fetchSupabaseGroups();
     
+    let serverData = null;
     try {
         const response = await fetch("data.json");
         if (response.ok) {
-            const data = await response.json();
-            if (data.sections && data.groups && data.lessons && data.settings) {
-                // Preserve local user settings if saved in browser
-                const localSettingsRaw = localStorage.getItem("dars_settings");
-                let mergedSettings = data.settings;
-                if (localSettingsRaw) {
-                    try {
-                        const parsedSettings = JSON.parse(localSettingsRaw);
-                        if (parsedSettings && typeof parsedSettings === 'object') {
-                            mergedSettings = { ...data.settings, ...parsedSettings };
-                        }
-                    } catch (e) {}
-                }
-
-                // Preserve local user lessons if saved in browser
-                const localLessonsRaw = localStorage.getItem("dars_lessons");
-                let mergedLessons = data.lessons;
-                if (localLessonsRaw) {
-                    try {
-                        const parsedLessons = JSON.parse(localLessonsRaw);
-                        if (Array.isArray(parsedLessons) && parsedLessons.length > 0) {
-                            mergedLessons = parsedLessons;
-                        }
-                    } catch (e) {}
-                }
-
-                state.sections = data.sections;
-                
-                // Use Supabase groups if available, otherwise fallback
-                state.groups = supabaseGroups && supabaseGroups.length > 0 ? supabaseGroups : data.groups;
-                state.lessons = mergedLessons;
-                state.settings = mergedSettings;
-                state.academicGraphs = data.academicGraphs || DEFAULT_ACADEMIC_GRAPHS;
-                
-                // Map/Upgrade groups to make sure they have graphId mapped (fallback to 1)
-                state.groups = state.groups.map(g => {
-                    return {
-                        id: g.id,
-                        name: g.name,
-                        graphId: g.graphId || 1
-                    };
-                });
-                
-                // Update settings.currentWeek dynamically
-                state.settings.currentWeek = calculateCurrentWeek();
-                
-                // Save locally as backup
-                localStorage.setItem("dars_sections", JSON.stringify(state.sections));
-                localStorage.setItem("dars_groups", JSON.stringify(state.groups));
-                localStorage.setItem("dars_lessons", JSON.stringify(state.lessons));
-                localStorage.setItem("dars_settings", JSON.stringify(state.settings));
-                localStorage.setItem("dars_academic_graphs", JSON.stringify(state.academicGraphs));
-                
-                serverDataLoaded = true;
-                updateSaveStatus(true);
-            }
+            serverData = await response.json();
         }
     } catch (e) {
-        console.warn("Could not load data.json from server. Falling back to local storage.", e);
+        console.warn("Could not load data.json from server.", e);
     }
 
-    if (!serverDataLoaded) {
-        // Fallback to localStorage
-        if (!localStorage.getItem("dars_lessons_seeded_v8")) {
-            localStorage.setItem("dars_sections", JSON.stringify(DEFAULT_SECTIONS));
-            localStorage.setItem("dars_groups", JSON.stringify(supabaseGroups && supabaseGroups.length > 0 ? supabaseGroups : DEFAULT_GROUPS));
-            localStorage.setItem("dars_lessons", JSON.stringify(DEFAULT_LESSONS));
-            localStorage.setItem("dars_settings", JSON.stringify(DEFAULT_SETTINGS));
-            localStorage.setItem("dars_academic_graphs", JSON.stringify(DEFAULT_ACADEMIC_GRAPHS));
-            localStorage.setItem("dars_lessons_seeded_v8", "true");
-        }
+    const defaultSecs = serverData?.sections || DEFAULT_SECTIONS;
+    const defaultGrps = serverData?.groups || DEFAULT_GROUPS;
+    const defaultLess = serverData?.lessons || DEFAULT_LESSONS;
+    const defaultSets = serverData?.settings || DEFAULT_SETTINGS;
+    const defaultGphs = serverData?.academicGraphs || DEFAULT_ACADEMIC_GRAPHS;
 
-        if (supabaseGroups && supabaseGroups.length > 0) {
-            localStorage.setItem("dars_groups", JSON.stringify(supabaseGroups));
-        }
+    // Read saved data from localStorage first
+    const localSecsRaw = localStorage.getItem("dars_sections");
+    const localGrpsRaw = localStorage.getItem("dars_groups");
+    const localLessRaw = localStorage.getItem("dars_lessons");
+    const localSetsRaw = localStorage.getItem("dars_settings");
+    const localGphsRaw = localStorage.getItem("dars_academic_graphs");
 
-        if (!localStorage.getItem("dars_sections")) {
-            localStorage.setItem("dars_sections", JSON.stringify(DEFAULT_SECTIONS));
-        }
-        if (!localStorage.getItem("dars_groups")) {
-            localStorage.setItem("dars_groups", JSON.stringify(DEFAULT_GROUPS));
-        }
-        if (!localStorage.getItem("dars_lessons")) {
-            localStorage.setItem("dars_lessons", JSON.stringify(DEFAULT_LESSONS));
-        }
-        if (!localStorage.getItem("dars_settings")) {
-            localStorage.setItem("dars_settings", JSON.stringify(DEFAULT_SETTINGS));
-        }
-        if (!localStorage.getItem("dars_academic_graphs")) {
-            localStorage.setItem("dars_academic_graphs", JSON.stringify(DEFAULT_ACADEMIC_GRAPHS));
-        }
-
-        loadStateFromStorage();
-        updateSaveStatus(false);
+    // Sections (Fanlar)
+    if (localSecsRaw) {
+        try { state.sections = JSON.parse(localSecsRaw); } catch(e) { state.sections = defaultSecs; }
+    } else {
+        state.sections = defaultSecs;
     }
+
+    // Lessons (Darslar)
+    if (localLessRaw) {
+        try { state.lessons = JSON.parse(localLessRaw); } catch(e) { state.lessons = defaultLess; }
+    } else {
+        state.lessons = defaultLess;
+    }
+
+    // Settings (Sozlamalar & O'qituvchi ma'lumotlari)
+    let mergedSettings = defaultSets;
+    if (localSetsRaw) {
+        try {
+            const parsed = JSON.parse(localSetsRaw);
+            if (parsed && typeof parsed === 'object') {
+                mergedSettings = { ...defaultSets, ...parsed };
+            }
+        } catch(e) {}
+    }
+    state.settings = mergedSettings;
+
+    // Academic Graphs (Grafiklar)
+    if (localGphsRaw) {
+        try { state.academicGraphs = JSON.parse(localGphsRaw); } catch(e) { state.academicGraphs = defaultGphs; }
+    } else {
+        state.academicGraphs = defaultGphs;
+    }
+
+    // Groups (Guruhlar)
+    let baseGroups = defaultGrps;
+    if (supabaseGroups && supabaseGroups.length > 0) {
+        baseGroups = supabaseGroups;
+    } else if (localGrpsRaw) {
+        try { baseGroups = JSON.parse(localGrpsRaw); } catch(e) {}
+    }
+
+    state.groups = baseGroups.map(g => ({
+        id: g.id,
+        name: g.name,
+        graphId: g.graphId || 1
+    }));
+
+    // Update settings.currentWeek dynamically
+    state.settings.currentWeek = calculateCurrentWeek();
+
+    // Persist current state to localStorage
+    saveStateToStorage();
 }
 
 function loadStateFromStorage() {
