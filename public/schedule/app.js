@@ -229,16 +229,11 @@ async function supabaseGroupMutate(action, id, payload) {
 function setupBackButtons() {
     const params = new URLSearchParams(window.location.search);
     const techSchool = params.get('techSchool') || 'shahrisabz';
+    const targetUrl = `/?techSchool=${encodeURIComponent(techSchool)}`;
     
-    const backBtn = document.getElementById("back-to-journal-btn");
-    if (backBtn) {
-        backBtn.href = `/?techSchool=${encodeURIComponent(techSchool)}`;
-    }
-    
-    const backMobileBtn = document.getElementById("back-to-journal-mobile");
-    if (backMobileBtn) {
-        backMobileBtn.href = `/?techSchool=${encodeURIComponent(techSchool)}`;
-    }
+    document.querySelectorAll(".back-to-home-link, #back-to-journal-btn, #back-to-journal-mobile").forEach(el => {
+        if (el) el.href = targetUrl;
+    });
 }
 
 // Initialize Database from Server (data.json) or LocalStorage fallback
