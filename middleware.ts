@@ -26,10 +26,11 @@ function getUsernameFromCookie(cookie: string | undefined): string | null {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  // Static asset'larni o'tkazib yuborish
+  // Static asset'larni va Darsliklarni o'tkazib yuborish
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
+    pathname.startsWith('/darsliklar') ||
     pathname.includes('.')
   ) {
     return NextResponse.next();

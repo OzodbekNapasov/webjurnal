@@ -1,0 +1,2890 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <script>
+    // Immediate login check before rendering
+    const savedLogin = localStorage.getItem('darslik_login');
+    if (savedLogin !== 'Napasov' && savedLogin !== 'Umirov') {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../LOGO.png">
+  <title>Elektron Darslik: MS Office Dasturlari va Tibbiyotdagi Vazifalari</title>
+  
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0f172a;           /* Slate 900 */
+      --secondary-bg: #1e293b;         /* Slate 800 */
+      --text-main: #ffffff;            /* Pure white for maximum contrast */
+      --text-muted: #cbd5e1;           /* Slate 300 - much brighter than 94a3b8 */
+      --text-light: #f8fafc;           /* Slate 50 */
+      --card-bg: rgba(15, 23, 42, 0.9);/* Darker and more opaque for high contrast background */
+      --border-color: rgba(255, 255, 255, 0.15);
+      --accent: #38bdf8;               /* Sky Blue */
+      --accent-glow: rgba(56, 189, 248, 0.35);
+      --primary-cyan: #06b6d4;         /* Cyan */
+      --primary-cyan-glow: rgba(6, 182, 212, 0.4);
+      --accent-violet: #a855f7;        /* Purple */
+      --success: #10b981;              /* Cyber Green */
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --error: #ef4444;                /* Cyber Red */
+      --error-glow: rgba(239, 68, 68, 0.25);
+      
+      /* Software UI colors (Static for realism) */
+      --word-color: #2b579a;
+      --excel-color: #217346;
+      --pp-color: #b7472a;
+      --access-color: #a3363b;
+      --outlook-color: #0078d4;
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;           /* Light Slate */
+      --secondary-bg: #ffffff;
+      --text-main: #0f172a;            /* Very dark slate */
+      --text-muted: #334155;           /* Slate 700 - much darker for contrast */
+      --text-light: #1e293b;           /* Slate 800 */
+      --card-bg: rgba(255, 255, 255, 0.98);
+      --border-color: rgba(15, 23, 42, 0.12);
+      --accent: #0284c7;
+      --accent-glow: rgba(2, 132, 199, 0.2);
+      --primary-cyan: #0891b2;
+      --primary-cyan-glow: rgba(8, 145, 178, 0.2);
+      --accent-violet: #7c3aed;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Bootstrap Overrides for Readability and Contrast */
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    .text-light {
+      color: var(--text-light) !important;
+    }
+    .lead {
+      color: var(--text-muted) !important;
+      font-weight: 500 !important;
+    }
+    p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    li {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-light);
+    }
+
+    /* Light Theme Specific Readability Overrides */
+    [data-theme="light"] .text-white {
+      color: var(--text-main) !important;
+    }
+    [data-theme="light"] .text-warning {
+      color: #b45309 !important; /* Amber 700 - dark, readable orange */
+    }
+    [data-theme="light"] .text-info {
+      color: #0369a1 !important; /* Sky 700 - readable dark cyan */
+    }
+
+    /* Core Styles */
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      position: relative;
+    }
+
+    .logo-img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+      transition: var(--transition-smooth);
+    }
+    .logo-img:hover {
+      transform: scale(1.05);
+    }
+
+
+    /* Background Gradients */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background-image: 
+        radial-gradient(at 0% 0%, var(--primary-cyan-glow) 0, transparent 40%),
+        radial-gradient(at 100% 100%, var(--accent-glow) 0, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.005) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.005) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    /* Fixed Progress Bar */
+    .top-progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.1);
+      z-index: 1050;
+    }
+
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary-cyan), var(--accent), var(--accent-violet));
+      box-shadow: 0 0 10px var(--primary-cyan);
+      transition: width 0.1s ease;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 6px;
+      z-index: 1000;
+      margin: 0 12px;
+      border-radius: 0 0 16px 16px;
+    }
+
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--secondary-accent) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+    .logo-img {
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-img {
+      transform: scale(1.08);
+    }
+
+    /* Premium Author Badge Styling */
+    .author-badge {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(56, 189, 248, 0.05) 100%);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      border-radius: 9999px;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.15), inset 0 0 10px rgba(6, 182, 212, 0.05);
+      backdrop-filter: blur(8px);
+      transition: var(--transition-smooth);
+    }
+    .author-badge:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 22px rgba(6, 182, 212, 0.35);
+      transform: translateY(-2px);
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulseDot 1.6s infinite ease-in-out;
+    }
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(0.85); opacity: 0.6; box-shadow: 0 0 6px var(--accent); }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px var(--accent); }
+    }
+    .author-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent) !important;
+      letter-spacing: 0.05em;
+    }
+
+
+    /* Glassmorphism Cards */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+      transition: var(--transition-smooth);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(56, 189, 248, 0.25);
+      box-shadow: 0 12px 30px var(--accent-glow);
+    }
+
+    /* Scroll animations */
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .scroll-animate.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Section Styles */
+    section {
+      padding: 80px 0;
+    }
+
+    .section-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-cyan), var(--accent));
+      border-radius: 2px;
+      margin: 12px auto 0 auto;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 50px auto;
+      font-size: 1.1rem;
+    }
+
+    /* 1. Hero Section */
+    .hero-section {
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding-top: 120px;
+    }
+
+    .hero-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent) 80%, var(--primary-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 24px;
+    }
+
+    [data-theme="light"] .hero-title {
+      background: linear-gradient(135deg, #0f172a 40%, var(--accent) 80%, var(--primary-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-primary-custom {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      border: none;
+      color: #ffffff;
+      padding: 12px 30px;
+      border-radius: 30px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px var(--accent-glow);
+      transition: var(--transition-smooth);
+    }
+
+    .btn-primary-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--accent-glow);
+      color: #ffffff;
+    }
+
+    /* 2. Compostion / Composition Cards */
+    .comp-card {
+      text-align: center;
+      padding: 24px;
+      border-radius: 16px;
+      height: 100%;
+    }
+
+    .comp-icon {
+      width: 60px;
+      height: 60px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+
+    /* 3. Program Cards Grid */
+    .prog-card {
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+    }
+
+    .prog-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--card-color, var(--accent));
+    }
+
+    .prog-icon-box {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: var(--card-color, var(--accent));
+      margin-bottom: 15px;
+    }
+
+    /* Details Modal Custom style */
+    .modal-content {
+      background-color: var(--secondary-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+    }
+
+    .modal-header {
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--border-color);
+    }
+
+    /* 4. Interactive Word Mockup */
+    .word-window {
+      background: #f1f5f9;
+      color: #0f172a !important;
+      border-radius: 16px;
+      border: 1px solid #cbd5e1;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .word-header {
+      background: var(--word-color);
+      color: #ffffff;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .word-ribbon {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 8px 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .word-ribbon-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #1e293b !important;
+      font-weight: 600;
+      transition: var(--transition-smooth);
+    }
+
+    .word-ribbon-btn:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+
+    .word-ribbon-btn.active {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+      font-weight: 700;
+    }
+
+    .word-body {
+      padding: 20px;
+      background: #cbd5e1;
+      min-height: 400px;
+      display: flex;
+      justify-content: center;
+      overflow-y: auto;
+    }
+
+    .word-page {
+      background: #ffffff;
+      width: 100%;
+      max-width: 600px;
+      padding: 50px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 4px;
+      min-height: 350px;
+      position: relative;
+      color: #000000 !important;
+    }
+
+    .word-editor-text {
+      outline: none;
+      font-family: 'Times New Roman', serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      text-align: justify;
+      color: #000000 !important;
+    }
+
+    .word-editor-text p {
+      color: #111111 !important;
+      font-size: 0.95rem;
+    }
+
+    .word-editor-text h4 {
+      font-family: 'Times New Roman', serif;
+      font-weight: bold;
+      color: #000000 !important;
+      margin-bottom: 15px;
+    }
+
+    .word-toc {
+      border: 1px dashed var(--word-color);
+      background: #f8fafc;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-family: sans-serif;
+      font-size: 0.9rem;
+      color: #1e293b !important;
+    }
+
+    /* 5. Interactive Excel Mockup */
+    .excel-window {
+      background: #ffffff;
+      color: #0f172a !important;
+      border-radius: 16px;
+      border: 1px solid #cbd5e1;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .excel-header {
+      background: var(--excel-color);
+      color: #ffffff;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .excel-formula-bar {
+      background: #f1f5f9;
+      border-bottom: 1px solid #cbd5e1;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .excel-formula-input {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-family: 'Fira Code', monospace;
+      font-size: 0.85rem;
+      flex-grow: 1;
+      color: #000000 !important;
+    }
+
+    .excel-grid {
+      overflow-x: auto;
+    }
+
+    .excel-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .excel-table th, .excel-table td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 10px;
+      text-align: center;
+      color: #000000 !important;
+    }
+
+    .excel-table th {
+      background: #e2e8f0;
+      font-weight: 600;
+    }
+
+    .excel-table td.label-col {
+      background: #f1f5f9;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .excel-input {
+      width: 80px;
+      border: 1px solid transparent;
+      background: transparent;
+      text-align: center;
+      font-weight: 600;
+      color: #000000 !important;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .excel-input:focus {
+      background: #e0f2fe;
+      border-color: var(--accent);
+    }
+
+    .excel-calc-card {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .excel-calc-card .text-muted {
+      color: #334155 !important;
+      font-weight: 600 !important;
+    }
+
+    .excel-calc-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--excel-color) !important;
+      font-family: 'Fira Code', monospace;
+    }
+
+      font-family: 'Fira Code', monospace;
+    }
+
+    /* 6. Mini Slide Simulator */
+    .ppt-window {
+      background: #1e293b;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .ppt-header {
+      background: var(--pp-color);
+      color: #ffffff;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .ppt-workspace {
+      display: flex;
+      min-height: 380px;
+    }
+
+    .ppt-sidebar {
+      width: 120px;
+      background: rgba(15, 23, 42, 0.4);
+      border-right: 1px solid var(--border-color);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ppt-thumb {
+      aspect-ratio: 16/9;
+      background: var(--secondary-bg);
+      border: 2px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      transition: var(--transition-smooth);
+      padding: 4px;
+      text-align: center;
+    }
+
+    .ppt-thumb.active {
+      border-color: var(--pp-color);
+      color: #ffffff !important;
+      background: var(--pp-color) !important;
+    }
+
+    .ppt-slide-area {
+      flex-grow: 1;
+      background: #ffffff;
+      color: #0f172a !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      position: relative;
+    }
+
+    .ppt-slide-content {
+      width: 100%;
+      max-width: 500px;
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    .ppt-slide-content h3 {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      color: var(--pp-color) !important;
+      margin-bottom: 20px;
+      font-size: 1.6rem;
+    }
+
+    .ppt-slide-content ul {
+      padding-left: 20px;
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #1e293b !important;
+    }
+
+    .ppt-slide-content li {
+      color: #1e293b !important;
+    }
+
+    /* 7. Access Database Schema */
+    .access-window {
+      background: var(--secondary-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .access-header {
+      background: var(--access-color);
+      color: #ffffff;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .db-schema {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 30px;
+      position: relative;
+    }
+
+    .db-table {
+      background: var(--primary-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      width: 250px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transition: var(--transition-smooth);
+      color: var(--text-main) !important;
+    }
+
+    .db-table:hover {
+      transform: translateY(-4px);
+      border-color: var(--access-color);
+    }
+
+    .db-table-title {
+      background: rgba(163, 54, 59, 0.15);
+      border-bottom: 2px solid var(--access-color);
+      color: #ffffff !important;
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .db-fields {
+      padding: 10px 0;
+    }
+
+    .db-field-item {
+      padding: 6px 16px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: flex-start;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      color: var(--text-main) !important;
+    }
+
+    .db-field-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--accent) !important;
+    }
+
+    .db-field-name {
+      font-family: 'Fira Code', monospace;
+      font-weight: 600;
+      color: var(--text-main) !important;
+    }
+
+    .db-field-type {
+      color: var(--text-muted) !important;
+      font-size: 0.75rem;
+    }
+
+    .db-info-panel {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      margin: 0 30px 30px 30px;
+    }
+
+    /* 8. Outlook Email Mockup */
+    .outlook-window {
+      background: #f1f5f9;
+      color: #334155;
+      border-radius: 16px;
+      border: 1px solid #cbd5e1;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .outlook-header {
+      background: var(--outlook-color);
+      color: #ffffff;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .outlook-body {
+      display: grid;
+      grid-template-columns: 200px 300px 1fr;
+      min-height: 400px;
+    }
+
+    .outlook-sidebar {
+      background: #e2e8f0;
+      border-right: 1px solid #cbd5e1;
+      padding: 15px 0;
+    }
+
+    .outlook-folder-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: left;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #475569 !important;
+      cursor: pointer;
+    }
+
+    .outlook-folder-btn.active {
+      background: #cbd5e1;
+      color: var(--outlook-color) !important;
+      font-weight: 700;
+    }
+
+    .outlook-maillist {
+      background: #ffffff;
+      border-right: 1px solid #cbd5e1;
+      overflow-y: auto;
+    }
+
+    .outlook-mail-item {
+      padding: 15px;
+      border-bottom: 1px solid #cbd5e1;
+      cursor: pointer;
+      color: #334155 !important;
+      transition: var(--transition-smooth);
+    }
+
+    .outlook-mail-item:hover {
+      background: #f8fafc;
+    }
+
+    .outlook-mail-item.active {
+      background: #eff6ff;
+      border-left: 4px solid var(--outlook-color);
+      color: #0f172a !important;
+    }
+
+    .mail-sender {
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 2px;
+    }
+
+    .mail-subject {
+      font-size: 0.85rem;
+      color: #1e293b !important;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .mail-preview {
+      font-size: 0.75rem;
+      color: #64748b !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .outlook-reading-pane {
+      background: #ffffff;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      color: #0f172a !important;
+    }
+
+    .mail-details-header {
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .outlook-reading-pane .text-muted {
+      color: #475569 !important;
+    }
+
+    /* 9. Infographics Card */
+    .info-flow-card {
+      border-left: 4px solid var(--accent);
+      padding-left: 20px;
+      margin-bottom: 24px;
+    }
+
+    /* 10. Checklist Checklist */
+    .checklist-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .checklist-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-checkbox.checked {
+      background: var(--success);
+      border-color: var(--success);
+      color: #ffffff;
+    }
+
+    .checklist-text {
+      font-size: 1.05rem;
+      color: var(--text-light);
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-checkbox.checked + .checklist-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* 11. 20-Question Quiz */
+    .quiz-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 40px;
+    }
+
+    .quiz-question-box {
+      margin-bottom: 30px;
+      display: none;
+    }
+
+    .quiz-question-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .quiz-option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      font-size: 1rem;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .quiz-option-btn:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    .quiz-option-btn.correct {
+      background: rgba(16, 185, 129, 0.1) !important;
+      border-color: var(--success) !important;
+      color: var(--success) !important;
+    }
+
+    .quiz-option-btn.incorrect {
+      background: rgba(239, 68, 68, 0.1) !important;
+      border-color: var(--error) !important;
+      color: var(--error) !important;
+    }
+
+    .quiz-nav {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 30px;
+    }
+
+    /* 12. Matching Game (Tap-To-Match) */
+    .match-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    .match-column {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .match-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 16px 20px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+      position: relative;
+    }
+
+    .match-item:hover:not(.matched) {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .match-item.selected {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.15);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .match-item.matched {
+      background: rgba(16, 185, 129, 0.08) !important;
+      border-color: var(--success) !important;
+      color: var(--success) !important;
+      cursor: not-allowed;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      .outlook-body {
+        grid-template-columns: 1fr;
+      }
+      .outlook-sidebar, .outlook-maillist {
+        display: none; /* simple stack for tablet/mobile representation */
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.25rem;
+      }
+      .match-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+    }
+  
+    /* Login Overlay Styling */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    [data-theme="light"] .login-overlay {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white;
+      font-size: 1.7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px var(--primary-cyan-glow);
+    }
+
+    .login-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .login-input-wrapper i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.4) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 50px;
+      padding: 12px 20px 12px 50px;
+      color: var(--text-main) !important;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .login-input {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 15px var(--primary-cyan-glow);
+    }
+
+    .login-error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white !important;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--primary-cyan-glow);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-cyan-glow);
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+  </style>
+  <link rel="stylesheet" href="darslik.css">
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="top-progress-container">
+    <div id="topProgressBar" class="top-progress-bar"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+        <img src="../LOGO.png" alt="Logo" class="logo-img">
+        <span class="logo-text">Axborot texnologiyalari</span>
+      </a>
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <a href="../index.html" class="btn btn-sm btn-outline-light border-0" title="Portalga qaytish">
+          <i class="fa-solid fa-house"></i> <span class="d-none d-sm-inline ms-1">Mundarija</span>
+        </a>
+        <div class="author-badge d-none d-md-flex">
+          <span class="pulse-dot"></span>
+          <span class="author-name">Muallif: {{AUTHOR}}</span>
+        </div>
+                <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- 1. Hero Section -->
+    <section class="hero-section" id="section-1">
+      <div class="row align-items-center">
+        <div class="col-lg-6 mb-5 mb-lg-0 scroll-animate animated">
+          <span class="badge bg-info-subtle text-info mb-3 px-3 py-2 rounded-pill font-weight-bold" style="letter-spacing: 0.05em;">TIBBIYOTDA AKT</span>
+          <h1 class="hero-title">MS Office Dasturlari va Ularning Vazifalari</h1>
+          <p class="lead text-muted mb-4">
+            Ushbu elektron darslik orqali Microsoft Office paketi dasturlari, ularning ishlash mexanizmlari, imkoniyatlari hamda zamonaviy shifoxonalar va tibbiy ilmiy markazlarda qo'llanilishi haqida interaktiv tarzda o'rganasiz.
+          </p>
+          <a href="#section-2" class="btn btn-primary-custom btn-lg">Darsni Boshlash <i class="fa-solid fa-arrow-down ms-2"></i></a>
+        </div>
+        <div class="col-lg-6 scroll-animate animated">
+          <!-- Premium Illustration SVG -->
+          <svg viewBox="0 0 500 400" width="100%" height="auto">
+            <defs>
+              <linearGradient id="svg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#06b6d4" />
+                <stop offset="100%" stop-color="#38bdf8" />
+              </linearGradient>
+              <linearGradient id="violet-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#a855f7" />
+                <stop offset="100%" stop-color="#10b981" />
+              </linearGradient>
+            </defs>
+            <!-- Glowing circles -->
+            <circle cx="250" cy="200" r="140" fill="none" stroke="url(#svg-grad)" stroke-width="2" stroke-dasharray="10 5" opacity="0.6" />
+            <circle cx="250" cy="200" r="170" fill="none" stroke="url(#violet-grad)" stroke-width="1.5" stroke-dasharray="5 15" opacity="0.4" />
+            <!-- Central Document Node -->
+            <rect x="200" y="140" width="100" height="120" rx="15" fill="rgba(30,41,59,0.8)" stroke="url(#svg-grad)" stroke-width="3" />
+            <path d="M 220 175 L 280 175 M 220 200 L 280 200 M 220 225 L 260 225" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+            <!-- Floating Med / Office icons -->
+            <g transform="translate(110, 110)">
+              <circle cx="20" cy="20" r="28" fill="#2b579a" opacity="0.9" />
+              <text x="13" y="27" fill="#ffffff" font-family="'Outfit', sans-serif" font-weight="bold" font-size="20">W</text>
+            </g>
+            <g transform="translate(340, 110)">
+              <circle cx="20" cy="20" r="28" fill="#217346" opacity="0.9" />
+              <text x="14" y="27" fill="#ffffff" font-family="'Outfit', sans-serif" font-weight="bold" font-size="20">X</text>
+            </g>
+            <g transform="translate(340, 240)">
+              <circle cx="20" cy="20" r="28" fill="#b7472a" opacity="0.9" />
+              <text x="14" y="27" fill="#ffffff" font-family="'Outfit', sans-serif" font-weight="bold" font-size="20">P</text>
+            </g>
+            <g transform="translate(110, 240)">
+              <circle cx="20" cy="20" r="28" fill="#a3363b" opacity="0.9" />
+              <text x="14" y="27" fill="#ffffff" font-family="'Outfit', sans-serif" font-weight="bold" font-size="20">A</text>
+            </g>
+            <g transform="translate(225, 40)">
+              <circle cx="25" cy="25" r="25" fill="rgba(6,182,212,0.15)" stroke="url(#svg-grad)" stroke-width="2" />
+              <path d="M 23 15 L 27 15 M 25 13 L 25 17 M 21 21 L 29 21 M 21 25 L 29 25 M 21 29 L 26 29" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Microsoft Office Haqida -->
+    <section id="section-2" class="scroll-animate">
+      <h2 class="section-title">Microsoft Office Paketi Haqida</h2>
+      <p class="section-subtitle">Dasturlar to'plamining shakllanishi, universal imkoniyatlari va shifoxonadagi asosiy o'rni.</p>
+      
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="glass-card h-100">
+            <h3 class="mb-4 text-info"><i class="fa-solid fa-layer-group me-2"></i> Paket nima va uning tarkibi?</h3>
+            <p class="text-light">
+              Microsoft Office — bu matnlar, elektron jadvallar, taqdimotlar va ma'lumotlar bazalarini boshqarish kabi turli xil professional vazifalarni bajarish uchun mo'ljallangan ofis amaliy dasturlar to'plamidir. Dunyo bo'ylab 1.2 milliarddan ortiq foydalanuvchi ushbu paketdan kundalik ishlarida foydalanadi.
+            </p>
+            <p class="text-light">
+              Har bir dastur alohida ma'lumot turlari (matn, son, vizual prezentatsiya) bilan ishlashga ixtisoslashgan bo'lib, ular o'zaro integratsiyani (masalan, Excel jadvalini Word hisobotiga avtomatik bog'lashni) to'liq qo'llab-quvvatlaydi.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="glass-card h-100">
+            <h3 class="mb-4 text-purple" style="color: var(--accent-violet);"><i class="fa-solid fa-stethoscope me-2"></i> Tibbiyotdagi O'rni va Ahamiyati</h3>
+            <p class="text-light">
+              Zamonaviy tibbiyot muassasalarida shifokorlar va ma'muriyat xodimlari katta hajmdagi hujjatlar va statistik ma'lumotlar bilan to'qnashadilar. MS Office quyidagi yo'nalishlarda tibbiyotni avtomatlashtiradi:
+            </p>
+            <ul class="text-muted" style="line-height: 1.8;">
+              <li><strong class="text-light">Anamnez va epikriz:</strong> Kasallik tarixini tezkor shakllantirish (Word).</li>
+              <li><strong class="text-light">Statistika:</strong> Bemorlar diagnostikasi va tahlillarini hisoblash (Excel).</li>
+              <li><strong class="text-light">Klinik hisobotlar:</strong> Tibbiy anjumanlarda ilmiy ma'ruzalar taqdimoti (PowerPoint).</li>
+              <li><strong class="text-light">Baza arxivi:</strong> Klinik dori vositalari yoki shifokorlar jadvallarini saqlash (Access).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MS Office Dasturlari -->
+    <section id="section-3" class="scroll-animate">
+      <h2 class="section-title">Asosiy MS Office Dasturlari</h2>
+      <p class="section-subtitle">Dasturlarning tibbiyot sohasidagi vazifalari bilan batafsil tanishish uchun ularning ustiga bosing.</p>
+
+      <div class="row g-4">
+        
+        <!-- Word Card -->
+        <div class="col-md-4 col-sm-6">
+          <div class="glass-card prog-card" style="--card-color: var(--word-color);" onclick="showAppDetails('word')">
+            <div class="prog-icon-box">
+              <i class="fa-solid fa-file-word"></i>
+            </div>
+            <h4>MS Word</h4>
+            <p class="text-muted">Matnli axborotlarni yaratish, tahrirlash, andozalar yaratish va chop etish muharriri.</p>
+          </div>
+        </div>
+
+        <!-- Excel Card -->
+        <div class="col-md-4 col-sm-6">
+          <div class="glass-card prog-card" style="--card-color: var(--excel-color);" onclick="showAppDetails('excel')">
+            <div class="prog-icon-box">
+              <i class="fa-solid fa-file-excel"></i>
+            </div>
+            <h4>MS Excel</h4>
+            <p class="text-muted">Elektron jadvallar, murakkab matematik-statistik formulalar va diagrammalar tizimi.</p>
+          </div>
+        </div>
+
+        <!-- PowerPoint Card -->
+        <div class="col-md-4 col-sm-6">
+          <div class="glass-card prog-card" style="--card-color: var(--pp-color);" onclick="showAppDetails('ppt')">
+            <div class="prog-icon-box">
+              <i class="fa-solid fa-file-powerpoint"></i>
+            </div>
+            <h4>MS PowerPoint</h4>
+            <p class="text-muted">Prezentatsiyalar, animatsiyalar, multimedia slaydlari va hisobot taqdimotlari.</p>
+          </div>
+        </div>
+
+        <!-- Access Card -->
+        <div class="col-md-4 col-sm-6">
+          <div class="glass-card prog-card" style="--card-color: var(--access-color);" onclick="showAppDetails('access')">
+            <div class="prog-icon-box">
+              <i class="fa-solid fa-database"></i>
+            </div>
+            <h4>MS Access</h4>
+            <p class="text-muted">Ma'lumotlar bazasini loyihalash va tibbiy jadvallarni bog'lash dasturi (MBBT).</p>
+          </div>
+        </div>
+
+        <!-- Outlook Card -->
+        <div class="col-md-4 col-sm-6">
+          <div class="glass-card prog-card" style="--card-color: var(--outlook-color);" onclick="showAppDetails('outlook')">
+            <div class="prog-icon-box">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <h4>MS Outlook</h4>
+            <p class="text-muted">Elektron pochta, kalendar, klinik topshiriqlar va shaxsiy rejalashtirish tashkilotchisi.</p>
+          </div>
+        </div>
+
+        <!-- OneNote Card -->
+        <div class="col-md-4 col-sm-6">
+          <div class="glass-card prog-card" style="--card-color: #80397b;" onclick="showAppDetails('onenote')">
+            <div class="prog-icon-box" style="color: #80397b;">
+              <i class="fa-solid fa-note-sticky"></i>
+            </div>
+            <h4>MS OneNote</h4>
+            <p class="text-muted">Tezkor eslatmalar, tibbiy tezislar va raqamli bloknotlar yuritish tizimi.</p>
+          </div>
+        </div>
+
+        <!-- Publisher Card -->
+        <div class="col-md-4 col-sm-6 mx-auto">
+          <div class="glass-card prog-card" style="--card-color: #077570;" onclick="showAppDetails('publisher')">
+            <div class="prog-icon-box" style="color: #077570;">
+              <i class="fa-solid fa-newspaper"></i>
+            </div>
+            <h4>MS Publisher</h4>
+            <p class="text-muted">Ilmiy bukletlar, salomatlik broshyuralari va nashriyot materiallarini loyihalash.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. Microsoft Word Section -->
+    <section id="section-4" class="scroll-animate">
+      <h2 class="section-title">Microsoft Word</h2>
+      <p class="section-subtitle">Tibbiy hisobotlarni rasmiylashtirish va matn bilan professional ishlash.</p>
+      
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-5">
+          <div class="glass-card mb-4">
+            <h3 class="text-primary mb-3"><i class="fa-solid fa-file-invoice me-2"></i> Asosiy Funksiyalari</h3>
+            <p class="text-light">
+              Tibbiy hujjatlar (kasallik varaqalari, retseptlar, tibbiy bayonnomalar) asosan MS Word yordamida yoziladi. Dastur matnni formatlash, jadvallar yaratish, rasm va sxemalar kiritish imkonini beradi.
+            </p>
+            <p class="text-light">
+              <strong class="text-info">Avtomatik Mundarija:</strong> Hujjatning sarlavhalariga sarlavha uslublarini (Heading Styles) qo'llab, "References" menyusi orqali mundarijani bir soniyada shakllantirish mumkin.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <!-- Interactive Word UI Mockup -->
+          <div class="word-window">
+            <div class="word-header">
+              <span><i class="fa-solid fa-file-word me-2"></i> Bemor_Kasallik_Tarixi.docx - Microsoft Word</span>
+              <div class="d-flex gap-2">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+              </div>
+            </div>
+            <div class="word-ribbon">
+              <button class="word-ribbon-btn active" id="btnBold" onclick="toggleWordFormat('bold')"><i class="fa-solid fa-bold"></i> Qalin</button>
+              <button class="word-ribbon-btn" id="btnItalic" onclick="toggleWordFormat('italic')"><i class="fa-solid fa-italic"></i> Kursiv</button>
+              <button class="word-ribbon-btn" onclick="insertWordTOC()"><i class="fa-solid fa-list-ol"></i> Mundarija kiritish</button>
+              <button class="word-ribbon-btn" onclick="printSimulate()"><i class="fa-solid fa-print"></i> Chop etish</button>
+            </div>
+            <div class="word-body">
+              <div class="word-page">
+                <div id="wordTOCPlace"></div>
+                <div class="word-editor-text" id="wordEditor">
+                  <h4 id="wordH1" class="text-center">BEMOR KASALLIK TARIXI (CARD NO: 405)</h4>
+                  <p><strong>Bemor:</strong> Toshpo'latov Sanjarbek, 1988-yilda tug'ilgan.</p>
+                  <p><strong>Klinik Tashxis:</strong> Gipertoniya II daraja. Surunkali yurak yetishmovchiligi.</p>
+                  <p><strong>Birlamchi Anamnez:</strong> Bemor arterial qon bosimining tez-tez 160/100 mm.sm.ust. gacha ko'tarilishi, ensa sohasidagi og'riq va holsizlikdan shikoyat qilib klinikaga murojaat qilgan. Kasallik so'nggi 2 yildan buyon bezovta qiladi.</p>
+                  <p><strong>Tavsiya etilgan muolajalar:</strong> Ratsional parhez (tuzni cheklash), jismoniy faollikni nazorat qilish va dori-darmon terapiyasi.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Microsoft Excel Section -->
+    <section id="section-5" class="scroll-animate">
+      <h2 class="section-title">Microsoft Excel</h2>
+      <p class="section-subtitle">Tibbiy ma'lumotlarni hisoblash, statistik jadvallar va avtomatlashtirilgan tahlillar.</p>
+      
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-5 order-lg-2">
+          <div class="glass-card mb-4">
+            <h3 class="text-success mb-3"><i class="fa-solid fa-table me-2"></i> Elektron Jadvallar va Formulalar</h3>
+            <p class="text-light">
+              Excel dasturi shifoxonalarda bemorlar to'lovlari, harorat monitoringi, laboratoriya tahlillari va dori qoldiqlarini nazorat qilishda o'ta qulay.
+            </p>
+            <p class="text-light">
+              Jadvaldagi sonli qiymatlarni hisoblash uchun universal formulalar qo'llaniladi. Chapdagi jadvalda bemorlarning yurak urish chastotasi (Pulse) ko'rsatilgan. Qiymatlarni o'zgartiring va Excel qanday avtomatik hisoblashini kuzating!
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-7 order-lg-1">
+          <!-- Interactive Excel Mockup -->
+          <div class="excel-window">
+            <div class="excel-header">
+              <span><i class="fa-solid fa-file-excel me-2"></i> Bemorlar_Monitoringi.xlsx - Microsoft Excel</span>
+              <div class="d-flex gap-2">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+              </div>
+            </div>
+            <div class="excel-formula-bar">
+              <span class="text-muted fw-bold">fx</span>
+              <input type="text" class="excel-formula-input" id="excelFormula" value="=AVERAGE(D2:D6)" readonly>
+            </div>
+            <div class="excel-grid">
+              <table class="excel-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>A (Bemor F.I.O)</th>
+                    <th>B (Sistolik AD)</th>
+                    <th>C (Diastolik AD)</th>
+                    <th>D (Puls / min)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="label-col">2</td>
+                    <td>Karimov A.</td>
+                    <td>120</td>
+                    <td>80</td>
+                    <td><input type="number" class="excel-input" value="72" oninput="recalculateExcel()" id="exP1"></td>
+                  </tr>
+                  <tr>
+                    <td class="label-col">3</td>
+                    <td>Sattorov J.</td>
+                    <td>130</td>
+                    <td>85</td>
+                    <td><input type="number" class="excel-input" value="80" oninput="recalculateExcel()" id="exP2"></td>
+                  </tr>
+                  <tr>
+                    <td class="label-col">4</td>
+                    <td>Alimova N.</td>
+                    <td>115</td>
+                    <td>75</td>
+                    <td><input type="number" class="excel-input" value="68" oninput="recalculateExcel()" id="exP3"></td>
+                  </tr>
+                  <tr>
+                    <td class="label-col">5</td>
+                    <td>Qodirov B.</td>
+                    <td>140</td>
+                    <td>90</td>
+                    <td><input type="number" class="excel-input" value="95" oninput="recalculateExcel()" id="exP4"></td>
+                  </tr>
+                  <tr>
+                    <td class="label-col">6</td>
+                    <td>Valiyeva M.</td>
+                    <td>120</td>
+                    <td>78</td>
+                    <td><input type="number" class="excel-input" value="74" oninput="recalculateExcel()" id="exP5"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Formulas Calculated Automatically -->
+            <div class="row g-3 p-3 bg-light">
+              <div class="col-6 col-sm-3">
+                <div class="excel-calc-card">
+                  <div class="small text-muted">JAMI (SUM)</div>
+                  <div class="excel-calc-val" id="calcSum">389</div>
+                </div>
+              </div>
+              <div class="col-6 col-sm-3">
+                <div class="excel-calc-card">
+                  <div class="small text-muted">O'RTACHA (AVERAGE)</div>
+                  <div class="excel-calc-val" id="calcAverage">77.8</div>
+                </div>
+              </div>
+              <div class="col-6 col-sm-3">
+                <div class="excel-calc-card">
+                  <div class="small text-muted">MAX PULS</div>
+                  <div class="excel-calc-val" id="calcMax">95</div>
+                </div>
+              </div>
+              <div class="col-6 col-sm-3">
+                <div class="excel-calc-card">
+                  <div class="small text-muted">MIN PULS</div>
+                  <div class="excel-calc-val" id="calcMin">68</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Microsoft PowerPoint Section -->
+    <section id="section-6" class="scroll-animate">
+      <h2 class="section-title">Microsoft PowerPoint</h2>
+      <p class="section-subtitle">Tibbiy taqdimotlar tayyorlash, ilmiy konferensiya slaydlari loyihasi.</p>
+
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-5">
+          <div class="glass-card mb-4">
+            <h3 class="text-warning mb-3"><i class="fa-solid fa-film me-2"></i> Taqdimotlar va Dizayn</h3>
+            <p class="text-light">
+              Taqdimot shifokorlar ilmiy faoliyatida, konferensiyalarda va yangi dori-darmonlar ma'ruzasida keng qo'llaniladi. PowerPoint slaydlar yordamida ma'lumotni sodda, chizma va rasmlar orqali yetkazishga yordam beradi.
+            </p>
+            <p class="text-light">
+              O'ngdagi slayd simulyatorida slaydlarni almashtirib, darslik tarkibidagi tibbiy taqdimot slaydlarini amalda ko'rib chiqing.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <!-- Mini Slide Simulator -->
+          <div class="ppt-window">
+            <div class="ppt-header">
+              <span><i class="fa-solid fa-file-powerpoint me-2"></i> Tibbiyotda_AKT.pptx - Microsoft PowerPoint</span>
+              <div class="d-flex gap-2">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+              </div>
+            </div>
+            <div class="ppt-workspace">
+              <!-- Slayd mini ro'yxati -->
+              <div class="ppt-sidebar">
+                <div class="ppt-thumb active" onclick="switchPPTSlide(0)" id="pptThumb0">
+                  Slide 1<br>Kirish
+                </div>
+                <div class="ppt-thumb" onclick="switchPPTSlide(1)" id="pptThumb1">
+                  Slide 2<br>MS Word
+                </div>
+                <div class="ppt-thumb" onclick="switchPPTSlide(2)" id="pptThumb2">
+                  Slide 3<br>MS Excel
+                </div>
+                <div class="ppt-thumb" onclick="switchPPTSlide(3)" id="pptThumb3">
+                  Slide 4<br>MS Access
+                </div>
+              </div>
+              <!-- Slayd ish maydoni -->
+              <div class="ppt-slide-area" id="pptSlideArea">
+                <!-- Slide Content will be dynamically inserted here -->
+                <div class="ppt-slide-content">
+                  <h3>Tibbiyotda AKT va MS Office</h3>
+                  <ul>
+                    <li>Klinik faoliyatni tizimlashtirish.</li>
+                    <li>Elektron sog'liqni saqlash standartlari.</li>
+                    <li>Shifokor va bemor muloqoti integratsiyasi.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="bg-dark p-2 d-flex justify-content-between align-items-center" style="border-top: 1px solid var(--border-color);">
+              <button class="btn btn-sm btn-outline-light" onclick="prevPPTSlide()"><i class="fa-solid fa-chevron-left"></i> Oldingi</button>
+              <span class="text-white small" id="pptSlideNum">Slayd 1 / 4</span>
+              <button class="btn btn-sm btn-outline-light" onclick="nextPPTSlide()">Keyingi <i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Microsoft Access Section -->
+    <section id="section-7" class="scroll-animate">
+      <h2 class="section-title">Microsoft Access</h2>
+      <p class="section-subtitle">Ma'lumotlar bazasini boshqarish tizimlari (MBBT) va klinik jadvallar integratsiyasi.</p>
+
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-5 order-lg-2">
+          <div class="glass-card mb-4">
+            <h3 class="text-danger mb-3"><i class="fa-solid fa-database me-2"></i> Ma'lumotlar Bazasi va Relatsiya</h3>
+            <p class="text-light">
+              Tibbiyot bazalari murakkab bo'lib, ular bir necha o'zaro bog'liq jadvallardan (Bemorlar, Shifokorlar, Tashriflar, Retseptlar) tashkil topadi.
+            </p>
+            <p class="text-light">
+              Access jadvallar o'rtasida munosabatlar (relatsiyalar) o'rnatish imkonini beradi. Sxemadagi jadval ustunlarini bosing va ularning maydon turi (Data Type) haqida batafsil ma'lumotga ega bo'ling.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-7 order-lg-1">
+          <!-- Interactive Access Schema -->
+          <div class="access-window">
+            <div class="access-header">
+              <span><i class="fa-solid fa-database me-2"></i> Shifoxona_Baza.accdb - Microsoft Access</span>
+              <div class="d-flex gap-2">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+              </div>
+            </div>
+            
+            <div class="db-schema">
+              <!-- Table 1: Bemorlar -->
+              <div class="db-table">
+                <div class="db-table-title"><i class="fa-solid fa-user-injured text-danger"></i> Bemorlar (Table)</div>
+                <div class="db-fields">
+                  <div class="db-field-item" onclick="showAccessFieldInfo('BemorID', 'AutoNumber / Birlamchi Kalit (PK). Bemorning tartib raqamini avtomatik ravishda yagona shaklda shakllantiradi.')">
+                    <span class="db-field-name"><i class="fa-solid fa-key text-warning"></i> BemorID</span>
+                    <span class="db-field-type">AutoNumber</span>
+                  </div>
+                  <div class="db-field-item" onclick="showAccessFieldInfo('FIO', 'Short Text. Bemorning ism-familiyasi uchun mo\'ljallangan matn maydoni (maks. 255 ta belgi).')">
+                    <span class="db-field-name">Ism_Familiya</span>
+                    <span class="db-field-type">Short Text</span>
+                  </div>
+                  <div class="db-field-item" onclick="showAccessFieldInfo('TugilganYil', 'Number. Bemorning tug\'ilgan yilini butun son shaklida saqlaydi.')">
+                    <span class="db-field-name">Tugilgan_Yil</span>
+                    <span class="db-field-type">Number</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Table 2: Tashriflar -->
+              <div class="db-table">
+                <div class="db-table-title"><i class="fa-solid fa-notes-medical text-danger"></i> Tashriflar (Table)</div>
+                <div class="db-fields">
+                  <div class="db-field-item" onclick="showAccessFieldInfo('TashrifID', 'AutoNumber / Birlamchi kalit (PK). Har bir vrach ko\'rigi yozuvining unikal indeksi.')">
+                    <span class="db-field-name"><i class="fa-solid fa-key text-warning"></i> TashrifID</span>
+                    <span class="db-field-type">AutoNumber</span>
+                  </div>
+                  <div class="db-field-item" onclick="showAccessFieldInfo('BemorID (FK)', 'Number / Tashqi Kalit (FK). Bemorlar jadvalidagi tegishli bemorni aniqlash uchun foydalaniladi (1:N munosabati).')">
+                    <span class="db-field-name">BemorID</span>
+                    <span class="db-field-type">Number (FK)</span>
+                  </div>
+                  <div class="db-field-item" onclick="showAccessFieldInfo('Tashrif_Sana', 'Date/Time. Shifokor ko\'rigi yoki klinikaga murojaat qilgan vaqt va kunni belgilaydi.')">
+                    <span class="db-field-name">Tashrif_Sana</span>
+                    <span class="db-field-type">Date/Time</span>
+                  </div>
+                  <div class="db-field-item" onclick="showAccessFieldInfo('Tashxis', 'Long Text. Bemorga vrach tomonidan qo\'yilgan klinik tashxis izohi.')">
+                    <span class="db-field-name">Tashxis</span>
+                    <span class="db-field-type">Long Text</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Relational info box -->
+            <div class="db-info-panel" id="dbInfoPanel">
+              <h5 class="text-white mb-2"><i class="fa-solid fa-circle-info text-info me-2"></i> Access Strukturasi tushuntiruvchisi</h5>
+              <p class="text-muted mb-0" id="dbInfoText">
+                Tepadagi jadval maydonlarining birortasini bosing. Ushbu bazada <strong>Bemorlar</strong> va <strong>Tashriflar</strong> jadvallari "BemorID" kaliti orqali <strong>1-ga-ko'p (1:N)</strong> bog'liqlikda ulanadi (ya'ni bitta bemor ko'p marta tashrif buyurishi mumkin).
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Microsoft Outlook Section -->
+    <section id="section-8" class="scroll-animate">
+      <h2 class="section-title">Microsoft Outlook</h2>
+      <p class="section-subtitle">Elektron kommunikatsiya, shifokorlar ish rejasi va shoshilinch klinik bildirishnomalar.</p>
+
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-5">
+          <div class="glass-card mb-4">
+            <h3 class="text-info mb-3"><i class="fa-solid fa-calendar-check me-2"></i> Elektron Pochta va Kalendar</h3>
+            <p class="text-light">
+              Outlook tibbiyot muassasalarida ichki va tashqi elektron yozishmalarni ta'minlaydi. Shuningdek, dori-darmon buyurtmalarini va bemorlarni ro'yxatga olish taqvimini boshqaradi.
+            </p>
+            <p class="text-light">
+              O'ngdagi Outlook pochtasi simulyatorida kelgan xatlarni bosing va o'qing. Shuningdek, vrach javobini simulyatsiya qibly ko'ring.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <!-- Interactive Outlook Window -->
+          <div class="outlook-window">
+            <div class="outlook-header">
+              <span><i class="fa-solid fa-envelope me-2"></i> Inbox - Outlook Web Client</span>
+              <div class="d-flex gap-2">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+              </div>
+            </div>
+            
+            <div class="outlook-body">
+              <!-- Sidebar -->
+              <div class="outlook-sidebar">
+                <button class="outlook-folder-btn active"><i class="fa-solid fa-inbox text-primary"></i> Kiruvchi (3)</button>
+                <button class="outlook-folder-btn"><i class="fa-solid fa-paper-plane"></i> Yuborilgan</button>
+                <button class="outlook-folder-btn"><i class="fa-solid fa-trash-can"></i> O'chirilganlar</button>
+              </div>
+
+              <!-- Mail List -->
+              <div class="outlook-maillist">
+                <div class="outlook-mail-item active" id="mail1" onclick="selectOutlookMail(1)">
+                  <div class="mail-sender">Klinika Bosh Shifokori</div>
+                  <div class="mail-subject">Yig'ilish bayonnomasi</div>
+                  <div class="mail-preview">Hurmatli shifokorlar, dushanba kungi konsilium yig'ilishida barcha shifokorlar ishtirok etishi...</div>
+                </div>
+                <div class="outlook-mail-item" id="mail2" onclick="selectOutlookMail(2)">
+                  <div class="mail-sender">Lab-Express Ekspertiza</div>
+                  <div class="mail-subject">Bemor Qodirov N. tahlillari</div>
+                  <div class="mail-preview">Bemorning MRT va umumiy qon tahlili natijalari tayyorlandi. Iltimos, tekshirib...</div>
+                </div>
+                <div class="outlook-mail-item" id="mail3" onclick="selectOutlookMail(3)">
+                  <div class="mail-sender">SSV Axborot xizmati</div>
+                  <div class="mail-subject">Yangi klinik protokollar</div>
+                  <div class="mail-preview">Yurak qon-tomir kasalliklarini davolash bo'yicha yangi buyruq tasdiqlandi. Ilova qilingan...</div>
+                </div>
+              </div>
+
+              <!-- Reading Pane -->
+              <div class="outlook-reading-pane" id="outlookReadingPane">
+                <div class="mail-details-header">
+                  <h5 class="text-dark fw-bold mb-1" id="readSubject">Yig'ilish bayonnomasi</h5>
+                  <div class="small text-muted mb-2">Kimdan: <span id="readSender">Klinika Bosh Shifokori</span></div>
+                </div>
+                <div class="text-dark mb-4" id="readBody" style="font-size: 0.925rem; line-height: 1.6;">
+                  Hurmatli shifokorlar, dushanba kungi konsilium yig'ilishida barcha kardiologiya va terapiya bo'limi shifokorlari ishtirok etishi so'raladi. Kun tartibida yangi tibbiy formatlarni joriy etish masalalari muhokama qilinadi.
+                </div>
+                <div class="mt-auto">
+                  <textarea class="form-control mb-2" rows="2" placeholder="Shifokor javobini yozing..." id="outlookReplyText"></textarea>
+                  <button class="btn btn-primary btn-sm" onclick="sendOutlookReply()"><i class="fa-solid fa-paper-plane me-2"></i> Javob yuborish</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. Tibbiyotda MS Office Dasturlari (Infographics) -->
+    <section id="section-9" class="scroll-animate">
+      <h2 class="section-title">Tibbiyotda MS Office Dasturlari Amaliyoti</h2>
+      <p class="section-subtitle">Klinika ma'muriy va davolash faoliyatini avtomatlashtirishda har bir dasturning roli.</p>
+
+      <div class="row g-4">
+        <div class="col-lg-3 col-sm-6">
+          <div class="glass-card info-flow-card h-100" style="border-left-color: var(--word-color);">
+            <h4 class="text-white mb-3">MS Word amaliyoti</h4>
+            <p class="text-muted small">
+              Kasallik tarixini (anamnez) yagona standart shablonlar asosida rasmiylashtirish, dori retseptlarini shablonlashtirish, tahlil natijalarining matnli qismini tayyorlash.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="glass-card info-flow-card h-100" style="border-left-color: var(--excel-color);">
+            <h4 class="text-white mb-3">MS Excel amaliyoti</h4>
+            <p class="text-muted small">
+              Klinika moliyaviy-xo'jalik tahlillari, dorilar qoldig'i hisobi, laboratoriya raqamli ko'rsatkichlarini matematik-statistik hisoblash, bemorlar harorati grafigi.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="glass-card info-flow-card h-100" style="border-left-color: var(--pp-color);">
+            <h4 class="text-white mb-3">MS PowerPoint amaliyoti</h4>
+            <p class="text-muted small">
+              Ilmiy tadqiqot natijalarini shifokorlar kengashida vizual himoya qilish, tibbiy ko'rsatmalar taqdimoti, talabalarga klinik darslarni slaydlar orqali tushuntirish.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+          <div class="glass-card info-flow-card h-100" style="border-left-color: var(--access-color);">
+            <h4 class="text-white mb-3">MS Access amaliyoti</h4>
+            <p class="text-muted small">
+              Butun shifoxona ma'lumotlar bazasini (Bemorlar kartotekasi, shifokorlar navbatchilik ro'yxati, palatalar bo'sh o'rinlari) bitta relatsion bazada saqlash.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. Amaliy Mashqlar -->
+    <section id="section-10" class="scroll-animate">
+      <h2 class="section-title">Amaliy Mashqlar va Topshiriqlar</h2>
+      <p class="section-subtitle">O'quv modullarini o'zlashtirish jarayonida talabalar bajarishi lozim bo'lgan vazifalar ro'yxati.</p>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="checklist-container">
+            <h4 class="mb-4 text-white d-flex justify-content-between align-items-center">
+              <span><i class="fa-solid fa-list-check text-info me-2"></i> Mustaqil topshiriqlar</span>
+              <span class="badge bg-info" id="checklistProgressText">0% Bajarildi</span>
+            </h4>
+            
+            <div class="progress mb-4" style="height: 10px;">
+              <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" id="checklistProgressBar" role="progressbar" style="width: 0%"></div>
+            </div>
+
+            <div class="checklist-item">
+              <div class="checklist-checkbox" onclick="toggleChecklistItem(this, 1)"></div>
+              <div class="checklist-text">MS Word dasturida yangi tibbiy blanka hujjati yaratish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" onclick="toggleChecklistItem(this, 2)"></div>
+              <div class="checklist-text">Kasallik tarixi sarlavhasiga "Heading 1" uslubini berish va avtomatik mundarija qo'shish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" onclick="toggleChecklistItem(this, 3)"></div>
+              <div class="checklist-text">MS Excelda 10 nafar bemorning tana harorati jadvalini yaratish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" onclick="toggleChecklistItem(this, 4)"></div>
+              <div class="checklist-text">Excelda AVERAGE funksiyasi yordamida o'rtacha tana haroratini hisoblash</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" onclick="toggleChecklistItem(this, 5)"></div>
+              <div class="checklist-text">PowerPoint dasturida "Yurak qon-tomir kasalliklari profilaktikasi" mavzusida 5 slaydli taqdimot tayyorlash</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" onclick="toggleChecklistItem(this, 6)"></div>
+              <div class="checklist-text">MS Accessda "Bemorlar" va "Tashriflar" jadvallarini o'zaro bog'lash</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. Bilimingizni Sinang (Test) -->
+    <section id="section-11" class="scroll-animate">
+      <h2 class="section-title">Bilimingizni Sinang (Interaktiv Test)</h2>
+      <p class="section-subtitle">Mavzuni o'zlashtirish darajangizni aniqlash uchun 20 ta savoldan iborat testni topshiring.</p>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="quiz-card">
+            
+            <!-- Question boxes will be generated dynamically -->
+            <div id="quizQuestionsContainer"></div>
+
+            <!-- Quiz navigation and progress -->
+            <div class="quiz-nav">
+              <button class="btn btn-outline-light" onclick="prevQuizQuestion()" id="quizPrevBtn"><i class="fa-solid fa-chevron-left me-2"></i> Oldingi</button>
+              <span class="text-muted align-self-center" id="quizProgressLabel">Savol 1 / 20</span>
+              <button class="btn btn-info" onclick="nextQuizQuestion()" id="quizNextBtn">Keyingi <i class="fa-solid fa-chevron-right ms-2"></i></button>
+            </div>
+
+            <!-- Results display (Hidden by default) -->
+            <div id="quizResultBox" class="text-center mt-5" style="display: none;">
+              <h3 class="text-white mb-3"><i class="fa-solid fa-circle-check text-success me-2"></i> Test Yakunlandi!</h3>
+              <p class="lead">Sizning umumiy natijangiz:</p>
+              <div class="display-3 fw-bold text-info mb-3" id="quizScoreText">18 / 20</div>
+              <p class="fs-5 text-muted mb-4" id="quizPercentageText">Foiz ko'rsatkichi: 90%</p>
+              <div class="badge bg-success fs-5 p-3 px-4 rounded-pill" id="quizGradeBadge">Baho: 5 (A'lo)</div>
+              <div class="mt-4">
+                <button class="btn btn-outline-info" onclick="restartQuiz()"><i class="fa-solid fa-rotate-left me-2"></i> Testni qayta boshlash</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. O'yinli Topshiriq (Moslashtirish) -->
+    <section id="section-12" class="scroll-animate">
+      <h2 class="section-title">O'yinli Topshiriq</h2>
+      <p class="section-subtitle">Dasturlar nomini ularning asosiy vazifalari bilan to'g'ri moslashtiring (Tanlash va Ulash).</p>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="glass-card">
+            <h4 class="mb-4 text-white text-center"><i class="fa-solid fa-puzzle-piece text-warning me-2"></i> MS Office Moslashtirish O'yini</h4>
+            
+            <div class="match-container">
+              <!-- Left Column: Programs -->
+              <div class="match-column" id="matchPrograms">
+                <div class="match-item" data-id="word" onclick="selectMatchItem(this, 'left')">Microsoft Word</div>
+                <div class="match-item" data-id="excel" onclick="selectMatchItem(this, 'left')">Microsoft Excel</div>
+                <div class="match-item" data-id="ppt" onclick="selectMatchItem(this, 'left')">Microsoft PowerPoint</div>
+                <div class="match-item" data-id="access" onclick="selectMatchItem(this, 'left')">Microsoft Access</div>
+                <div class="match-item" data-id="outlook" onclick="selectMatchItem(this, 'left')">Microsoft Outlook</div>
+              </div>
+
+              <!-- Right Column: Functions -->
+              <div class="match-column" id="matchFunctions">
+                <div class="match-item" data-match="excel" onclick="selectMatchItem(this, 'right')">Elektron jadval tizimi</div>
+                <div class="match-item" data-match="access" onclick="selectMatchItem(this, 'right')">Ma'lumotlar bazasini boshqarish</div>
+                <div class="match-item" data-match="word" onclick="selectMatchItem(this, 'right')">Matn tahrirlash va formatlash</div>
+                <div class="match-item" data-match="outlook" onclick="selectMatchItem(this, 'right')">Elektron pochta va rejalashtiruvchi</div>
+                <div class="match-item" data-match="ppt" onclick="selectMatchItem(this, 'right')">Multimedia taqdimotlar loyihalash</div>
+              </div>
+            </div>
+
+            <!-- Match Success alert -->
+            <div id="matchSuccessAlert" class="alert alert-success mt-4 text-center" style="display: none;">
+              <i class="fa-solid fa-circle-check me-2"></i> <strong>Barakalla!</strong> Barcha dasturlarni o'z vazifalari bilan muvaffaqiyatli moslashtirdingiz!
+            </div>
+
+            <div class="text-center mt-4">
+              <button class="btn btn-outline-light btn-sm" onclick="resetMatchGame()"><i class="fa-solid fa-rotate-right me-2"></i> Qaytadan boshlash</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. Xulosa -->
+    <section id="section-13" class="scroll-animate">
+      <h2 class="section-title">Yakuniy Xulosa</h2>
+      <p class="section-subtitle">Microsoft Office dasturlarining tibbiyotdagi universal ahamiyati.</p>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="glass-card text-center">
+            <h3 class="mb-4 text-info"><i class="fa-solid fa-graduation-cap me-2"></i> Tibbiyot Kelajagi va Axborot Texnologiyalari</h3>
+            <p class="text-light fs-5" style="line-height: 1.8;">
+              Zamonaviy shifoxonalar va sog'liqni saqlash tizimlarida Microsoft Office paketi shunchaki ofis ishlarini yurituvchi vosita bo'lmay, balki tibbiyotni standartlashtirish va samaradorlikni oshirishning asosiy ustunlaridan biridir. Shifokorlarning ushbu dasturlar bilan erkin ishlashi bemorlarni davolash sifatini oshirishga va vaqtni maksimal tejashga zamin yaratadi.
+            </p>
+            <p class="text-muted">
+              Ushbu darslik tibbiyot va texnika birlashmasining kichik bir namunasi bo'lib, axborot asrida har bir talabaning professional faoliyatida mustahkam poydevor vazifasini o'taydi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Details Modals for Section 3 -->
+  <div class="modal fade" id="appDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-info" id="detailsModalTitle"><i class="fa-solid fa-circle-info me-2"></i> Dastur tafsilotlari</h5>
+          <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="detailsModalBody">
+          <!-- Dynamically populated detail tabs -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Yopish</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer mt-5">
+    <div class="container text-center py-4">
+      <p class="mb-0 text-muted">&copy; 2026. Tibbiyotda Axborot Texnologiyalari Kafedrasi. Barcha huquqlar himoyalangan.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap & Custom JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    /* Theme Toggler */
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      const currentTheme = htmlEl.getAttribute('data-theme');
+      const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      htmlEl.setAttribute('data-theme', targetTheme);
+      localStorage.setItem('darslik-theme', targetTheme);
+      
+      if (targetTheme === 'dark') {
+        themeIcon.className = "fa-solid fa-sun";
+      } else {
+        themeIcon.className = "fa-solid fa-moon";
+      }
+    }
+
+    /* Scroll Progress Bar Mechanism */
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      document.getElementById('topProgressBar').style.width = scrolled + "%";
+    });
+
+    /* Intersection Observer for Scroll Animations */
+    const scrollAnimateElements = document.querySelectorAll('.scroll-animate');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animated');
+        }
+      });
+    }, { threshold: 0.15 });
+
+    scrollAnimateElements.forEach(el => observer.observe(el));
+
+    /* 3. Program Details Data */
+    const appDetails = {
+      word: {
+        title: "Microsoft Word (Matn Muharriri)",
+        task: "Har qanday matnli hujjatlarni yaratish, tahrirlash, andozalarga solish va chop etishga tayyorlash.",
+        features: "Avtomatik mundarijalar, imlo va grammatika tekshiruvi, jadvallar bilan ishlash, snoskalar va adabiyotlar ro'yxatini ulash, o'rnatilgan tibbiy lug'at va makroslar yaratish.",
+        scope: "Ofis ma'muriyati, ilmiy-tadqiqot markazlari, ta'lim muassasalari, nashriyotlar.",
+        medical: "Bemor kasallik tarixi (anamnez), laboratoriya va rentgen tahlillari xulosalarini tayyorlash. Shifoxona standart tibbiy blankalarini andozalash."
+      },
+      excel: {
+        title: "Microsoft Excel (Elektron Jadvallar)",
+        task: "Elektron jadvallar yordamida ma'lumotlarni hisoblash, statistik tahlillar va diagrammalar yaratish.",
+        features: "Formulalar, matematik-moliya funksiyalari (SUM, AVERAGE, MAX, MIN, IF), pivot jadvallar, ma'lumotlarni filtrlash va tartiblash, vizual diagrammalar shakllantirish.",
+        scope: "Moliya va buxgalteriya, statistika bo'limlari, ilmiy laboratoriyalar.",
+        medical: "Bemorlar ma'lumotlarini statistik baholash, dori vositalari zaxirasini nazorat qilish, harorat va qon bosimi grafiklarini yuritish."
+      },
+      ppt: {
+        title: "Microsoft PowerPoint (Taqdimotlar Loyihasi)",
+        task: "Foydalanuvchilarga ma'lumotlarni vizual slaydlar, animatsiyalar va multimedia yordamida taqdim etish.",
+        features: "Slayd dizaynlari, animatsion effektlar va o'tishlar (Transitions), video va audio fayllarni o'rnatish, taqdimotlar namoyishi (Slide Show).",
+        scope: "Marketing va reklama, oliy ta'lim ma'ruzalari, ilmiy anjumanlar.",
+        medical: "Klinik ilmiy-tadqiqot natijalarini shifokorlar yig'ilishida himoya qilish, kardiologik va boshqa tibbiy jarrohlik prezentatsiyalari."
+      },
+      access: {
+        title: "Microsoft Access (Ma'lumotlar Bazasi)",
+        task: "Relatsion ma'lumotlar bazalarini boshqarish va murakkab tibbiy jadvallarni o'zaro bog'lash.",
+        features: "Ma'lumotlar bazasi jadvallarini tuzish, so'rovlar (Queries) yaratish, ma'lumotlar kiritish formalari (Forms), mukammal klinik hisobotlar (Reports).",
+        scope: "Katta axborot tizimlari ma'muriyati, shifoxona ro'yxatga olish bo'limlari.",
+        medical: "Bemorlarning umumiy klinik kartotekasini yaratish, shifokorlar ma'lumotlari va bemor tashriflarini unikal kalitlar yordamida o'zaro bog'lash."
+      },
+      outlook: {
+        title: "Microsoft Outlook (Pochta va Rejalashtiruvchi)",
+        task: "Elektron kommunikatsiya, kontaktlarni boshqarish va klinik rejalar tuzish.",
+        features: "Elektron pochta jo'natish, doimiy kalendar yordamida uchrashuv va navbatchiliklarni rejalashtirish, klinik vazifalarni taqsimlash.",
+        scope: "Korporativ muloqot, barcha turdagi muassasalar.",
+        medical: "Shifoxonalararo rasmiy ma'lumot almashish, tahlil natijalarini boshqa bo'limlarga tezkor yuborish, shifokorlar navbatchilik taqvimini yuritish."
+      },
+      onenote: {
+        title: "Microsoft OneNote (Raqamli Qaydlar)",
+        task: "Tezkor shaxsiy eslatmalar, tibbiy tezislar va tez yordam ko'rsatmalari yozib borish.",
+        features: "Raqamli bloknotlar shaklida sahifalar yaratish, audio yozuvlar qo'shish, rasmlardan matnlarni nusxalash.",
+        scope: "Talabalar ta'limi, shaxsiy rejalashtirish.",
+        medical: "Shifokorning tezkor yozishmalari, dori vositalari ta'siri haqidagi shaxsiy eslatmalari va tezkor kardiologik qoidalar qaydnomasi."
+      },
+      publisher: {
+        title: "Microsoft Publisher (Nashriyot Loyihasi)",
+        task: "Broshyuralar, bukletlar, vizitkalar va boshqa ko'rgazmali nashriyot mahsulotlarini tayyorlash.",
+        features: "Nashriyot andozalari, professional maketlar bilan ishlash, tasvirlar va yozuvlarni aniq joylashtirish tizimi.",
+        scope: "Tashqi aloqalar bo'limlari, reklama agentliklari, tibbiy targ'ibot markazlari.",
+        medical: "Aholi orasida sog'lom turmush tarzini targ'ib qiluvchi bukletlar tayyorlash, tibbiy ko'rgazmalar va e'lonlar maketlarini loyihalash."
+      }
+    };
+
+    function showAppDetails(appKey) {
+      const data = appDetails[appKey];
+      const modalTitle = document.getElementById('detailsModalTitle');
+      const modalBody = document.getElementById('detailsModalBody');
+      
+      modalTitle.innerHTML = `<i class="fa-solid fa-circle-info me-2 text-info"></i> ${data.title}`;
+      
+      modalBody.innerHTML = `
+        <div class="p-3">
+          <p class="fs-5 mb-4"><strong><i class="fa-solid fa-bullseye text-primary me-2"></i> Asosiy Vazifasi:</strong> ${data.task}</p>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="p-3 border border-secondary rounded h-100 bg-dark-subtle">
+                <h6 class="text-info fw-bold"><i class="fa-solid fa-gear me-2"></i> Asosiy Imkoniyatlari</h6>
+                <p class="small text-light mb-0">${data.features}</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 border border-secondary rounded h-100 bg-dark-subtle">
+                <h6 class="text-warning fw-bold"><i class="fa-solid fa-briefcase me-2"></i> Qo'llanilish Sohasi</h6>
+                <p class="small text-light mb-0">${data.scope}</p>
+              </div>
+            </div>
+            <div class="col-12 mt-3">
+              <div class="p-3 border border-info rounded bg-info-subtle text-dark">
+                <h6 class="fw-bold"><i class="fa-solid fa-heart-pulse me-2"></i> Tibbiyotdagi Amaliy Qo'llanilishi</h6>
+                <p class="small mb-0 fw-medium">${data.medical}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const myModal = new bootstrap.Modal(document.getElementById('appDetailsModal'));
+      myModal.show();
+    }
+
+    /* 4. MS Word Mockup Logic */
+    let isBold = false;
+    let isItalic = false;
+
+    function toggleWordFormat(format) {
+      const editor = document.getElementById('wordEditor');
+      const btnB = document.getElementById('btnBold');
+      const btnI = document.getElementById('btnItalic');
+
+      if (format === 'bold') {
+        isBold = !isBold;
+        editor.style.fontWeight = isBold ? 'bold' : 'normal';
+        btnB.classList.toggle('active', isBold);
+      } else if (format === 'italic') {
+        isItalic = !isItalic;
+        editor.style.fontStyle = isItalic ? 'italic' : 'normal';
+        btnI.classList.toggle('active', isItalic);
+      }
+    }
+
+    function insertWordTOC() {
+      const tocPlace = document.getElementById('wordTOCPlace');
+      tocPlace.innerHTML = `
+        <div class="word-toc">
+          <h6 class="fw-bold mb-2 text-primary border-bottom pb-1"><i class="fa-solid fa-list-ol me-2"></i> AVTOMATIK MUNDARIJA</h6>
+          <div class="d-flex justify-content-between">
+            <span>1. Bemor Kasallik Tarixi</span>
+            <span>................................................................</span>
+            <span>1-bet</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span>2. Birlamchi Anamnez</span>
+            <span>................................................................</span>
+            <span>1-bet</span>
+          </div>
+        </div>
+      `;
+      alert("Hujjat sarlavhalari (Heading Styles) asosida avtomatik mundarija qo'shildi!");
+    }
+
+    function printSimulate() {
+      alert("Hujjat chop etishga tayyorlanmoqda. MS Word printer drayverlari yuklandi!");
+    }
+
+    /* 5. MS Excel Mockup Logic */
+    function recalculateExcel() {
+      const p1 = parseFloat(document.getElementById('exP1').value) || 0;
+      const p2 = parseFloat(document.getElementById('exP2').value) || 0;
+      const p3 = parseFloat(document.getElementById('exP3').value) || 0;
+      const p4 = parseFloat(document.getElementById('exP4').value) || 0;
+      const p5 = parseFloat(document.getElementById('exP5').value) || 0;
+
+      const vals = [p1, p2, p3, p4, p5];
+      const sum = vals.reduce((a, b) => a + b, 0);
+      const avg = sum / vals.length;
+      const max = Math.max(...vals);
+      const min = Math.min(...vals);
+
+      document.getElementById('calcSum').innerText = sum.toFixed(0);
+      document.getElementById('calcAverage').innerText = avg.toFixed(1);
+      document.getElementById('calcMax').innerText = max.toFixed(0);
+      document.getElementById('calcMin').innerText = min.toFixed(0);
+    }
+
+    /* 6. MS PowerPoint Slide Simulator Logic */
+    const pptSlides = [
+      {
+        title: "Tibbiyotda AKT va MS Office",
+        bullets: [
+          "Klinik faoliyatni tizimlashtirish.",
+          "Elektron sog'liqni saqlash standartlari.",
+          "Shifokor va bemor muloqoti integratsiyasi."
+        ]
+      },
+      {
+        title: "MS Word: Standart Hujjatlar",
+        bullets: [
+          "Standart bemor epikrizi va anamnezi shakllantirish.",
+          "Tibbiy ilmiy tadqiqotlar va nashriyot ishlari.",
+          "Avtomatik mundarijalar bilan navigatsiya qilish."
+        ]
+      },
+      {
+        title: "MS Excel: Bemorlar Monitoringi",
+        bullets: [
+          "Laboratoriya tahlillarini statistik hisoblash.",
+          "Dori zaxiralari va klinik kassa nazorati.",
+          "Harorat va qon bosimi grafiklarini yuritish."
+        ]
+      },
+      {
+        title: "MS Access: Bemorlar Ma'lumotlar Bazasi",
+        bullets: [
+          "Bemorlarning yagona elektron kartotekasi.",
+          "Jadvallararo bog'liqlik (1:N, N:M).",
+          "Klinik dori va shifokorlar hisobi."
+        ]
+      }
+    ];
+
+    let currentPPTSlide = 0;
+
+    function updatePPTSlide() {
+      const slideArea = document.getElementById('pptSlideArea');
+      const slide = pptSlides[currentPPTSlide];
+      
+      // Update Slide View with animation
+      slideArea.innerHTML = `
+        <div class="ppt-slide-content">
+          <h3>${slide.title}</h3>
+          <ul>
+            ${slide.bullets.map(b => `<li>${b}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+
+      // Update Navigation indicator
+      document.getElementById('pptSlideNum').innerText = `Slayd ${currentPPTSlide + 1} / 4`;
+
+      // Update active thumbnail
+      for (let i = 0; i < 4; i++) {
+        const thumb = document.getElementById(`pptThumb${i}`);
+        if (i === currentPPTSlide) {
+          thumb.classList.add('active');
+        } else {
+          thumb.classList.remove('active');
+        }
+      }
+    }
+
+    function prevPPTSlide() {
+      if (currentPPTSlide > 0) {
+        currentPPTSlide--;
+        updatePPTSlide();
+      }
+    }
+
+    function nextPPTSlide() {
+      if (currentPPTSlide < pptSlides.length - 1) {
+        currentPPTSlide++;
+        updatePPTSlide();
+      }
+    }
+
+    function switchPPTSlide(index) {
+      currentPPTSlide = index;
+      updatePPTSlide();
+    }
+
+    /* 7. MS Access Logic */
+    function showAccessFieldInfo(fieldName, description) {
+      const title = document.getElementById('dbInfoPanel').querySelector('h5');
+      const text = document.getElementById('dbInfoText');
+      
+      title.innerHTML = `<i class="fa-solid fa-key text-warning me-2"></i> Maydon: ${fieldName}`;
+      text.innerText = description;
+    }
+
+    /* 8. MS Outlook Logic */
+    const outlookMails = {
+      1: {
+        subject: "Yig'ilish bayonnomasi",
+        sender: "Klinika Bosh Shifokori",
+        body: "Hurmatli shifokorlar, dushanba kungi konsilium yig'ilishida barcha kardiologiya va terapiya bo'limi shifokorlari ishtirok etishi so'raladi. Kun tartibida yangi tibbiy formatlarni joriy etish masalalari muhokama qilinadi."
+      },
+      2: {
+        subject: "Bemor Qodirov N. tahlillari",
+        sender: "Lab-Express Ekspertiza",
+        body: "Bemor Qodirov N.ning MRT va umumiy qon tahlili natijalari tayyorlandi. Iltimos, tekshirib, kelgusi davolash rejasini shakllantiring. Natijalar klinikaga elektron integratsiya qilindi."
+      },
+      3: {
+        subject: "Yangi klinik protokollar",
+        sender: "SSV Axborot xizmati",
+        body: "Yurak qon-tomir kasalliklarini davolash bo'yicha yangi buyruq tasdiqlandi. Ilova qilingan yangi uslubiy ko'rsatmalarni barcha shifokorlar o'z ishlarida qo'llashlari shart."
+      }
+    };
+
+    function selectOutlookMail(mailId) {
+      // Toggle active states
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById(`mail${i}`).classList.toggle('active', i === mailId);
+      }
+
+      // Update reader
+      const mail = outlookMails[mailId];
+      document.getElementById('readSubject').innerText = mail.subject;
+      document.getElementById('readSender').innerText = mail.sender;
+      document.getElementById('readBody').innerText = mail.body;
+      document.getElementById('outlookReplyText').value = "";
+    }
+
+    function sendOutlookReply() {
+      const reply = document.getElementById('outlookReplyText').value;
+      if (!reply.trim()) {
+        alert("Iltimos, avval javob xatini yozing.");
+        return;
+      }
+      alert("Javob xati jo'natildi! Outlook serverlari xat yuborishni tasdiqladi.");
+      document.getElementById('outlookReplyText').value = "";
+    }
+
+    /* 10. Checklist Checklist Logic */
+    const checkedItems = {};
+
+    function toggleChecklistItem(element, itemId) {
+      if (checkedItems[itemId]) {
+        delete checkedItems[itemId];
+        element.classList.remove('checked');
+        element.innerHTML = "";
+      } else {
+        checkedItems[itemId] = true;
+        element.classList.add('checked');
+        element.innerHTML = '<i class="fa-solid fa-check"></i>';
+      }
+
+      // Recalculate progress
+      const total = 6;
+      const checkedCount = Object.keys(checkedItems).length;
+      const percentage = Math.round((checkedCount / total) * 100);
+
+      document.getElementById('checklistProgressText').innerText = `${percentage}% Bajarildi`;
+      document.getElementById('checklistProgressBar').style.width = `${percentage}%`;
+    }
+
+    /* 11. 20-Question Quiz Logic */
+    const quizQuestions = [
+      {
+        q: "Microsoft Office paketi birinchi marta nechanchi yilda taqdim etilgan?",
+        a: ["1995-yilda", "1989-yilda", "2000-yilda", "2003-yilda"],
+        c: 1
+      },
+      {
+        q: "MS Word matn muharririda matn ostiga avtomatik qizil to'lqinli chiziq chizilishi nimani bildiradi?",
+        a: ["Grammatik xato", "Imlo (orfografik) xatosi", "Stilistik xato", "Formatlash xatosi"],
+        c: 1
+      },
+      {
+        q: "Word dasturida avtomatik mundarija (Table of Contents) yaratish uchun matn sarlavhalariga qaysi uslub (Style) qo'llanilishi shart?",
+        a: ["Normal", "Heading (Заголовок)", "Title", "Subtitle"],
+        c: 1
+      },
+      {
+        q: "Excel jadvalida barcha formulalar qaysi belgi bilan boshlanadi?",
+        a: ["+", "=", "@", "/"],
+        c: 1
+      },
+      {
+        q: "Excelda berilgan oraliqdagi barcha sonlarning o'rtacha qiymatini hisoblovchi funksiya qaysi?",
+        a: ["SUM", "AVERAGE", "COUNT", "MIN"],
+        c: 1
+      },
+      {
+        q: "Excelda =SUM(A1:A3) formulasi nima ishni bajaradi?",
+        a: ["A1 va A3 kataklarining o'rtacha qiymatini topadi", "A1, A2 va A3 kataklari qiymatlarini qo'shadi", "A1 dan A3 gacha bo'lgan kataklar sonini hisoblaydi", "A1 va A3 kataklarini birlashtiradi"],
+        c: 1
+      },
+      {
+        q: "PowerPoint dasturida yangi slayd yaratish uchun qaysi klavishlar kombinatsiyasi ishlatiladi?",
+        a: ["Ctrl + N", "Ctrl + M", "Ctrl + S", "Ctrl + Shift + N"],
+        c: 1
+      },
+      {
+        q: "PowerPoint taqdimotini namoyish qilishni (Slide Show) boshlash uchun qaysi klavish bosiladi?",
+        a: ["F1", "F5", "Esc", "Spacebar"],
+        c: 1
+      },
+      {
+        q: "MS Access nima vazifani bajaradi?",
+        a: ["Matnlar bilan ishlash", "Taqdimotlar yaratish", "Relatsion ma'lumotlar bazasini boshqarish", "Elektron pochtani boshqarish"],
+        c: 2
+      },
+      {
+        q: "Access ma'lumotlar bazasida har bir yozuvni (satrni) yagona tarzda aniqlovchi kalit qanday ataladi?",
+        a: ["Tashqi kalit (Foreign Key)", "Birlamchi kalit (Primary Key)", "Noyob kalit", "Indeks kalit"],
+        c: 1
+      },
+      {
+        q: "Elektron xabarlar almashish, kalendar va shaxsiy topshiriqlarni rejalashtirish uchun mo'ljallangan MS Office dasturi qaysi?",
+        a: ["MS Outlook", "MS Publisher", "MS Access", "MS OneNote"],
+        c: 0
+      },
+      {
+        q: "MS Excelda uchinchi ustun va to'rtinchi satr kesishmasidagi katak manzili qanday bo'ladi?",
+        a: ["4C", "C4", "D3", "3D"],
+        c: 1
+      },
+      {
+        q: "Tibbiyotda bemorlar ma'lumotlar bazasida bemorning tug'ilgan sanasini saqlash uchun MS Accessda qaysi ma'lumot turi tanlanadi?",
+        a: ["Short Text", "Date/Time", "Number", "Memo"],
+        c: 1
+      },
+      {
+        q: "MS Word dasturida hujjatni chop etish oynasini ochish uchun qaysi tezkor klavishlar ishlatiladi?",
+        a: ["Ctrl + P", "Ctrl + C", "Ctrl + Shift + P", "Alt + P"],
+        c: 0
+      },
+      {
+        q: "MS Excelda qator va ustunlarni saralash (Sort) va filtrlash (Filter) amallari qaysi menyuda joylashgan?",
+        a: ["Вставка (Insert)", "Данные (Data)", "Вид (View)", "Рецензирование"],
+        c: 1
+      },
+      {
+        q: "PowerPoint slaydlaridagi matn yoki ob'ektlarga harakatlanish effektlarini berish qaysi menyu orqali amalga oshiriladi?",
+        a: ["Переходы (Transitions)", "Анимация (Animations)", "Дизайн (Design)", "Слайд-шоu"],
+        c: 1
+      },
+      {
+        q: "MS OneNote dasturining asosiy vazifasi nima?",
+        a: ["Elektron blankalar tayyorlash", "Tezkor elektron qaydnomalar va eslatmalar yuritish", "Ma'lumotlar bazasini yaratish", "Buklet va broshyuralar dizayni"],
+        c: 1
+      },
+      {
+        q: "Nashriyot ishlari, vizitkalar, bukletlar va gazeta sahifalarini professional loyihalash uchun qaysi MS Office dasturi ishlatiladi?",
+        a: ["MS Publisher", "MS Access", "MS Word", "MS Outlook"],
+        c: 0
+      },
+      {
+        q: "Tibbiyot muassasalarida shifokorlar va bemorlarning yillik hisobotlarini chiroyli grafik ko'rinishga keltirish uchun Excelning qaysi imkoniyatidan foydalaniladi?",
+        a: ["Diagrammalar (Charts)", "Filtrlash", "Avtomatik mundarija", "Makroslar"],
+        c: 0
+      },
+      {
+        q: "Word dasturida ilmiy ishlarda foydalanilgan adabiyotlar yoki atamalar izohini sahifa ostida ko'rsatish qanday ataladi?",
+        a: ["Mundarija", "Snoska (Footnote)", "Sarlavha (Header)", "Giperhavola"],
+        c: 1
+      }
+    ];
+
+    let currentQuestionIdx = 0;
+    const userQuizAnswers = {};
+
+    function initQuiz() {
+      const container = document.getElementById('quizQuestionsContainer');
+      container.innerHTML = "";
+
+      quizQuestions.forEach((item, idx) => {
+        const qBox = document.createElement('div');
+        qBox.className = `quiz-question-box ${idx === 0 ? 'active' : ''}`;
+        qBox.id = `qBox${idx}`;
+
+        qBox.innerHTML = `
+          <h5 class="text-white mb-4">Savol ${idx + 1}: ${item.q}</h5>
+          <div class="row g-2">
+            ${item.a.map((option, optIdx) => `
+              <div class="col-12">
+                <button class="quiz-option-btn" id="q${idx}opt${optIdx}" onclick="selectQuizOption(${idx}, ${optIdx})">
+                  <span class="badge bg-secondary rounded-circle" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;">${String.fromCharCode(65 + optIdx)}</span>
+                  ${option}
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(qBox);
+      });
+      updateQuizNav();
+    }
+
+    function selectQuizOption(questionIdx, optionIdx) {
+      if (userQuizAnswers[questionIdx] !== undefined) return; // Prevent changing answer after click
+
+      userQuizAnswers[questionIdx] = optionIdx;
+      const question = quizQuestions[questionIdx];
+      const correctOpt = question.c;
+
+      // Highlight selections
+      const optBtn = document.getElementById(`q${questionIdx}opt${optionIdx}`);
+      if (optionIdx === correctOpt) {
+        optBtn.classList.add('correct');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      } else {
+        optBtn.classList.add('incorrect');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-xmark ms-auto"></i>';
+        // highlight correct one
+        const correctBtn = document.getElementById(`q${questionIdx}opt${correctOpt}`);
+        correctBtn.classList.add('correct');
+        correctBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      }
+    }
+
+    function prevQuizQuestion() {
+      if (currentQuestionIdx > 0) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx--;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      }
+    }
+
+    function nextQuizQuestion() {
+      if (currentQuestionIdx < quizQuestions.length - 1) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx++;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      } else {
+        // Evaluate quiz results
+        showQuizResults();
+      }
+    }
+
+    function updateQuizNav() {
+      document.getElementById('quizProgressLabel').innerText = `Savol ${currentQuestionIdx + 1} / 20`;
+      document.getElementById('quizPrevBtn').disabled = (currentQuestionIdx === 0);
+      
+      const nextBtn = document.getElementById('quizNextBtn');
+      if (currentQuestionIdx === quizQuestions.length - 1) {
+        nextBtn.innerHTML = 'Natijani ko\'rish <i class="fa-solid fa-square-poll-vertical ms-2"></i>';
+        nextBtn.className = "btn btn-success";
+      } else {
+        nextBtn.innerHTML = 'Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>';
+        nextBtn.className = "btn btn-info";
+      }
+    }
+
+    function showQuizResults() {
+      // Hide questions and nav
+      document.getElementById('quizQuestionsContainer').style.display = 'none';
+      document.getElementById('quizPrevBtn').style.display = 'none';
+      document.getElementById('quizNextBtn').style.display = 'none';
+      document.getElementById('quizProgressLabel').style.display = 'none';
+
+      // Count scores
+      let score = 0;
+      quizQuestions.forEach((q, idx) => {
+        if (userQuizAnswers[idx] === q.c) {
+          score++;
+        }
+      });
+
+      const percentage = Math.round((score / quizQuestions.length) * 100);
+      let grade = "2 (Qoniqarsiz)";
+      let gradeClass = "bg-danger";
+
+      if (percentage >= 86) {
+        grade = "5 (A'lo)";
+        gradeClass = "bg-success";
+      } else if (percentage >= 71) {
+        grade = "4 (Yaxshi)";
+        gradeClass = "bg-primary";
+      } else if (percentage >= 55) {
+        grade = "3 (Qoniqarli)";
+        gradeClass = "bg-warning text-dark";
+      }
+
+      document.getElementById('quizScoreText').innerText = `${score} / 20`;
+      document.getElementById('quizPercentageText').innerText = `Foiz ko'rsatkichi: ${percentage}%`;
+      
+      const gradeBadge = document.getElementById('quizGradeBadge');
+      gradeBadge.className = `badge ${gradeClass} fs-5 p-3 px-4 rounded-pill`;
+      gradeBadge.innerText = `Baho: ${grade}`;
+
+      document.getElementById('quizResultBox').style.display = 'block';
+    }
+
+    function restartQuiz() {
+      currentQuestionIdx = 0;
+      // Reset answers
+      for (let i = 0; i < quizQuestions.length; i++) {
+        delete userQuizAnswers[i];
+      }
+
+      // Reset visibility
+      document.getElementById('quizQuestionsContainer').style.display = 'block';
+      document.getElementById('quizPrevBtn').style.display = 'inline-block';
+      document.getElementById('quizNextBtn').style.display = 'inline-block';
+      document.getElementById('quizProgressLabel').style.display = 'inline-block';
+      document.getElementById('quizResultBox').style.display = 'none';
+
+      // Re-init
+      initQuiz();
+    }
+
+    /* 12. MS Office Matching Game Logic */
+    let selectedLeftId = null;
+    let selectedRightMatch = null;
+    let matchCount = 0;
+
+    function selectMatchItem(element, column) {
+      if (element.classList.contains('matched')) return;
+
+      if (column === 'left') {
+        // Reset previous selections in left column
+        const items = document.getElementById('matchPrograms').querySelectorAll('.match-item');
+        items.forEach(i => i.classList.remove('selected'));
+        
+        element.classList.add('selected');
+        selectedLeftId = element.getAttribute('data-id');
+      } else {
+        // Reset previous selections in right column
+        const items = document.getElementById('matchFunctions').querySelectorAll('.match-item');
+        items.forEach(i => i.classList.remove('selected'));
+
+        element.classList.add('selected');
+        selectedRightMatch = element.getAttribute('data-match');
+      }
+
+      // Check Match
+      if (selectedLeftId && selectedRightMatch) {
+        if (selectedLeftId === selectedRightMatch) {
+          // Correct Match
+          const leftEl = document.querySelector(`#matchPrograms [data-id="${selectedLeftId}"]`);
+          const rightEl = document.querySelector(`#matchFunctions [data-match="${selectedRightMatch}"]`);
+
+          leftEl.classList.remove('selected');
+          leftEl.classList.add('matched');
+          leftEl.innerHTML += ' <i class="fa-solid fa-circle-check ms-2"></i>';
+
+          rightEl.classList.remove('selected');
+          rightEl.classList.add('matched');
+          rightEl.innerHTML += ' <i class="fa-solid fa-circle-check ms-2"></i>';
+
+          matchCount++;
+          if (matchCount === 5) {
+            document.getElementById('matchSuccessAlert').style.display = 'block';
+          }
+        } else {
+          // Incorrect Match - Reset Selection with red flash
+          const leftEl = document.querySelector(`#matchPrograms [data-id="${selectedLeftId}"]`);
+          const rightEl = document.querySelector(`#matchFunctions [data-match="${selectedRightMatch}"]`);
+
+          leftEl.classList.add('btn-danger', 'text-white');
+          rightEl.classList.add('btn-danger', 'text-white');
+
+          setTimeout(() => {
+            leftEl.classList.remove('selected', 'btn-danger', 'text-white');
+            rightEl.classList.remove('selected', 'btn-danger', 'text-white');
+          }, 600);
+        }
+
+        // Reset tracking keys
+        selectedLeftId = null;
+        selectedRightMatch = null;
+      }
+    }
+
+    function resetMatchGame() {
+      matchCount = 0;
+      selectedLeftId = null;
+      selectedRightMatch = null;
+      document.getElementById('matchSuccessAlert').style.display = 'none';
+
+      // Re-render items
+      const leftItems = document.getElementById('matchPrograms').querySelectorAll('.match-item');
+      leftItems.forEach(i => {
+        i.className = 'match-item';
+        i.innerHTML = i.innerText.replace('✓', ''); // clear icons
+      });
+
+      const rightItems = document.getElementById('matchFunctions').querySelectorAll('.match-item');
+      rightItems.forEach(i => {
+        i.className = 'match-item';
+        i.innerHTML = i.innerText.replace('✓', '');
+      });
+      shuffleNodes('matchFunctions');
+    }
+
+    // Utility to shuffle match options
+    function shuffleNodes(parentId) {
+      const parent = document.getElementById(parentId);
+      const items = Array.from(parent.children);
+      items.sort(() => Math.random() - 0.5);
+      parent.innerHTML = "";
+      items.forEach(i => parent.appendChild(i));
+    }
+
+    /* Initialize Everything */
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = 'dark'; localStorage.setItem('darslik-theme', 'dark');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      const themeIcon = document.getElementById('themeIcon');
+      if (themeIcon) {
+        themeIcon.className = savedTheme === 'dark' ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      }
+      initQuiz();
+      shuffleNodes('matchFunctions');
+    });
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.href = '../index.html';
+    }
+
+        function applyAuthorName() {
+      const loginName = localStorage.getItem('darslik_login') || 'Napasov';
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      applyAuthorName();
+    });
+  </script>
+
+</body>
+</html>

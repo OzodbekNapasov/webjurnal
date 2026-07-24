@@ -261,7 +261,19 @@ export default async function HomePage({ searchParams }: PageProps) {
                             <span className="whitespace-nowrap">Dars Jadvali</span>
                         </Link>
 
-                        {/* Item 4: Sozlamalar */}
+                        {/* Item 4: Darsliklar */}
+                        <Link
+                            href="/darsliklar/index.html"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent active:scale-[0.98] shrink-0"
+                            title="Elektron interaktiv darsliklar portali"
+                        >
+                            <BookOpen className="w-4 h-4 text-cyan-300 shrink-0" />
+                            <span className="whitespace-nowrap">Darsliklar</span>
+                        </Link>
+
+                        {/* Item 5: Sozlamalar */}
                         <Link
                             href="/settings"
                             className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent active:scale-[0.98] shrink-0"

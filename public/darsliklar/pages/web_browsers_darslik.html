@@ -1,0 +1,2874 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <script>
+    // Immediate login check before rendering
+    const savedLogin = localStorage.getItem('darslik_login');
+    if (savedLogin !== 'Napasov' && savedLogin !== 'Umirov') {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../LOGO.png">
+  <title>Elektron Darslik: Web brauzerlar bilan ishlash</title>
+  
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Google Fonts: Poppins (headings), Montserrat (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0f172a;           /* Dark Slate */
+      --secondary-bg: #1e293b;         /* Slate 800 */
+      --text-main: #f8fafc;            /* Off-white */
+      --text-muted: #94a3b8;           /* Muted Slate */
+      --text-light: #cbd5e1;           /* Light Slate */
+      --card-bg: rgba(30, 41, 59, 0.7);/* Glassmorphism */
+      --border-color: rgba(255, 255, 255, 0.08);
+      --accent: #06b6d4;               /* Cyan */
+      --accent-glow: rgba(6, 182, 212, 0.35);
+      --secondary-accent: #10b981;      /* Emerald */
+      --secondary-accent-glow: rgba(16, 185, 129, 0.25);
+      --success: #10b981;
+      --error: #ef4444;
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;           /* Light Slate */
+      --secondary-bg: #ffffff;         /* White */
+      --text-main: #0f172a;            /* Dark Slate */
+      --text-muted: #475569;           /* Slate 600 */
+      --text-light: #1e293b;           /* Slate 800 */
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --border-color: rgba(15, 23, 42, 0.08);
+      --accent: #0891b2;               /* Deep Cyan */
+      --accent-glow: rgba(8, 145, 178, 0.15);
+      --secondary-accent: #059669;      /* Deep Emerald */
+      --secondary-accent-glow: rgba(5, 150, 105, 0.10);
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: 'Montserrat', sans-serif;
+      transition: var(--transition-smooth);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-top: 56px;
+    }
+
+    p {
+      font-size: 1.02rem;
+      line-height: 1.7;
+    }
+
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    .text-light {
+      color: var(--text-light) !important;
+    }
+    .text-accent {
+      color: var(--accent) !important;
+    }
+    .text-emerald {
+      color: var(--secondary-accent) !important;
+    }
+
+    /* bg-dark override for both dark/light themes to ensure it is always deep blue with white text */
+    .bg-dark {
+      background-color: #162545 !important;
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    .bg-dark * {
+      color: #ffffff !important;
+    }
+    .bg-dark .text-muted {
+      color: #94a3b8 !important;
+    }
+
+    /* bg-secondary-subtle override */
+    .bg-secondary-subtle {
+      background-color: #1a2e5c !important; /* Premium deep blue */
+      color: #ffffff !important;
+      border: 1px solid var(--border-color) !important;
+    }
+    .bg-secondary-subtle * {
+      color: #ffffff !important;
+    }
+    .bg-secondary-subtle .text-muted {
+      color: #94a3b8 !important;
+    }
+
+    [data-theme="light"] .bg-secondary-subtle {
+      background-color: #ebf5ff !important; /* Soft light blue */
+      color: var(--text-main) !important;
+      border: 1px solid var(--border-color) !important;
+    }
+    [data-theme="light"] .bg-secondary-subtle * {
+      color: var(--text-main) !important;
+    }
+    [data-theme="light"] .bg-secondary-subtle .text-muted {
+      color: var(--text-muted) !important;
+    }
+
+    /* Top Progress Bar */
+    .top-progress-container {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 1050;
+    }
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--secondary-accent));
+      transition: width 0.1s;
+    }
+
+    /* Navigation Bar */
+    .navbar {
+      background: rgba(15, 23, 42, 0.8) !important;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 1090;
+    }
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.8) !important;
+    }
+    .navbar-brand {
+      font-weight: 800;
+      color: var(--text-main) !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--secondary-accent) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+    .logo-img {
+      height: 32px;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-img {
+      transform: scale(1.08);
+    }
+
+    .author-badge {
+      font-size: 0.75rem;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid var(--accent);
+      padding: 4px 10px;
+      border-radius: 20px;
+      color: var(--accent) !important;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.6s infinite alternate;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.4; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Theme toggle switch */
+    .theme-toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .theme-switch-bg {
+      width: 44px;
+      height: 24px;
+      background-color: #334155;
+      border-radius: 12px;
+      position: relative;
+      transition: var(--transition-smooth);
+    }
+    .theme-switch-handle {
+      width: 18px;
+      height: 18px;
+      background-color: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      color: #000;
+    }
+    [data-theme="light"] .theme-switch-bg {
+      background-color: var(--accent);
+    }
+    [data-theme="light"] .theme-switch-handle {
+      left: 23px;
+      color: #059669;
+    }
+
+    /* Floating Collapsible Sidebar */
+    .sidebar-toggle-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 15px var(--accent-glow);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .sidebar-toggle-btn:hover {
+      transform: scale(1.1);
+    }
+    
+    .nav-sidebar {
+      position: fixed;
+      top: 60px;
+      left: -280px;
+      width: 280px;
+      height: calc(100vh - 60px);
+      background-color: var(--secondary-bg);
+      border-right: 1px solid var(--border-color);
+      transition: left 0.3s ease;
+      z-index: 1040;
+      overflow-y: auto;
+      padding: 20px 10px;
+      box-shadow: var(--shadow);
+    }
+    .nav-sidebar.open {
+      left: 0;
+    }
+    .nav-sidebar-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      padding: 0 15px 15px 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .nav-sidebar-list {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0 0 0;
+    }
+    .nav-sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 15px;
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      transition: var(--transition-smooth);
+    }
+    .nav-sidebar-link:hover, .nav-sidebar-link.active {
+      background-color: var(--accent-glow);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    [data-theme="light"] .nav-sidebar-link.active {
+      background-color: var(--accent);
+      color: white;
+    }
+
+    /* Page Layout */
+    .main-container {
+      margin-left: 0;
+      transition: margin-left 0.3s ease;
+      padding: 40px 15px;
+      max-width: 1280px; /* Widescreen Widen container */
+    }
+    .main-container.sidebar-open {
+      margin-left: 280px;
+    }
+
+    /* Hero Section Specifics */
+    .hero-box {
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 50px 30px;
+      background: linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(16,185,129,0.03) 100%);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 50px;
+    }
+    .hero-glow-blob {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: var(--accent);
+      filter: blur(120px);
+      opacity: 0.12;
+      top: -50px;
+      right: -50px;
+      pointer-events: none;
+    }
+
+    /* Content Cards */
+    .custom-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: var(--transition-smooth);
+    }
+    .custom-card:hover {
+      border-color: rgba(6, 182, 212, 0.25);
+    }
+    .section-title {
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px dashed var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    /* 3D Flip Cards for Popular Browsers */
+    .browser-card-container {
+      perspective: 1000px;
+      min-height: 250px;
+      cursor: pointer;
+    }
+    .browser-logo {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 1rem;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+    }
+    .browser-card-container:hover .browser-logo {
+      transform: scale(1.1);
+    }
+    .browser-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .browser-card-container.flipped .browser-card-inner {
+      transform: rotateY(180deg);
+    }
+    .browser-card-front, .browser-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      padding: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 250px;
+    }
+    .browser-card-front {
+      background-color: var(--secondary-bg);
+      color: var(--text-main);
+    }
+    .browser-card-back {
+      background-color: #0c1524;
+      color: #ffffff !important;
+      transform: rotateY(180deg);
+      align-items: flex-start;
+      text-align: left;
+    }
+    .browser-card-back * {
+      color: #ffffff !important;
+    }
+
+    /* Timeline styling */
+    .timeline-container {
+      position: relative;
+      padding-left: 30px;
+      margin: 20px 0;
+    }
+    .timeline-container::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background-color: var(--border-color);
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 25px;
+      cursor: pointer;
+    }
+    .timeline-badge {
+      position: absolute;
+      left: -30px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: var(--secondary-bg);
+      border: 3px solid var(--accent);
+      transition: var(--transition-smooth);
+      z-index: 2;
+    }
+    .timeline-item:hover .timeline-badge,
+    .timeline-item.active .timeline-badge {
+      background-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+      transform: scale(1.2);
+    }
+    .timeline-card {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 15px 20px;
+      transition: var(--transition-smooth);
+    }
+    .timeline-item:hover .timeline-card {
+      border-color: var(--accent);
+      background-color: rgba(6, 182, 212, 0.03);
+    }
+    .timeline-item.active .timeline-card {
+      border-color: var(--secondary-accent);
+      background-color: rgba(16, 185, 129, 0.05);
+    }
+    .timeline-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-out;
+    }
+    .timeline-item.active .timeline-detail {
+      max-height: 250px;
+    }
+
+    /* URL Analysis component */
+    .url-analysis-box {
+      border: 1px solid var(--border-color);
+      background-color: rgba(0,0,0,0.15);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .url-segment {
+      display: inline-block;
+      padding: 4px 8px;
+      margin: 2px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .url-segment:hover {
+      transform: translateY(-2px);
+    }
+    .seg-protocol { background-color: rgba(6, 182, 212, 0.2); color: #06b6d4; border: 1px solid #06b6d4; }
+    .seg-domain { background-color: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+    .seg-path { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+
+    /* Interactive Mock Browser Header for Layout Explanation */
+    .mock-browser-chrome {
+      border: 1px solid var(--border-color);
+      background: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .chrome-header {
+      background: #0f172a;
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .chrome-tab-row {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+    .chrome-tab-item {
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      padding: 4px 12px;
+      font-size: 0.75rem;
+      border-radius: 6px 6px 0 0;
+      border-bottom: none;
+      cursor: pointer;
+      max-width: 150px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .chrome-tab-item.active {
+      background: #0f172a;
+      font-weight: bold;
+      border-bottom: 2px solid var(--accent);
+    }
+    .chrome-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .chrome-address-bar {
+      flex-grow: 1;
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 4px 15px;
+      font-size: 0.8rem;
+      color: var(--text-light);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .chrome-btn {
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .chrome-btn:hover {
+      color: var(--accent);
+    }
+    .chrome-tooltip-box {
+      background: rgba(0,0,0,0.3);
+      border: 1px dashed var(--accent);
+      border-radius: 12px;
+      padding: 15px;
+      min-height: 80px;
+    }
+
+    /* Real Interactive Browser Simulator */
+    .real-simulator-container {
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      background-color: var(--secondary-bg);
+      display: flex;
+      flex-direction: column;
+      min-height: 500px;
+    }
+    .sim-header {
+      background-color: #0f172a;
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 15px;
+    }
+    .sim-tab-bar {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 8px;
+      overflow-x: auto;
+    }
+    .sim-tab {
+      background-color: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      padding: 6px 12px;
+      border-radius: 8px 8px 0 0;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      min-width: 120px;
+      justify-content: flex-start;
+    }
+    .sim-tab.active {
+      background-color: var(--secondary-bg);
+      color: var(--text-main);
+      border-top: 2px solid var(--accent);
+      font-weight: 600;
+    }
+    .sim-tab-close {
+      cursor: pointer;
+      opacity: 0.5;
+      font-size: 0.7rem;
+    }
+    .sim-tab-close:hover {
+      opacity: 1;
+      color: var(--error);
+    }
+    .sim-add-tab-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--text-light);
+      cursor: pointer;
+    }
+    .sim-add-tab-btn:hover {
+      background-color: var(--accent);
+      color: white;
+    }
+    .sim-controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sim-input-box {
+      flex-grow: 1;
+      position: relative;
+    }
+    .sim-url-input {
+      width: 100%;
+      background-color: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 6px 40px 6px 16px;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      outline: none;
+    }
+    .sim-url-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 5px var(--accent-glow);
+    }
+    .sim-star-btn {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+    .sim-star-btn.bookmarked {
+      color: #eab308 !important; /* Gold */
+    }
+    .sim-nav-btn {
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: var(--transition-smooth);
+    }
+    .sim-nav-btn:hover:not(.disabled) {
+      color: var(--accent);
+    }
+    .sim-nav-btn.disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+    
+    /* Simulator Bookmarks bar */
+    .sim-bookmarks-bar {
+      background-color: #162032;
+      border-bottom: 1px solid var(--border-color);
+      padding: 4px 15px;
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      font-size: 0.75rem;
+    }
+    .sim-bookmark-item {
+      color: var(--text-light);
+      text-decoration: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .sim-bookmark-item:hover {
+      color: var(--accent);
+    }
+
+    /* Simulator Content Screen */
+    .sim-screen {
+      flex-grow: 1;
+      background-color: #0f172a;
+      padding: 25px;
+      min-height: 350px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sim-screen-default {
+      margin: auto;
+      text-align: center;
+      max-width: 400px;
+    }
+    .sim-menu-dropdown {
+      position: absolute;
+      right: 15px;
+      top: 95px;
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      z-index: 1080;
+      width: 180px;
+      display: none;
+    }
+    .sim-menu-item {
+      padding: 10px 15px;
+      font-size: 0.8rem;
+      color: var(--text-light);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: var(--transition-smooth);
+    }
+    .sim-menu-item:hover {
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--accent);
+    }
+
+    /* Incognito Mode theme styling */
+    .real-simulator-container.incognito-mode .sim-header {
+      background-color: #111827 !important;
+    }
+    .real-simulator-container.incognito-mode .sim-url-input {
+      background-color: #374151 !important;
+    }
+    .real-simulator-container.incognito-mode .sim-screen {
+      background-color: #1f2937 !important;
+    }
+
+    /* Practical checklist checkbox styles */
+    .task-checkbox-item {
+      border: 1px solid var(--border-color);
+      background-color: rgba(255,255,255,0.01);
+      padding: 12px 18px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .task-checkbox-item:hover {
+      border-color: var(--accent);
+    }
+    .task-checkbox-item.checked {
+      border-color: var(--success);
+      background-color: rgba(16, 185, 129, 0.04);
+    }
+    .task-chk-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+      flex-shrink: 0;
+    }
+    .task-checkbox-item.checked .task-chk-box {
+      border-color: var(--success);
+      background-color: var(--success);
+      color: white;
+    }
+
+    /* Tap-to-match shortcut game styling */
+    .shortcut-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .shortcut-btn {
+      background-color: var(--secondary-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-align: center;
+      width: 100%;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      box-shadow: var(--shadow);
+    }
+    .shortcut-btn:hover {
+      border-color: var(--accent);
+      background-color: var(--accent-glow);
+    }
+    .shortcut-btn.selected {
+      background-color: var(--accent) !important;
+      color: white !important;
+      border-color: var(--accent) !important;
+    }
+    .shortcut-btn.matched {
+      background-color: var(--success) !important;
+      color: white !important;
+      border-color: var(--success) !important;
+      cursor: default;
+      opacity: 0.8;
+    }
+
+    /* Quiz styling */
+    .quiz-option-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-light);
+      padding: 14px 20px;
+      text-align: left;
+      width: 100%;
+      margin-bottom: 12px;
+      transition: var(--transition-smooth);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .quiz-option-btn:hover:not([disabled]) {
+      background: rgba(6, 182, 212, 0.08);
+      border-color: var(--accent);
+      color: var(--text-main);
+      transform: translateX(4px);
+    }
+    .quiz-option-btn.correct {
+      background-color: rgba(16, 185, 129, 0.15) !important;
+      border-color: var(--success) !important;
+      color: #10b981 !important;
+    }
+    .quiz-option-btn.incorrect {
+      background-color: rgba(239, 68, 68, 0.15) !important;
+      border-color: var(--error) !important;
+      color: #ef4444 !important;
+    }
+    
+    [data-theme="light"] .quiz-option-btn.correct,
+    [data-theme="light"] .quiz-option-btn.correct * {
+      color: #10b981 !important;
+      background-color: rgba(16, 185, 129, 0.15) !important;
+    }
+    [data-theme="light"] .quiz-option-btn.incorrect,
+    [data-theme="light"] .quiz-option-btn.incorrect * {
+      color: #ef4444 !important;
+      background-color: rgba(239, 68, 68, 0.15) !important;
+    }
+
+    .quiz-question-box {
+      display: none;
+    }
+    .quiz-question-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @media (max-width: 991.98px) {
+      .main-container.sidebar-open {
+        margin-left: 0;
+      }
+    }
+  
+    /* Login Overlay Styling */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    [data-theme="light"] .login-overlay {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white;
+      font-size: 1.7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px var(--primary-cyan-glow);
+    }
+
+    .login-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .login-input-wrapper i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.4) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 50px;
+      padding: 12px 20px 12px 50px;
+      color: var(--text-main) !important;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .login-input {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 15px var(--primary-cyan-glow);
+    }
+
+    .login-error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white !important;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--primary-cyan-glow);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-cyan-glow);
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+  </style>
+  <link rel="stylesheet" href="darslik.css">
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="top-progress-container">
+    <div class="top-progress-bar" id="scrollProgressBar"></div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid px-3">
+      <a class="navbar-brand animate-brand d-flex align-items-center gap-2" href="../index.html">
+        <img src="../LOGO.png" alt="Logo" class="logo-img">
+        <span class="logo-text d-none d-sm-inline">Axborot Texnologiyalari</span>
+      </a>
+      
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <div class="author-badge">
+          <div class="pulse-dot"></div>
+          <span class="d-none d-md-inline">Tuzuvchi:</span> <strong class="text-white">{{AUTHOR}}</strong>
+        </div>
+        
+                <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        <div class="theme-toggle-container" onclick="toggleTheme()">
+          <i class="fa-solid fa-moon text-muted" id="themeDarkIcon"></i>
+          <div class="theme-switch-bg">
+            <div class="theme-switch-handle" id="themeSwitchHandle">
+              <i class="fa-solid fa-moon" id="handleIcon"></i>
+            </div>
+          </div>
+          <i class="fa-solid fa-sun text-muted" id="themeLightIcon"></i>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Floating Sidebar Toggle Button -->
+  <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Mundarijani ochish">
+    <i class="fa-solid fa-bars" id="sidebarIcon"></i>
+  </button>
+
+  <!-- Sidebar Navigation -->
+  <div class="nav-sidebar" id="sidebarMenu">
+    <div class="nav-sidebar-title">Mundarija</div>
+    <ul class="nav-sidebar-list">
+      <li><a href="#section-1" class="nav-sidebar-link active" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-play"></i> 1. Kirish</a></li>
+      <li><a href="#section-2" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-globe"></i> 2. Web tushunchalari</a></li>
+      <li><a href="#section-3" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-clock-rotate-left"></i> 3. Brauzerlar tarixi</a></li>
+      <li><a href="#section-4" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-star"></i> 4. Mashhur brauzerlar</a></li>
+      <li><a href="#section-5" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-window-restore"></i> 5. Oyna tuzilishi</a></li>
+      <li><a href="#section-6" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-link"></i> 6. URL manzil tahlili</a></li>
+      <li><a href="#section-7" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-route"></i> 7. Saytga kirish</a></li>
+      <li><a href="#section-8" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-magnifying-glass"></i> 8. Qidiruv tizimlari</a></li>
+      <li><a href="#section-9" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-square-plus"></i> 9. Yangi tab (Вкладка)</a></li>
+      <li><a href="#section-10" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-bookmark"></i> 10. Xatcho'plar (Закладки)</a></li>
+      <li><a href="#section-11" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-download"></i> 11. Yuklab olish (Загрузки)</a></li>
+      <li><a href="#section-12" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-history"></i> 12. Brauzer tarixi (История)</a></li>
+      <li><a href="#section-13" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-user-secret"></i> 13. Maxfiy rejim (Инкогнито)</a></li>
+      <li><a href="#section-14" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-shield"></i> 14. Internet xavfsizligi</a></li>
+      <li><a href="#section-15" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-sliders"></i> 15. Sozlamalar (Настройки)</a></li>
+      <li><a href="#section-16" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-user-doctor"></i> 16. Tibbiyotda AKT</a></li>
+      <li><a href="#section-17" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-laptop-code"></i> 17. Brauzer Simulyatori</a></li>
+      <li><a href="#section-18" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-check-square"></i> 18. Amaliy topshiriqlar</a></li>
+      <li><a href="#section-19" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-gamepad"></i> 19. O'yinli topshiriqlar</a></li>
+      <li><a href="#section-20" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-graduation-cap"></i> 20. Bilimingizni sinang</a></li>
+      <li><a href="#section-21" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-award"></i> 21. Xulosa</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content Layout -->
+  <div class="container main-container mx-auto" id="mainContainer">
+    <div class="row justify-content-center">
+      <div class="col-12">
+        
+        <!-- Section 1: Hero & Introduction -->
+        <section id="section-1" class="hero-box">
+          <div class="hero-glow-blob"></div>
+          <div class="row align-items-center">
+            <div class="col-lg-8">
+              <span class="badge bg-info-subtle text-accent px-3 py-2 mb-3 rounded-pill text-uppercase fw-bold"><i class="fa-solid fa-book-open me-2"></i> 13-Modul</span>
+              <h1 class="display-5 fw-extrabold mb-3" style="font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Web brauzerlar bilan ishlash
+              </h1>
+              <p class="lead mb-4 text-light">
+                Internet tarmog'idagi saytlarga kirish, ularda ma'lumotlarni xavfsiz qidirish, elektron sog'liqni saqlash platformalari bilan ishlash va brauzer interfeyslarini boshqarishni professional darajada o'rganing.
+              </p>
+              <a href="#section-2" class="btn btn-info text-white px-4 py-2 rounded-pill fw-bold shadow-sm" style="background-color: var(--accent); border: none;">
+                Darsni Boshlash <i class="fa-solid fa-circle-arrow-down ms-2"></i>
+              </a>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="160" height="160">
+                <circle cx="100" cy="100" r="90" fill="none" stroke="url(#heroGradB)" stroke-width="3" stroke-dasharray="10 5" />
+                <path d="M50,100 C50,72 72,50 100,50 C128,50 150,72 150,100 C150,128 128,150 100,150 C72,150 50,128 50,100 Z" fill="none" stroke="#06b6d4" stroke-width="4" />
+                <path d="M100,50 A50,50 0 0,0 100,150 A50,50 0 0,0 100,50" fill="none" stroke="#10b981" stroke-width="2" />
+                <line x1="50" y1="100" x2="150" y2="100" stroke="#06b6d4" stroke-width="2" />
+                <circle cx="100" cy="100" r="15" fill="#1e293b" stroke="#10b981" stroke-width="3" />
+                <defs>
+                  <linearGradient id="heroGradB" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#06b6d4" />
+                    <stop offset="100%" stop-color="#10b981" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2: Browser Concept -->
+        <section id="section-2" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-globe"></i> 2-Bo'lim. Web brauzer tushunchasi va internet farqi</h2>
+          <p>
+            Kundalik hayotda biz "Internet" va "Brauzer" atamalarini ko'p eshitamiz. Lekin ularning vazifalari butunlay boshqacha:
+          </p>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle">
+                <h5 class="fw-bold text-accent"><i class="fa-solid fa-network-wired me-2"></i> Internet nima?</h5>
+                <p class="small text-muted mb-0">Internet — bu dunyo bo'ylab millionlab kompyuter va serverlarni birlashtirgan ulkan jismoniy tarmoq tizimidir (infratuzilma).</p>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle">
+                <h5 class="fw-bold text-emerald"><i class="fa-solid fa-window-maximize me-2"></i> Web brauzer nima?</h5>
+                <p class="small text-muted mb-0">Brauzer — bu internet tarmog'idagi saytlarga kirish, web-sahifalarni (HTML fayllarni) ochish va ularni ekranda foydalanuvchiga ko'rsatish uchun mo'ljallangan maxsus dasturdir.</p>
+              </div>
+            </div>
+          </div>
+
+          <h5 class="fw-bold text-white mb-3">Asosiy terminlar:</h5>
+          <ul>
+            <li class="mb-2"><strong>Web sahifa (Веб-страница)</strong> — internetdagi matn, rasm va boshqa ma'lumotlarni saqlovchi yagona elektron hujjat.</li>
+            <li class="mb-2"><strong>Web sayt (Веб-сайт)</strong> — umumiy mavzu va manzil ostida birlashgan web sahifalar to'plami (masalan, `dmed.uz`).</li>
+            <li class="mb-2"><strong>URL manzil (URL-адрес)</strong> — har bir sayt yoki faylning internetdagi yagona elektron manzil yo'li.</li>
+            <li class="mb-2"><strong>HTTP / HTTPS (Protokollar)</strong> — kompyuter bilan sayt serveri o'rtasida ma'lumot almashish qoidalari. Oxiridagi "S" harfi (Secure) xavfsiz shifrlangan ulanishni bildiradi.</li>
+          </ul>
+
+          <h5 class="fw-bold text-accent mt-4 mb-2"><i class="fa-solid fa-diagram-project me-2"></i> Interaktiv aloqa sxemasi:</h5>
+          <div class="p-3 rounded bg-dark border border-secondary text-center">
+            <span class="badge bg-secondary p-2 mb-2 text-white">Kompyuter (Siz)</span>
+            <i class="fa-solid fa-arrow-right-long text-accent mx-3 my-2" title="So'rov yuborish (Request)"></i>
+            <span class="badge bg-info p-2 mb-2 text-white">Brauzer</span>
+            <i class="fa-solid fa-arrow-right-long text-emerald mx-3 my-2" title="Internet tarmog'i"></i>
+            <span class="badge bg-secondary p-2 mb-2 text-white">Sayt Serveri</span>
+            <div class="small text-muted mt-2">So'rov yuborish: Brauzer HTTPS protokoli orqali serverga ulanadi va kodlarni vizual sahifaga aylantiradi.</div>
+          </div>
+        </section>
+
+        <!-- Section 3: History Timeline -->
+        <section id="section-3" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> 3-Bo'lim. Web brauzerlar tarixi</h2>
+          <p class="mb-4">
+            Web brauzerlarning taraqqiyot bosqichlari bilan quyidagi timeline (Xronologiya) orqali tanishing. Bosqichlarni bosib tafsilotlarni ko'ring:
+          </p>
+
+          <div class="timeline-container">
+            <!-- 1990 -->
+            <div class="timeline-item active" onclick="selectTimeline(1)" id="time-item-1">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">WorldWideWeb (Birinchi brauzer)</h6>
+                  <span class="badge bg-secondary">1990-yil</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-1" style="max-height: 250px;">
+                  <p class="small text-muted mb-0"><strong>Ishlab chiquvchi:</strong> Tim Berners-Li (Tim Berners-Lee).<br><strong>Imkoniyati:</strong> Faqat matnli va oddiy ko'rinishda bo'lib, keyinchalik loyiha nomi "Nexus" deb o'zgartirilgan.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1994 -->
+            <div class="timeline-item" onclick="selectTimeline(2)" id="time-item-2">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">Netscape Navigator</h6>
+                  <span class="badge bg-secondary">1994-yil</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-2">
+                  <p class="small text-muted mb-0"><strong>Ishlab chiquvchi:</strong> Netscape Communications.<br><strong>Imkoniyati:</strong> O'z davrining eng ommabop grafik brauzeri bo'lib, JavaScript tili ilk bor aynan shu brauzerda yaratilgan.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1995 -->
+            <div class="timeline-item" onclick="selectTimeline(3)" id="time-item-3">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">Internet Explorer (IE)</h6>
+                  <span class="badge bg-secondary">1995-yil</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-3">
+                  <p class="small text-muted mb-0"><strong>Ishlab chiquvchi:</strong> Microsoft.<br><strong>Imkoniyati:</strong> Windows operatsion tizimi bilan birga bepul tarqatilib, bozorning 95% qismini egallagan. 2022-yilda faoliyati rasman tugatilgan.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2004 -->
+            <div class="timeline-item" onclick="selectTimeline(4)" id="time-item-4">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">Mozilla Firefox</h6>
+                  <span class="badge bg-secondary">2004-yil</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-4">
+                  <p class="small text-muted mb-0"><strong>Ishlab chiquvchi:</strong> Mozilla Foundation.<br><strong>Imkoniyati:</strong> Ochiq kodli (open-source) va shaxsiy ma'lumotlar xavfsizligiga e'tibor qaratgan, Netscape vorisi hisoblanadi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2008 -->
+            <div class="timeline-item" onclick="selectTimeline(5)" id="time-item-5">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">Google Chrome</h6>
+                  <span class="badge bg-secondary">2008-yil</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-5">
+                  <p class="small text-muted mb-0"><strong>Ishlab chiquvchi:</strong> Google.<br><strong>Imkoniyati:</strong> Blink dvigateli asosidagi eng tezkor, sodda va hozirgi kunda dunyoda 65% dan ortiq foydalanuvchiga ega yetakchi brauzer.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2015 -->
+            <div class="timeline-item" onclick="selectTimeline(6)" id="time-item-6">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">Microsoft Edge</h6>
+                  <span class="badge bg-secondary">2015-yil</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-6">
+                  <p class="small text-muted mb-0"><strong>Ishlab chiquvchi:</strong> Microsoft.<br><strong>Imkoniyati:</strong> Internet Explorer o'rniga ishlab chiqilgan, hozirda Chromium asosida ishlaydi, Sun'iy Intellekt (Copilot) bilan integratsiya qilingan.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4: Popular Browsers Cards -->
+        <section id="section-4" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-star"></i> 4-Bo'lim. Eng mashhur zamonaviy brauzerlar</h2>
+          <p class="mb-4">
+            Hozirgi kunda eng ko'p ishlatiladigan brauzerlarning afzalliklari va cheklovlarini solishtiring (Kartalarni bosib ularni aylantiring):
+          </p>
+
+          <div class="row g-4 justify-content-center">
+            <!-- Google Chrome -->
+            <div class="col-lg-4 col-md-6 col-12 browser-card-container" onclick="flipBrowserCard(this)">
+              <div class="browser-card-inner">
+                <div class="browser-card-front">
+                  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/chrome/chrome-original.svg" alt="Google Chrome Logo" class="browser-logo">
+                  <h5 class="fw-bold">Google Chrome</h5>
+                  <span class="badge bg-info mt-2">Bozor ulushi: ~65%</span>
+                </div>
+                <div class="browser-card-back">
+                  <h6 class="fw-bold text-accent mb-2">Chrome tahlili</h6>
+                  <p class="small mb-0">
+                    <strong>Afzalligi:</strong> Juda yuqori tezlik, Google ekotizimi bilan mukammal integratsiya, minglab foydali kengaytmalar.<br>
+                    <strong>Kamchiligi:</strong> Operativ xotirani (RAM) juda ko'p sarflaydi.<br>
+                    <strong>Sohasi:</strong> Barcha platformalar, raqamli tibbiyot portallari va tezkor ish faoliyati.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Firefox -->
+            <div class="col-lg-4 col-md-6 col-12 browser-card-container" onclick="flipBrowserCard(this)">
+              <div class="browser-card-inner">
+                <div class="browser-card-front">
+                  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firefox/firefox-original.svg" alt="Mozilla Firefox Logo" class="browser-logo">
+                  <h5 class="fw-bold">Mozilla Firefox</h5>
+                  <span class="badge bg-info mt-2">Bozor ulushi: ~3%</span>
+                </div>
+                <div class="browser-card-back">
+                  <h6 class="fw-bold text-accent mb-2">Firefox tahlili</h6>
+                  <p class="small mb-0">
+                    <strong>Afzalligi:</strong> Shaxsiy ma'lumotlar xavfsizligini ta'minlash, reklamalarni bloklash, sozlash osonligi.<br>
+                    <strong>Kamchiligi:</strong> Ba'zi saytlar va murakkab web-ilovalar u bilan biroz sekinroq ishlashi mumkin.<br>
+                    <strong>Sohasi:</strong> Maxfiylikni afzal ko'radigan foydalanuvchilar va tibbiyot tadqiqotchilari.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Microsoft Edge -->
+            <div class="col-lg-4 col-md-6 col-12 browser-card-container" onclick="flipBrowserCard(this)">
+              <div class="browser-card-inner">
+                <div class="browser-card-front">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/9/98/Microsoft_Edge_logo_%282019%29.svg" alt="Microsoft Edge Logo" class="browser-logo">
+                  <h5 class="fw-bold">Microsoft Edge</h5>
+                  <span class="badge bg-info mt-2">Bozor ulushi: ~5%</span>
+                </div>
+                <div class="browser-card-back">
+                  <h6 class="fw-bold text-accent mb-2">Edge tahlili</h6>
+                  <p class="small mb-0">
+                    <strong>Afzalligi:</strong> Windows tizimi bilan o'rnatilgan keladi, xotirani Chrome'ga nisbatan kamroq band qiladi, Copilot AI integratsiyasi.<br>
+                    <strong>Kamchiligi:</strong> Keraksiz reklamalar va tez-tez tavsiya etiladigan Microsoft xizmatlari.<br>
+                    <strong>Sohasi:</strong> Windows ofis tizimlari va ta'lim muassasalari.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Safari -->
+            <div class="col-lg-4 col-md-6 col-12 browser-card-container" onclick="flipBrowserCard(this)">
+              <div class="browser-card-inner">
+                <div class="browser-card-front">
+                  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/safari/safari-original.svg" alt="Safari Logo" class="browser-logo">
+                  <h5 class="fw-bold">Safari</h5>
+                  <span class="badge bg-info mt-2">Bozor ulushi: ~18%</span>
+                </div>
+                <div class="browser-card-back">
+                  <h6 class="fw-bold text-accent mb-2">Safari tahlili</h6>
+                  <p class="small mb-0">
+                    <strong>Afzalligi:</strong> Apple qurilmalari (macOS, iOS) uchun to'liq optimallashtirilgan, batareya quvvatini juda tejaydi.<br>
+                    <strong>Kamchiligi:</strong> Faqat Apple qurilmalarida ishlaydi, Windows va Android tizimlari uchun rasmiy versiyasi mavjud emas.<br>
+                    <strong>Sohasi:</strong> Macbook, iMac, iPhone va iPad foydalanuvchilari.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Opera -->
+            <div class="col-lg-4 col-md-6 col-12 browser-card-container" onclick="flipBrowserCard(this)">
+              <div class="browser-card-inner">
+                <div class="browser-card-front">
+                  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/opera/opera-original.svg" alt="Opera Logo" class="browser-logo">
+                  <h5 class="fw-bold">Opera</h5>
+                  <span class="badge bg-info mt-2">Bozor ulushi: ~2%</span>
+                </div>
+                <div class="browser-card-back">
+                  <h6 class="fw-bold text-accent mb-2">Opera tahlili</h6>
+                  <p class="small mb-0">
+                    <strong>Afzalligi:</strong> O'rnatilgan bepul VPN, reklama to'suvchi (Ad Blocker) va yon paneldagi messenjerlar integratsiyasi.<br>
+                    <strong>Kamchiligi:</strong> Ba'zi sahifalar ko'rinishida va yuklanishida kichik xatoliklar bo'lishi mumkin.<br>
+                    <strong>Sohasi:</strong> Maxsus qulayliklar va o'rnatilgan VPN xizmatlarini afzal ko'ruvchilar.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 5: Browser Window Structure -->
+        <section id="section-5" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-window-restore"></i> 5-Bo'lim. Brauzer oynasining tuzilishi (Ruscha)</h2>
+          <p class="mb-4">
+            Kompyuter darslarida ko'p qo'llaniladigan va Windows operatsion tizimining rus tilidagi interfeysi asosida brauzer tugmalari va qismlari bilan tanishing.
+            Elementlar ustiga bosib, ularning tushuntirishini pastki maydonda o'qing:
+          </p>
+
+          <div class="mock-browser-chrome bg-dark mb-3">
+            <div class="chrome-header">
+              <!-- Tabs bar -->
+              <div class="chrome-tab-row">
+                <div class="chrome-tab-item active" onclick="explainChromeElement('Вкладка (Tab)', 'Вкладка - bir vaqtning o\'zida bir nechta saytlarni ochish va ular o\'rtasida o\'tish uchun ishlatiladi.')">
+                  <i class="fa-solid fa-globe me-1 text-accent"></i> Новая вкладка
+                </div>
+                <div class="chrome-tab-item" onclick="explainChromeElement('Закрыть вкладку', 'Vkladkani o\'ng tarafidagi xoch belgisini bosib, uni yopish mumkin.')">
+                  Google <i class="fa-solid fa-times ms-2" style="font-size: 0.65rem;"></i>
+                </div>
+                <div class="chrome-btn ms-2 align-self-center" onclick="explainChromeElement('Новая вкладка (+)', 'Yangi bo\'sh vkladka ochish tugmasi.')">
+                  <i class="fa-solid fa-plus"></i>
+                </div>
+              </div>
+              
+              <!-- Address bar and controls -->
+              <div class="chrome-controls">
+                <div class="chrome-btn" onclick="explainChromeElement('Кнопка Назад', 'Avval kirilgan sahifaga qaytish uchun bosiladi.')">
+                  <i class="fa-solid fa-arrow-left"></i>
+                </div>
+                <div class="chrome-btn" onclick="explainChromeElement('Кнопка Вперёд', 'Orqaga qaytgandan so\'ng, yana keyingi sahifaga o\'tish uchun bosiladi.')">
+                  <i class="fa-solid fa-arrow-right"></i>
+                </div>
+                <div class="chrome-btn" onclick="explainChromeElement('Обновить страницу', 'Sahifani qayta yuklash (F5 yoki Ctrl+R) tugmasi.')">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </div>
+                <div class="chrome-btn" onclick="explainChromeElement('Домашняя страница', 'Foydalanuvchi tomonidan tanlangan boshlang\'ich sahifaga qaytish.')">
+                  <i class="fa-solid fa-house"></i>
+                </div>
+                
+                <div class="chrome-address-bar" onclick="explainChromeElement('Адресная строка', 'Saytning URL manzilini yozadigan maxsus maydon.')">
+                  <span>https://www.google.com</span>
+                  <i class="fa-regular fa-star text-muted"></i>
+                </div>
+
+                <div class="chrome-btn" onclick="explainChromeElement('Меню браузера (Три точки)', 'Tarix, yuklashlar, sozlamalar (Настройки) va shaxsiy ma\'lumotlar panelini ochish tugmasi.')">
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chrome-tooltip-box bg-dark text-light p-3">
+            <h6 class="fw-bold text-accent" id="chromeElTitle">Tugma ustiga bosing</h6>
+            <p class="small mb-0" id="chromeElDesc">Yuqoridagi brauzer elementlarining birortasini tanlasangiz, bu yerda uning batafsil vazifasi va ruscha atamasi chiqadi.</p>
+          </div>
+        </section>
+
+        <!-- Section 6: URL Analysis -->
+        <section id="section-6" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-link"></i> 6-Bo'lim. URL manzil bilan ishlash</h2>
+          <p>
+            <strong>URL (Uniform Resource Locator)</strong> — bu internetdagi ma'lumotning (sahifa, rasm, video) joylashgan joyi va aniq manzilidir. 
+            URL manzilining asosiy qismlarini ranglar orqali ko'rib chiqing (Tugmalarni bosib tekshiring):
+          </p>
+
+          <div class="url-analysis-box text-center mb-4">
+            <span class="url-segment seg-protocol" onclick="explainUrlPart('protocol', 'HTTPS - Protokol. Ma\'lumotlarni server bilan xavfsiz shifrlangan tarzda uzatish qoidasi.')">https://</span>
+            <span class="url-segment seg-domain" onclick="explainUrlPart('domain', 'dmed.uz - Domen. Saytning internetdagi jismoniy nomi yoki manzili.')">www.dmed.uz</span>
+            <span class="url-segment seg-path" onclick="explainUrlPart('path', '/patients/search - Sahifa yo\'li. Domen ichidagi aniq bo\'lim yoki fayl joylashgan joy.')">/patients/search</span>
+          </div>
+
+          <div class="p-3 border border-secondary rounded bg-secondary-subtle" id="urlExplanatonBox">
+            <h6 class="fw-bold text-accent" id="urlPartTitle">Rangli qismlar ustiga bosing</h6>
+            <p class="small mb-0 text-light" id="urlPartDesc">URL manzil qismlarining vazifasini o'rganish uchun yuqoridagi rang-barang bloklar ustiga bosing.</p>
+          </div>
+
+          <h5 class="fw-bold text-white mt-4 mb-2">Eng mashhur saytlar URL misollari:</h5>
+          <ul>
+            <li class="mb-1"><a href="https://www.google.com" target="_blank" class="text-accent text-decoration-none">https://www.google.com</a> — global qidiruv tizimi</li>
+            <li class="mb-1"><a href="https://www.wikipedia.org" target="_blank" class="text-accent text-decoration-none">https://www.wikipedia.org</a> — ochiq ensiklopediya</li>
+            <li class="mb-1"><a href="https://www.uzedu.uz" target="_blank" class="text-accent text-decoration-none">https://www.uzedu.uz</a> — Maktabgacha va maktab ta'limi vazirligi</li>
+          </ul>
+        </section>
+
+        <!-- Section 7: Entering Website -->
+        <section id="section-7" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-route"></i> 7-Bo'lim. Web saytga kirish bosqichlari</h2>
+          <p class="mb-4">
+            Foydalanuvchi saytga kirish uchun quyidagi 3 ta oddiy bosqichni amalga oshirishi lozim. Quyidagi slayder yordamida qadam-baqadam animatsiyani ko'ring:
+          </p>
+
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <div class="list-group">
+                <button type="button" class="list-group-item list-group-item-action active" id="btnStep1" onclick="showWebEnterStep(1)">1. Brauzerni ochish</button>
+                <button type="button" class="list-group-item list-group-item-action" id="btnStep2" onclick="showWebEnterStep(2)">2. URL manzilini yozish</button>
+                <button type="button" class="list-group-item list-group-item-action" id="btnStep3" onclick="showWebEnterStep(3)">3. Enter tugmasini bosish</button>
+              </div>
+            </div>
+            <div class="col-md-8">
+              <div class="p-4 border border-secondary rounded bg-dark text-white text-center" style="min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                <div id="stepImg" class="mb-2"><i class="fa-solid fa-computer-mouse fs-1 text-accent animate-bounce"></i></div>
+                <h5 class="fw-bold text-accent" id="stepTitleText">1. Brauzer dasturini ochish</h5>
+                <p class="small text-muted mb-0" id="stepDescText">Ish stolidagi Google Chrome yoki Microsoft Edge yorlig'ini sichqoncha bilan ikki marta bosib ochamiz.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 8: Search Engines -->
+        <section id="section-8" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-magnifying-glass"></i> 8-Bo'lim. Qidiruv tizimlari</h2>
+          <p>
+            Agar siz kerakli saytning aniq URL manzilini bilmasangiz, qidiruv tizimlaridan foydalanasiz. 
+            Eng ommabop qidiruv tizimlari quyidagilardir:
+          </p>
+          
+          <div class="row g-3 text-center mb-4">
+            <div class="col-md-3 col-6"><div class="p-3 border border-secondary rounded bg-secondary-subtle fw-bold text-warning"><i class="fab fa-google me-2"></i> Google</div></div>
+            <div class="col-md-3 col-6"><div class="p-3 border border-secondary rounded bg-secondary-subtle fw-bold text-info"><i class="fa-solid fa-b me-2"></i> Bing</div></div>
+            <div class="col-md-3 col-6"><div class="p-3 border border-secondary rounded bg-secondary-subtle fw-bold text-danger"><i class="fab fa-yandex me-2"></i> Yandex</div></div>
+            <div class="col-md-3 col-6"><div class="p-3 border border-secondary rounded bg-secondary-subtle fw-bold text-purple"><i class="fab fa-yahoo me-2"></i> Yahoo</div></div>
+          </div>
+
+          <h5 class="fw-bold text-white mb-2">Qidiruv kalit so'zlari (Search Keywords):</h5>
+          <p class="small text-muted">Saytda to'g'ri natijani qidirish uchun aniq so'zlardan foydalaning. Masalan, "klinika" emas, balki "Toshkent kardiologiya klinikasi" yoki "gripp kasalligi davolash bayonnomasi" deb qidirish kerak.</p>
+        </section>
+
+        <!-- Sections 9-13: Basic Functions -->
+        <section id="section-9" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-cubes"></i> 9-13 Bo'limlar. Brauzerning asosiy funksiyalari</h2>
+          <div class="accordion" id="browserFeaturesAccordion">
+            <!-- 9. Tab -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headFeat1">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collFeat1" aria-expanded="true" aria-controls="collFeat1">
+                  <i class="fa-solid fa-square-plus me-2 text-accent"></i> 9. Yangi tab (Вкладка) ochish va yopish
+                </button>
+              </h2>
+              <div id="collFeat1" class="accordion-collapse collapse show" aria-labelledby="headFeat1" data-bs-parent="#browserFeaturesAccordion">
+                <div class="accordion-body">
+                  <p><strong>Vkladka (Tab)</strong> — bitta brauzer oynasining o'zida har xil saytlarni ochish paneli.</p>
+                  <ul>
+                    <li>Klaviaturada <strong>Ctrl + T</strong> hotkeyni bosib, yangi tab ochish mumkin.</li>
+                    <li>Tabni yopish uchun uning o'ng tarafidagi xochni yoki <strong>Ctrl + W</strong> tugmalarini bosasiz.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 10. Bookmark -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headFeat2">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collFeat2" aria-expanded="false" aria-controls="collFeat2">
+                  <i class="fa-solid fa-bookmark me-2 text-accent"></i> 10. Xatcho'plar (Закладки)
+                </button>
+              </h2>
+              <div id="collFeat2" class="accordion-collapse collapse" aria-labelledby="headFeat2" data-bs-parent="#browserFeaturesAccordion">
+                <div class="accordion-body">
+                  <p><strong>Xatcho'p (Bookmark)</strong> — tez-tez ishlatiladigan saytlarni keyinchalik tez ochish uchun saqlab qo'yish tizimi.</p>
+                  <ul>
+                    <li>Saytni saqlash uchun manzil panelidagi yulduzcha <i class="fa-regular fa-star text-warning"></i> belgisini yoki <strong>Ctrl + D</strong> tugmalarini bosasiz.</li>
+                    <li>Saqlangan saytlar brauzerning yuqori qismidagi maxsus panelda paydo bo'ladi.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 11. Downloads -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headFeat3">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collFeat3" aria-expanded="false" aria-controls="collFeat3">
+                  <i class="fa-solid fa-download me-2 text-accent"></i> 11. Fayllarni yuklab olish (Загрузки)
+                </button>
+              </h2>
+              <div id="collFeat3" class="accordion-collapse collapse" aria-labelledby="headFeat3" data-bs-parent="#browserFeaturesAccordion">
+                <div class="accordion-body">
+                  <p>Internetdagi kitob, hujjat (PDF) yoki rasmlarni kompyuter xotirasiga o'tkazish yuklab olish deyiladi.</p>
+                  <ul>
+                    <li>Yuklab olingan barcha fayllar Windows tizimidagi maxsus **"Загрузки" (Downloads)** papkasiga tushadi.</li>
+                    <li>Yuklangan fayllarni ko'rish uchun <strong>Ctrl + J</strong> tugmalari bosiladi.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 12. History -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headFeat4">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collFeat4" aria-expanded="false" aria-controls="collFeat4">
+                  <i class="fa-solid fa-history me-2 text-accent"></i> 12. Brauzer tarixi (История)
+                </button>
+              </h2>
+              <div id="collFeat4" class="accordion-collapse collapse" aria-labelledby="headFeat4" data-bs-parent="#browserFeaturesAccordion">
+                <div class="accordion-body">
+                  <p>Brauzer siz kirgan barcha saytlar ro'yxatini xotirasida saqlab boradi.</p>
+                  <ul>
+                    <li>Tarixni ko'rish uchun menyudan kirish yoki <strong>Ctrl + H</strong> tugmalarini bosish kerak.</li>
+                    <li>Xavfsizlik maqsadida tarixni tozalash funksiyasi (*Очистить историю*) ham mavjud.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- 13. Incognito -->
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headFeat5">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collFeat5" aria-expanded="false" aria-controls="collFeat5">
+                  <i class="fa-solid fa-user-secret me-2 text-accent"></i> 13. Maxfiy rejim (Инкогнито)
+                </button>
+              </h2>
+              <div id="collFeat5" class="accordion-collapse collapse" aria-labelledby="headFeat5" data-bs-parent="#browserFeaturesAccordion">
+                <div class="accordion-body">
+                  <p><strong>Incognito (Private Mode)</strong> — bu rejim yoqilganda brauzer siz kirgan saytlar manzilini, kiritgan parollaringizni va qidiruvlaringizni tarixda saqlab qolmaydi.</p>
+                  <ul>
+                    <li>Kompyuterni o'chirganingizda ushbu sessiya ma'lumotlari o'chadi.</li>
+                    <li>Bu rejim internet provayderingiz yoki sayt ma'murlaridan sizni butunlay yashirmaydi, faqat kompyuter ichida tarix qolishini cheklaydi.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Sections 14-16: Security, Settings and Medical Use -->
+        <section id="section-14" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-shield"></i> 14-16 Bo'limlar. Xavfsizlik, Sozlamalar va Tibbiyotda AKT</h2>
+          <p>
+            AKT fanining tibbiyot mutaxassislari uchun eng muhim darslaridan biri bu xavfsiz ishlashdir:
+          </p>
+
+          <h5 class="fw-bold text-accent mb-2"><i class="fa-solid fa-user-shield me-2"></i> 14. Internet xavfsizligi qoidalari</h5>
+          <ul>
+            <li class="mb-1"><strong>Phishing (Fishinq)</strong> — soxta havola va saytlar yaratib, shifokor yoki bemorning shaxsiy ma'lumotlarini o'g'irlash harakati.</li>
+            <li class="mb-1">Tibbiy tizimlarga kirishda faqat **HTTPS** protokoli yozilgan manzillardan foydalaning va parollarni hech kimga aytmang.</li>
+          </ul>
+
+          <h5 class="fw-bold text-accent mt-4 mb-2"><i class="fa-solid fa-sliders me-2"></i> 15. Brauzer sozlamalari (Настройки)</h5>
+          <p class="small text-muted">Sozlamalar orqali brauzer tilini o'zgartirish, kesh va Cookies fayllarini tozalash (kompyuter yuklanishini tezlatish uchun) hamda fayllar yuklanadigan papkani belgilash mumkin.</p>
+
+          <h5 class="fw-bold text-emerald mt-4 mb-2"><i class="fa-solid fa-user-doctor me-2"></i> 16. Tibbiyotda web brauzerlar roli</h5>
+          <p class="small text-muted">Zamonaviy shifokor internet brauzer orqali PubMed tizimidan ilmiy maqolalarni qidiradi, elektron sog'liqni saqlash platformalariga (masalan, DMED) bemor kasallik varaqalarini kiritadi va onlayn konsiliumlarda qatnashadi.</p>
+        </section>
+
+        <!-- Section 17: Interactive Browser Simulator -->
+        <section id="section-17" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-laptop-code"></i> 17-Bo'lim. Interaktiv brauzer simulyatori</h2>
+          <p class="mb-4">
+            Quyida to'liq ishlaydigan virtual brauzer simulyatori yaratilgan. 
+            Siz URL yozib Enter tugmasini bosishingiz, yangi tablar ochishingiz, saytni bookmark qilishingiz, menyuni bosib Tarix va yuklashlarni ko'rishingiz mumkin:
+          </p>
+
+          <div class="real-simulator-container bg-dark" id="browserSimulator">
+            <!-- Header section of virtual browser -->
+            <div class="sim-header">
+              <div class="sim-tab-bar" id="simTabBar">
+                <!-- Tabs will be rendered here dynamically -->
+              </div>
+              <div class="sim-controls-bar">
+                <i class="fa-solid fa-arrow-left sim-nav-btn disabled" id="simBackBtn" onclick="simGoBack()"></i>
+                <i class="fa-solid fa-arrow-right sim-nav-btn disabled" id="simForwardBtn" onclick="simGoForward()"></i>
+                <i class="fa-solid fa-rotate-right sim-nav-btn" onclick="simRefresh()"></i>
+                <i class="fa-solid fa-house sim-nav-btn" onclick="simGoHome()"></i>
+                
+                <div class="sim-input-box">
+                  <input type="text" id="simUrlField" class="sim-url-input" value="https://google.com" onkeydown="handleSimUrlKeydown(event)">
+                  <i class="fa-regular fa-star sim-star-btn" id="simStarIcon" onclick="toggleSimBookmark()"></i>
+                </div>
+
+                <i class="fa-solid fa-ellipsis-vertical sim-nav-btn" onclick="toggleSimMenu()"></i>
+              </div>
+            </div>
+
+            <!-- Virtual bookmarks bar -->
+            <div class="sim-bookmarks-bar" id="simBookmarksBar">
+              <!-- Bookmarks will render here -->
+            </div>
+
+            <!-- Context menu dropdown -->
+            <div class="sim-menu-dropdown" id="simMenuDropdown">
+              <div class="sim-menu-item" onclick="openSimInternal('history')"><i class="fa-solid fa-history"></i> История (Ctrl+H)</div>
+              <div class="sim-menu-item" onclick="openSimInternal('downloads')"><i class="fa-solid fa-download"></i> Загрузки</div>
+              <div class="sim-menu-item" onclick="openSimInternal('bookmarks')"><i class="fa-solid fa-bookmark"></i> Закладки</div>
+              <div class="sim-menu-item" onclick="toggleSimIncognito()"><i class="fa-solid fa-user-secret"></i> Инкогнито</div>
+              <div class="sim-menu-item" onclick="openSimInternal('settings')"><i class="fa-solid fa-cog"></i> Настройки</div>
+            </div>
+
+            <!-- Simulated web pages screen -->
+            <div class="sim-screen" id="simScreen">
+              <!-- Content loaded dynamically -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 18: Practical Tasks -->
+        <section id="section-18" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-check-square"></i> 18-Bo'lim. Amaliy topshiriqlar checklisti</h2>
+          <p class="mb-4">
+            Yuqoridagi virtual brauzer simulyatoridan foydalanib, quyidagi topshiriqlarni bajaring. Bajarilgan topshiriqlarni belgilang, progress bar o'zgaradi:
+          </p>
+
+          <div class="progress mb-4" style="height: 12px; border-radius: 6px;">
+            <div class="progress-bar bg-success" id="taskProgressBar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+          </div>
+
+          <div id="tasks-checklist-container">
+            <div class="task-checkbox-item" onclick="toggleTaskCheck(1)">
+              <div class="task-chk-box" id="chkBox1"><i class="fa-solid fa-check d-none"></i></div>
+              <span>1. Brauzer simulyatorini oching.</span>
+            </div>
+            <div class="task-checkbox-item" onclick="toggleTaskCheck(2)">
+              <div class="task-chk-box" id="chkBox2"><i class="fa-solid fa-check d-none"></i></div>
+              <span>2. URL manzil maydoniga `https://dmed.uz` deb yozib Enter tugmasini bosing.</span>
+            </div>
+            <div class="task-checkbox-item" onclick="toggleTaskCheck(3)">
+              <div class="task-chk-box" id="chkBox3"><i class="fa-solid fa-check d-none"></i></div>
+              <span>3. Saytni yulduzcha tugmasini bosib xatcho'pga (Закладки) qo'shing.</span>
+            </div>
+            <div class="task-checkbox-item" onclick="toggleTaskCheck(4)">
+              <div class="task-chk-box" id="chkBox4"><i class="fa-solid fa-check d-none"></i></div>
+              <span>4. O'ng tarafdagi menyuni bosib "Закладки" bo'limini ochib tekshiring.</span>
+            </div>
+            <div class="task-checkbox-item" onclick="toggleTaskCheck(5)">
+              <div class="task-chk-box" id="chkBox5"><i class="fa-solid fa-check d-none"></i></div>
+              <span>5. Yangi tab (Vkladka) ochish tugmasini bosing.</span>
+            </div>
+            <div class="task-checkbox-item" onclick="toggleTaskCheck(6)">
+              <div class="task-chk-box" id="chkBox6"><i class="fa-solid fa-check d-none"></i></div>
+              <span>6. Qidiruv tizimida (Google.com) "gripp davolash protokoli" kalit so'zi bilan qidiruv bering.</span>
+            </div>
+            <div class="task-checkbox-item" onclick="toggleTaskCheck(7)">
+              <div class="task-chk-box" id="chkBox7"><i class="fa-solid fa-check d-none"></i></div>
+              <span>7. Brauzer menyusidan "Инкогнито" (Incognito) rejimini yoqib ko'ring.</span>
+            </div>
+            <div class="task-checkbox-item" onclick="toggleTaskCheck(8)">
+              <div class="task-chk-box" id="chkBox8"><i class="fa-solid fa-check d-none"></i></div>
+              <span>8. Brauzer menyusidan "История" (Tarix) bo'limiga kirib kirgan saytlaringizni tekshiring.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 19: Tap-to-Match shortcut game -->
+        <section id="section-19" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-gamepad"></i> 19-Bo'lim. O'yinli topshiriqlar (Hotkey matching)</h2>
+          <p class="mb-4">
+            Klaviaturadagi tezkor tugmalar (Hotkeys) va ularning vazifalari juftliklarini to'g'ri toping. Avval tugmani, keyin mos vazifani bosing:
+          </p>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <h6 class="fw-bold text-accent mb-3 text-center">Tezkor tugmalar:</h6>
+              <div class="shortcut-btn mb-2" id="key-ct" onclick="selectHotkey('Ctrl + T', 'key-ct')">Ctrl + T</div>
+              <div class="shortcut-btn mb-2" id="key-cw" onclick="selectHotkey('Ctrl + W', 'key-cw')">Ctrl + W</div>
+              <div class="shortcut-btn mb-2" id="key-ch" onclick="selectHotkey('Ctrl + H', 'key-ch')">Ctrl + H</div>
+              <div class="shortcut-btn mb-2" id="key-cd" onclick="selectHotkey('Ctrl + D', 'key-cd')">Ctrl + D</div>
+              <div class="shortcut-btn mb-2" id="key-csn" onclick="selectHotkey('Ctrl + Shift + N', 'key-csn')">Ctrl + Shift + N</div>
+            </div>
+            <div class="col-md-6">
+              <h6 class="fw-bold text-emerald mb-3 text-center">Tavsif / Vazifasi:</h6>
+              <div class="shortcut-btn mb-2" id="desc-tab" onclick="selectDescription('Новая вкладка (Yangi tab ochish)', 'desc-tab')">Новая вкладка (Yangi tab ochish)</div>
+              <div class="shortcut-btn mb-2" id="desc-close" onclick="selectDescription('Закрыть вкладку (Tabni yopish)', 'desc-close')">Закрыть вкладку (Tabni yopish)</div>
+              <div class="shortcut-btn mb-2" id="desc-hist" onclick="selectDescription('Открыть историю (Tarixni ochish)', 'desc-hist')">Открыть историю (Tarixni ochish)</div>
+              <div class="shortcut-btn mb-2" id="desc-book" onclick="selectDescription('Добавить в закладки (Xatcho\'pga qo\'shish)', 'desc-book')">Добавить в закладки (Xatcho'pga qo'shish)</div>
+              <div class="shortcut-btn mb-2" id="desc-inc" onclick="selectDescription('Режим инкогнито (Maxfiy rejimni ochish)', 'desc-inc')">Режим инкогнито (Maxfiy rejimni ochish)</div>
+            </div>
+          </div>
+          <div class="text-center mt-3">
+            <button class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="resetHotkeyGame()">O'yinni tozalash</button>
+          </div>
+        </section>
+
+        <!-- Section 20: Quiz (20 Questions) -->
+        <section id="section-20" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-graduation-cap"></i> 20-Bo'lim. Bilimingizni sinang (20 ta Test)</h2>
+          <p class="mb-4">Mavzu yuzasidan 20 ta test savolini yechib, bilimingizni baholang. Test yakunida 5 ballik tizim bo'yicha baholanadi.</p>
+          
+          <div class="p-4 rounded bg-dark border border-secondary" id="quizWrapperBox">
+            <div id="quizQuestionsContainer">
+              <!-- Questions are dynamically inserted here -->
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top border-secondary">
+              <button class="btn btn-secondary" onclick="prevQuizQuestion()" id="quizPrevBtn" disabled>
+                <i class="fa-solid fa-chevron-left me-2"></i> Avvalgisi
+              </button>
+              <span class="fw-bold text-accent" id="quizProgressLabel">Savol 1 / 20</span>
+              <button class="btn btn-info text-white" style="background-color: var(--accent); border:none;" onclick="nextQuizQuestion()" id="quizNextBtn">
+                Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>
+              </button>
+            </div>
+
+            <!-- Result Container (hidden by default) -->
+            <div class="mt-4 p-4 bg-dark border border-secondary rounded text-center d-none" id="quizResultBox">
+              <h3 class="text-white mb-3"><i class="fa-solid fa-circle-check text-success me-2"></i> Test Yakunlandi!</h3>
+              <h4 class="mb-2 text-white">Natija: <span id="quizScoreText" class="text-accent fw-bold">-- / 20</span></h4>
+              <p id="quizPercentageText" class="text-muted">Foiz ko'rsatkichi: --%</p>
+              <div id="quizGradeBadge" class="badge bg-success fs-5 p-3 px-4 rounded-pill mb-3">Baho: --</div>
+              <p class="text-light italic" id="quizGradeText">Tavsiyalar...</p>
+              <div>
+                <button class="btn btn-warning text-white fw-bold px-4" style="background-color: var(--accent); border:none;" onclick="restartQuiz()"><i class="fa-solid fa-arrows-rotate me-2"></i> Qaytadan topshirish</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 21: Conclusion -->
+        <section id="section-21" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-award"></i> 21-Bo'lim. Xulosa</h2>
+          <p>
+            Ushbu 13-modul doirasida siz web-brauzerlarning ishlash prinsiplari, URL manzillari bilan ishlash, qidiruv kalit so'zlaridan to'g'ri foydalanish hamda kompyuterda internet xavfsizligi asoslarini o'rganib chiqdingiz.
+          </p>
+          <p>
+            Tibbiyot va AKT fanining eng hayotiy va amaliy qismlaridan biri bu internetdagi rasmiy tibbiy ma'lumotlar bazalari, elektron klinikalar portali (DMED, EMK) hamda teletibbiyot platformalaridan bexato foydalana olishdir. 
+          </p>
+          <div class="quote-box p-3 border-start border-4 border-success bg-secondary-subtle">
+            <p class="mb-0 text-light fw-bold">
+              Internet va web-brauzerlar — kelajak shifokorining dunyo tibbiyotiga ochilgan eng katta va tezkor raqamli darchasidir. O'qishlaringizda doimo muvaffaqiyatlar yor bo'lsin!
+            </p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container text-center">
+      <p class="footer-text mb-1">&copy; 2026 Axborot Texnologiyalari Elektron Darsliklar Portali. Barcha huquqlar himoyalangan.</p>
+      <p class="footer-text mb-0">
+        Muallif: <a href="https://t.me/Ozodbek_Napasov" target="_blank" class="footer-author text-decoration-none">{{AUTHOR}}</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Theme Manager
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeUI(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeUI(newTheme);
+    }
+
+    function updateThemeUI(theme) {
+      const darkIcon = document.getElementById('themeDarkIcon');
+      const lightIcon = document.getElementById('themeLightIcon');
+      if (theme === 'dark') {
+        darkIcon.classList.add('text-accent');
+        lightIcon.classList.remove('text-accent');
+      } else {
+        darkIcon.classList.remove('text-accent');
+        lightIcon.classList.add('text-accent');
+      }
+    }
+
+    // Sidebar Management
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebarMenu');
+      const main = document.getElementById('mainContainer');
+      const icon = document.getElementById('sidebarIcon');
+      
+      sidebar.classList.toggle('open');
+      main.classList.toggle('sidebar-open');
+
+      if (sidebar.classList.contains('open')) {
+        icon.className = 'fa-solid fa-xmark';
+      } else {
+        icon.className = 'fa-solid fa-bars';
+      }
+    }
+
+    function closeSidebarOnSelect() {
+      if (window.innerWidth < 992) {
+        toggleSidebar();
+      }
+    }
+
+    // Scroll progress bar
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      document.getElementById('scrollProgressBar').style.width = scrollPercent + '%';
+
+      // Update active sidebar link on scroll
+      const sections = document.querySelectorAll('section');
+      const sidebarLinks = document.querySelectorAll('.nav-sidebar-link');
+      
+      let currentSectionId = '';
+      sections.forEach(sec => {
+        const top = sec.offsetTop - 120;
+        if (scrollTop >= top) {
+          currentSectionId = sec.getAttribute('id');
+        }
+      });
+
+      if (currentSectionId) {
+        sidebarLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + currentSectionId) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+
+    // 3-Bo'lim: Timeline Select logic
+    function selectTimeline(step) {
+      const items = document.querySelectorAll('.timeline-item');
+      items.forEach((item, idx) => {
+        item.classList.remove('active');
+        const detail = document.getElementById(`time-detail-${idx+1}`);
+        if (detail) {
+          detail.style.maxHeight = '0px';
+        }
+      });
+
+      const selectedItem = document.getElementById(`time-item-${step}`);
+      selectedItem.classList.add('active');
+      const selectedDetail = document.getElementById(`time-detail-${step}`);
+      selectedDetail.style.maxHeight = '250px';
+    }
+
+    // 4-Bo'lim: Browser Cards Flip
+    function flipBrowserCard(element) {
+      element.classList.toggle('flipped');
+    }
+
+    // 5-Bo'lim: Explain Chrome Element
+    function explainChromeElement(title, desc) {
+      document.getElementById('chromeElTitle').innerText = title;
+      document.getElementById('chromeElDesc').innerText = desc;
+    }
+
+    // 6-Bo'lim: URL Part Analysis
+    function explainUrlPart(part, desc) {
+      const titleEl = document.getElementById('urlPartTitle');
+      const descEl = document.getElementById('urlPartDesc');
+      if (part === 'protocol') {
+        titleEl.innerText = "1. Protokol (HTTPS)";
+      } else if (part === 'domain') {
+        titleEl.innerText = "2. Domen nomi (www.dmed.uz)";
+      } else {
+        titleEl.innerText = "3. Sahifa yo'li (/patients/search)";
+      }
+      descEl.innerText = desc;
+    }
+
+    // 7-Bo'lim: Saytga kirish steps
+    function showWebEnterStep(step) {
+      const imgEl = document.getElementById('stepImg');
+      const titleEl = document.getElementById('stepTitleText');
+      const descEl = document.getElementById('stepDescText');
+      
+      for (let i = 1; i <= 3; i++) {
+        document.getElementById(`btnStep${i}`).classList.remove('active');
+      }
+      document.getElementById(`btnStep${step}`).classList.add('active');
+
+      if (step === 1) {
+        imgEl.innerHTML = '<i class="fa-solid fa-computer-mouse fs-1 text-accent animate-bounce"></i>';
+        titleEl.innerText = "1. Brauzer dasturini ochish";
+        descEl.innerText = "Ish stolidagi Google Chrome yoki Microsoft Edge yorlig'ini sichqoncha bilan ikki marta bosib ochamiz.";
+      } else if (step === 2) {
+        imgEl.innerHTML = '<i class="fa-solid fa-keyboard fs-1 text-accent"></i>';
+        titleEl.innerText = "2. URL manzilini yozish";
+        descEl.innerText = "Oynaning yuqorisidagi manzil paneliga (Адресная строка) kerakli saytning URL manzilini klaviaturadan kiritamiz.";
+      } else {
+        imgEl.innerHTML = '<i class="fa-solid fa-circle-check fs-1 text-emerald animate-pulse"></i>';
+        titleEl.innerText = "3. Enter tugmasini bosish";
+        descEl.innerText = "Klaviaturadan 'Enter' tugmasini bosganimizdan keyin sayt kodi serverdan yuklanib brauzerda ochiladi.";
+      }
+    }
+
+
+    // 17-Bo'lim: Real-time virtual Browser Simulator JS Engine
+    let simTabs = [
+      { id: 1, title: 'Google', url: 'https://google.com', history: ['https://google.com'], historyIdx: 0, bookmarked: false }
+    ];
+    let activeSimTabId = 1;
+    let simHistoryList = ['https://google.com'];
+    let simBookmarksList = [];
+    let simDownloadsList = [];
+    let simIncognitoMode = false;
+
+    function renderSimTabs() {
+      const bar = document.getElementById('simTabBar');
+      bar.innerHTML = "";
+      simTabs.forEach(t => {
+        const tabEl = document.createElement('div');
+        tabEl.className = `sim-tab ${t.id === activeSimTabId ? 'active' : ''}`;
+        tabEl.setAttribute('onclick', `switchSimTab(${t.id})`);
+        tabEl.innerHTML = `
+          <span><i class="fa-solid fa-globe text-accent small"></i> ${t.title}</span>
+          <i class="fa-solid fa-times sim-tab-close" onclick="closeSimTab(${t.id}, event)"></i>
+        `;
+        bar.appendChild(tabEl);
+      });
+      // Add '+' tab button
+      const plusBtn = document.createElement('div');
+      plusBtn.className = "sim-add-tab-btn";
+      plusBtn.innerHTML = '<i class="fa-solid fa-plus"></i>';
+      plusBtn.setAttribute('onclick', 'addSimTab()');
+      bar.appendChild(plusBtn);
+
+      updateSimControls();
+    }
+
+    function switchSimTab(id) {
+      activeSimTabId = id;
+      const tab = simTabs.find(t => t.id === id);
+      document.getElementById('simUrlField').value = tab.url;
+      renderSimTabs();
+      loadSimPage(tab.url);
+    }
+
+    function addSimTab() {
+      const newId = simTabs.length > 0 ? Math.max(...simTabs.map(t => t.id)) + 1 : 1;
+      simTabs.push({
+        id: newId,
+        title: 'Новая вкладка',
+        url: 'https://google.com',
+        history: ['https://google.com'],
+        historyIdx: 0,
+        bookmarked: false
+      });
+      switchSimTab(newId);
+    }
+
+    function closeSimTab(id, e) {
+      e.stopPropagation();
+      if (simTabs.length === 1) {
+        alert("Oxirgi vkladkani yopib bo'lmaydi!");
+        return;
+      }
+      const idx = simTabs.findIndex(t => t.id === id);
+      simTabs.splice(idx, 1);
+      if (activeSimTabId === id) {
+        activeSimTabId = simTabs[simTabs.length - 1].id;
+      }
+      renderSimTabs();
+      switchSimTab(activeSimTabId);
+    }
+
+    function handleSimUrlKeydown(e) {
+      if (e.key === 'Enter') {
+        let urlVal = document.getElementById('simUrlField').value.trim();
+        if (!urlVal.startsWith('http://') && !urlVal.startsWith('https://')) {
+          urlVal = 'https://' + urlVal;
+        }
+        const tab = simTabs.find(t => t.id === activeSimTabId);
+        
+        // Incognito check for history
+        if (!simIncognitoMode) {
+          simHistoryList.push(urlVal);
+        }
+
+        tab.url = urlVal;
+        tab.history = tab.history.slice(0, tab.historyIdx + 1);
+        tab.history.push(urlVal);
+        tab.historyIdx = tab.history.length - 1;
+        
+        // update tab title
+        if (urlVal.includes('google.com')) tab.title = 'Google';
+        else if (urlVal.includes('dmed.uz')) tab.title = 'DMED.uz';
+        else if (urlVal.includes('wikipedia.org')) tab.title = 'Wikipedia';
+        else if (urlVal.includes('pubmed')) tab.title = 'PubMed';
+        else tab.title = 'Сайт';
+
+        renderSimTabs();
+        loadSimPage(urlVal);
+      }
+    }
+
+    function loadSimPage(url) {
+      const screen = document.getElementById('simScreen');
+      const star = document.getElementById('simStarIcon');
+      
+      const tab = simTabs.find(t => t.id === activeSimTabId);
+      star.className = tab.bookmarked ? "fa-solid fa-star sim-star-btn bookmarked" : "fa-regular fa-star sim-star-btn";
+
+      if (url.includes('google.com')) {
+        screen.innerHTML = `
+          <div class="text-center my-auto">
+            <h1 class="display-4 fw-bold mb-4" style="font-family:'Poppins', sans-serif;"><span style="color:#4285F4">G</span><span style="color:#EA4335">o</span><span style="color:#FBBC05">o</span><span style="color:#4285F4">g</span><span style="color:#34A853">l</span><span style="color:#EA4335">e</span></h1>
+            <div class="row">
+              <div class="col-md-8 offset-md-2">
+                <div class="input-group mb-3 shadow-sm rounded-pill overflow-hidden border border-secondary">
+                  <input type="text" id="googleSearchField" class="form-control bg-dark border-0 text-white text-center py-2" placeholder="Google orqali izlang...">
+                  <button class="btn btn-info px-4" onclick="executeGoogleSearch()"><i class="fa-solid fa-search"></i></button>
+                </div>
+                <div class="small text-muted">Tavsiya kalit so'zlar: 'gripp', 'dmed', 'tibbiyot'</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (url.includes('dmed.uz') || url.includes('med.uz')) {
+        screen.innerHTML = `
+          <div class="text-white">
+            <div class="d-flex justify-content-between align-items-center border-bottom border-secondary pb-2 mb-3">
+              <h5 class="fw-bold text-accent"><i class="fa-solid fa-hospital-user"></i> DMED Elektron Sog'liqni Saqlash Tizimi</h5>
+              <span class="badge bg-success">Faol Shifokor: Dr. Ozodbek</span>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-8">
+                <div class="p-3 rounded bg-dark border border-secondary mb-3">
+                  <h6 class="fw-bold text-white mb-2"><i class="fa-solid fa-list"></i> Navbatdagi Bemorlar:</h6>
+                  <table class="table table-dark table-striped table-sm text-start" style="font-size:0.8rem;">
+                    <thead>
+                      <tr><th>F.I.Sh.</th><th>Tashxis</th><th>Vaqt</th><th>Amal</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>Napasov O.N.</td><td>Surunkali bronxit</td><td>11:00</td><td><button class="btn btn-xs btn-outline-info py-0" style="font-size:0.7rem;" onclick="simDownloadPdf('napasov_tashxis.pdf')">PDF Retsept</button></td></tr>
+                      <tr><td>Karimov A.B.</td><td>Gipertoniya II daraja</td><td>11:30</td><td><button class="btn btn-xs btn-outline-info py-0" style="font-size:0.7rem;" onclick="simDownloadPdf('karimov_retsept.pdf')">PDF Retsept</button></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="p-3 rounded bg-dark border border-secondary h-100">
+                  <h6 class="fw-bold text-accent mb-2">Statistika:</h6>
+                  <div class="text-start" style="font-size:0.8rem;">
+                    <div><i class="fa-solid fa-check text-success me-1"></i> Qabul qilingan: 12 bemor</div>
+                    <div><i class="fa-solid fa-clock text-warning me-1"></i> Kutayotganlar: 4 bemor</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (url.includes('wikipedia.org')) {
+        screen.innerHTML = `
+          <div class="text-white text-start">
+            <h4 class="fw-bold border-bottom border-secondary pb-2 mb-3"><i class="fab fa-wikipedia-w"></i> WikipediA - Erkin Ensiklopediya</h4>
+            <h5 class="text-accent">Axborot Texnologiyalari (AKT)</h5>
+            <p class="small text-muted">
+              Axborot texnologiyalari (AT, ing. Information Technology, IT) — ma'lumotlarni qayta ishlash, to'plash, saqlash, uzatish va himoyalash uchun foydalaniladigan texnik va dasturiy vositalar majmuasidir. Zamonaviy tibbiyotni AKT va raqamli tizimlarsiz tasavvur qilib bo'lmaydi.
+            </p>
+          </div>
+        `;
+      } else if (url.includes('pubmed')) {
+        screen.innerHTML = `
+          <div class="text-white text-start">
+            <h5 class="fw-bold text-warning border-bottom border-secondary pb-2"><i class="fa-solid fa-book-medical"></i> PubMed Medical Publications</h5>
+            <div class="p-2 border border-secondary rounded bg-dark mb-2">
+              <h6 class="fw-bold text-accent mb-0" style="font-size:0.85rem;">Digitalization in Cardiology and tele-health systems</h6>
+              <p class="mb-0 text-muted" style="font-size:0.75rem;">Authors: Napasov O., et al. (2026)</p>
+            </div>
+            <div class="p-2 border border-secondary rounded bg-dark">
+              <h6 class="fw-bold text-accent mb-0" style="font-size:0.85rem;">Phishing threats in hospital info systems (MIS)</h6>
+              <p class="mb-0 text-muted" style="font-size:0.75rem;">Authors: Ozodbek N. (2025)</p>
+            </div>
+          </div>
+        `;
+      } else {
+        // Default blank internal page or custom internal simulation
+        if (url === 'sim://history') {
+          showSimHistoryView();
+        } else if (url === 'sim://downloads') {
+          showSimDownloadsView();
+        } else if (url === 'sim://bookmarks') {
+          showSimBookmarksView();
+        } else if (url === 'sim://settings') {
+          showSimSettingsView();
+        } else {
+          screen.innerHTML = `
+            <div class="sim-screen-default">
+              <i class="fa-solid fa-circle-question fs-1 text-accent mb-3 animate-pulse"></i>
+              <h5 class="text-white">Simulyatsiya qilingan sayt</h5>
+              <p class="small text-muted mb-0">URL: ${url}</p>
+              <p class="small text-muted mt-2">Darsni davom ettirish uchun URL panelga 'google.com' yoki 'dmed.uz' deb yozishingiz mumkin.</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function executeGoogleSearch() {
+      const query = document.getElementById('googleSearchField').value.toLowerCase().trim();
+      const screen = document.getElementById('simScreen');
+      if (query === "") {
+        alert("Qidiruv so'zini kiriting!");
+        return;
+      }
+      
+      if (query.includes('gripp')) {
+        screen.innerHTML = `
+          <div class="text-white text-start">
+            <h5 class="text-muted" style="font-size:0.8rem;">Google Qidiruv natijalari:</h5>
+            <div class="mb-3">
+              <h5 class="text-accent mb-0"><a href="#" onclick="simNavigateDirect('https://wikipedia.org')">Gripp kasalligi - Wikipedia</a></h5>
+              <p class="small text-muted">Gripp — bu o'tkir yuqumli nafas yo'li virusli kasalligi...</p>
+            </div>
+            <div class="mb-3">
+              <h5 class="text-accent mb-0"><a href="#" onclick="simNavigateDirect('https://pubmed.ncbi.nlm.nih.gov')">Influenza vaccines and telemedicine - PubMed</a></h5>
+              <p class="small text-muted">Medical publications about influenza virus prevention...</p>
+            </div>
+          </div>
+        `;
+      } else if (query.includes('dmed')) {
+        screen.innerHTML = `
+          <div class="text-white text-start">
+            <h5 class="text-muted" style="font-size:0.8rem;">Google Qidiruv natijalari:</h5>
+            <div class="mb-3">
+              <h5 class="text-accent mb-0"><a href="#" onclick="simNavigateDirect('https://dmed.uz')">DMED.uz - Elektron sog'liqni saqlash tizimi</a></h5>
+              <p class="small text-muted">Bemorlarni hisobga olish, shifokor navbatlari va tibbiy andozalar portali.</p>
+            </div>
+          </div>
+        `;
+      } else {
+        screen.innerHTML = `
+          <div class="text-white text-start">
+            <h5 class="text-muted" style="font-size:0.8rem;">Qidiruv natijalari: '${query}'</h5>
+            <p class="small text-muted">Simulyatsiya qilingan qidiruv natijasi yo'q. 'gripp' yoki 'dmed' deb qidirib ko'ring.</p>
+          </div>
+        `;
+      }
+    }
+
+    function simNavigateDirect(url) {
+      document.getElementById('simUrlField').value = url;
+      const tab = simTabs.find(t => t.id === activeSimTabId);
+      tab.url = url;
+      tab.history.push(url);
+      tab.historyIdx = tab.history.length - 1;
+      
+      if (!simIncognitoMode) {
+        simHistoryList.push(url);
+      }
+      
+      loadSimPage(url);
+    }
+
+    function simDownloadPdf(fileName) {
+      simDownloadsList.push({ name: fileName, size: '254 KB', date: 'Bugun' });
+      alert(`Fayl yuklab olindi: ${fileName}. Uni menyudagi 'Загрузки' (Ctrl+J) bo'limida ko'rishingiz mumkin.`);
+    }
+
+    function toggleSimBookmark() {
+      const tab = simTabs.find(t => t.id === activeSimTabId);
+      tab.bookmarked = !tab.bookmarked;
+      
+      if (tab.bookmarked) {
+        if (!simBookmarksList.includes(tab.url)) {
+          simBookmarksList.push(tab.url);
+        }
+      } else {
+        const idx = simBookmarksList.indexOf(tab.url);
+        if (idx > -1) simBookmarksList.splice(idx, 1);
+      }
+
+      renderSimBookmarksBar();
+      loadSimPage(tab.url);
+    }
+
+    function renderSimBookmarksBar() {
+      const bar = document.getElementById('simBookmarksBar');
+      bar.innerHTML = "";
+      simBookmarksList.forEach(url => {
+        let label = url.replace('https://', '').replace('www.', '');
+        if (label.length > 15) label = label.slice(0, 15) + '...';
+        
+        const bEl = document.createElement('a');
+        bEl.className = "sim-bookmark-item";
+        bEl.innerHTML = `<i class="fa-solid fa-bookmark text-warning"></i> ${label}`;
+        bEl.setAttribute('onclick', `simNavigateDirect('${url}')`);
+        bar.appendChild(bEl);
+      });
+    }
+
+    function toggleSimMenu() {
+      const menu = document.getElementById('simMenuDropdown');
+      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('simMenuDropdown');
+      const toggle = e.target.closest('.fa-ellipsis-vertical');
+      if (menu && menu.style.display === 'block' && !toggle) {
+        menu.style.display = 'none';
+      }
+    });
+
+    function openSimInternal(page) {
+      const url = `sim://${page}`;
+      document.getElementById('simUrlField').value = url;
+      
+      const tab = simTabs.find(t => t.id === activeSimTabId);
+      tab.url = url;
+      tab.history.push(url);
+      tab.historyIdx = tab.history.length - 1;
+      
+      loadSimPage(url);
+    }
+
+    function toggleSimIncognito() {
+      simIncognitoMode = !simIncognitoMode;
+      const simContainer = document.getElementById('browserSimulator');
+      
+      if (simIncognitoMode) {
+        simContainer.classList.add('incognito-mode');
+        alert("Maxfiy rejim (Инкогнито) yoqildi. Ushbu rejimda qiladigan ishlaringiz va kirgan saytlaringiz brauzer tarixida (История) saqlanib qolmaydi.");
+      } else {
+        simContainer.classList.remove('incognito-mode');
+        alert("Maxfiy rejim o'chirildi.");
+      }
+      loadSimPage(simTabs.find(t => t.id === activeSimTabId).url);
+    }
+
+    function showSimHistoryView() {
+      const screen = document.getElementById('simScreen');
+      screen.innerHTML = `
+        <div class="text-white text-start">
+          <h5 class="fw-bold text-accent border-bottom border-secondary pb-2 mb-3"><i class="fa-solid fa-history"></i> История (Kirilgan Saytlar Tarixi)</h5>
+          ${simHistoryList.length === 0 ? '<p class="small text-muted">Hech qanday sayt tarixi yo\'q.</p>' : `
+            <div class="list-group list-group-dark" style="font-size:0.8rem;">
+              ${simHistoryList.map(h => `
+                <div class="list-group-item bg-dark border-secondary text-white-50 py-1 d-flex justify-content-between">
+                  <span>${h}</span>
+                  <span class="small text-muted">Bugun</span>
+                </div>
+              `).join('')}
+            </div>
+            <button class="btn btn-sm btn-danger mt-3" onclick="clearSimHistory()"><i class="fa-solid fa-trash"></i> Tarixni tozalash</button>
+          `}
+        </div>
+      `;
+    }
+
+    function clearSimHistory() {
+      simHistoryList = [];
+      showSimHistoryView();
+    }
+
+    function showSimDownloadsView() {
+      const screen = document.getElementById('simScreen');
+      screen.innerHTML = `
+        <div class="text-white text-start">
+          <h5 class="fw-bold text-accent border-bottom border-secondary pb-2 mb-3"><i class="fa-solid fa-download"></i> Загрузки (Yuklab olingan fayllar)</h5>
+          ${simDownloadsList.length === 0 ? '<p class="small text-muted">Hech qanday yuklab olingan fayllar mavjud emas. (DMED tizimida bemor retseptini yuklab oling).</p>' : `
+            <div class="list-group" style="font-size:0.8rem;">
+              ${simDownloadsList.map(d => `
+                <div class="list-group-item bg-dark border-secondary text-white py-2 d-flex justify-content-between">
+                  <span><i class="fa-solid fa-file-pdf text-danger me-2"></i> ${d.name} (${d.size})</span>
+                  <span class="small text-muted">${d.date}</span>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function showSimBookmarksView() {
+      const screen = document.getElementById('simScreen');
+      screen.innerHTML = `
+        <div class="text-white text-start">
+          <h5 class="fw-bold text-accent border-bottom border-secondary pb-2 mb-3"><i class="fa-solid fa-bookmark"></i> Закладки (Saqlangan saytlar)</h5>
+          ${simBookmarksList.length === 0 ? '<p class="small text-muted">Hozircha hech qanday xatcho\'plar qo\'shilmagan.</p>' : `
+            <div class="list-group" style="font-size:0.8rem;">
+              ${simBookmarksList.map(b => `
+                <a href="#" class="list-group-item list-group-item-action bg-dark border-secondary text-white py-2" onclick="simNavigateDirect('${b}')">
+                  <i class="fa-solid fa-bookmark text-warning me-2"></i> ${b}
+                </a>
+              `).join('')}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function showSimSettingsView() {
+      const screen = document.getElementById('simScreen');
+      screen.innerHTML = `
+        <div class="text-white text-start">
+          <h5 class="fw-bold text-accent border-bottom border-secondary pb-2 mb-3"><i class="fa-solid fa-cog"></i> Настройки (Brauzer sozlamalari)</h5>
+          <div style="font-size:0.85rem;">
+            <div class="mb-3">
+              <label class="fw-bold text-white mb-1">Brauzer tili (Язык интерфейса):</label>
+              <select class="form-select form-select-sm bg-dark text-white border-secondary">
+                <option>Русский (Windows 10 default)</option>
+                <option>O'zbekcha</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="fw-bold text-white mb-1">Yuklash joyi (Папка загрузок):</label>
+              <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" value="C:\\Users\\User\\Downloads" readonly>
+            </div>
+            <div class="mb-3">
+              <button class="btn btn-sm btn-outline-warning" onclick="alert('Kesh va Cookies tozalandi!')"><i class="fa-solid fa-trash-can"></i> Kesh va kuki-fayllarni tozalash</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function simGoBack() {
+      const tab = simTabs.find(t => t.id === activeSimTabId);
+      if (tab.historyIdx > 0) {
+        tab.historyIdx--;
+        tab.url = tab.history[tab.historyIdx];
+        document.getElementById('simUrlField').value = tab.url;
+        loadSimPage(tab.url);
+        updateSimControls();
+      }
+    }
+
+    function simGoForward() {
+      const tab = simTabs.find(t => t.id === activeSimTabId);
+      if (tab.historyIdx < tab.history.length - 1) {
+        tab.historyIdx++;
+        tab.url = tab.history[tab.historyIdx];
+        document.getElementById('simUrlField').value = tab.url;
+        loadSimPage(tab.url);
+        updateSimControls();
+      }
+    }
+
+    function simRefresh() {
+      const tab = simTabs.find(t => t.id === activeSimTabId);
+      loadSimPage(tab.url);
+    }
+
+    function simGoHome() {
+      simNavigateDirect('https://google.com');
+    }
+
+    function updateSimControls() {
+      const tab = simTabs.find(t => t.id === activeSimTabId);
+      const backBtn = document.getElementById('simBackBtn');
+      const forwardBtn = document.getElementById('simForwardBtn');
+      
+      if (tab && tab.historyIdx > 0) {
+        backBtn.classList.remove('disabled');
+      } else {
+        backBtn.classList.add('disabled');
+      }
+
+      if (tab && tab.historyIdx < tab.history.length - 1) {
+        forwardBtn.classList.remove('disabled');
+      } else {
+        forwardBtn.classList.add('disabled');
+      }
+    }
+
+
+    // 18-Bo'lim: Task Checklist Progress Engine
+    const completedTasks = {};
+    function toggleTaskCheck(id) {
+      completedTasks[id] = !completedTasks[id];
+      const card = document.getElementById(`chkBox${id}`).closest('.task-checkbox-item');
+      const icon = document.getElementById(`chkBox${id}`).querySelector('.fa-check');
+      
+      if (completedTasks[id]) {
+        card.classList.add('checked');
+        icon.classList.remove('d-none');
+      } else {
+        card.classList.remove('checked');
+        icon.classList.add('d-none');
+      }
+      
+      calculateTaskProgress();
+    }
+
+    function calculateTaskProgress() {
+      const total = 8;
+      let count = 0;
+      for (let i = 1; i <= total; i++) {
+        if (completedTasks[i]) count++;
+      }
+      const percent = Math.round((count / total) * 100);
+      const progress = document.getElementById('taskProgressBar');
+      progress.style.width = percent + '%';
+      progress.innerText = percent + '%';
+    }
+
+
+    // 19-Bo'lim: Shortcut matching game
+    let selectedKey = null;
+    let selectedKeyBtnId = null;
+
+    function selectHotkey(key, btnId) {
+      if (document.getElementById(btnId).classList.contains('matched')) return;
+
+      // Deselect old
+      if (selectedKeyBtnId) {
+        document.getElementById(selectedKeyBtnId).classList.remove('selected');
+      }
+
+      selectedKey = key;
+      selectedKeyBtnId = btnId;
+      document.getElementById(btnId).classList.add('selected');
+      checkMatch();
+    }
+
+    let selectedDesc = null;
+    let selectedDescBtnId = null;
+
+    function selectDescription(desc, btnId) {
+      if (document.getElementById(btnId).classList.contains('matched')) return;
+
+      if (selectedDescBtnId) {
+        document.getElementById(selectedDescBtnId).classList.remove('selected');
+      }
+
+      selectedDesc = desc;
+      selectedDescBtnId = btnId;
+      document.getElementById(btnId).classList.add('selected');
+      checkMatch();
+    }
+
+    const matchesMap = {
+      'Ctrl + T': 'Новая вкладка (Yangi tab ochish)',
+      'Ctrl + W': 'Закрыть вкладку (Tabni yopish)',
+      'Ctrl + H': 'Открыть историю (Tarixni ochish)',
+      'Ctrl + D': 'Добавить в закладки (Xatcho\'pga qo\'shish)',
+      'Ctrl + Shift + N': 'Режим инкогнито (Maxfiy rejimni ochish)'
+    };
+
+    function checkMatch() {
+      if (selectedKey && selectedDesc) {
+        const correctDesc = matchesMap[selectedKey];
+        if (selectedDesc === correctDesc) {
+          // Matched
+          document.getElementById(selectedKeyBtnId).className = 'shortcut-btn mb-2 matched';
+          document.getElementById(selectedDescBtnId).className = 'shortcut-btn mb-2 matched';
+          
+          selectedKey = null;
+          selectedKeyBtnId = null;
+          selectedDesc = null;
+          selectedDescBtnId = null;
+        } else {
+          // Wrong
+          alert("Juftlik noto'g'ri, qaytadan urinib ko'ring!");
+          document.getElementById(selectedKeyBtnId).classList.remove('selected');
+          document.getElementById(selectedDescBtnId).classList.remove('selected');
+          selectedKey = null;
+          selectedKeyBtnId = null;
+          selectedDesc = null;
+          selectedDescBtnId = null;
+        }
+      }
+    }
+
+    function resetHotkeyGame() {
+      const keys = ['key-ct', 'key-cw', 'key-ch', 'key-cd', 'key-csn'];
+      const descs = ['desc-tab', 'desc-close', 'desc-hist', 'desc-book', 'desc-inc'];
+      
+      keys.forEach(k => {
+        document.getElementById(k).className = 'shortcut-btn mb-2';
+      });
+      descs.forEach(d => {
+        document.getElementById(d).className = 'shortcut-btn mb-2';
+      });
+
+      selectedKey = null;
+      selectedKeyBtnId = null;
+      selectedDesc = null;
+      selectedDescBtnId = null;
+    }
+
+
+    // 20-Bo'lim: 20-Question Quiz Engine
+    const quizQuestions = [
+      { q: "Web brauzer nima?", a: ["Internet tarmog'ining jismoniy kabel tizimi", "Web saytlarni ochish va ko'rish uchun maxsus kompyuter dasturi", "Tibbiy ma'lumotlar bazasi", "Elektron pochtadan kelgan xatlar ro'yxati"], c: 1 },
+      { q: "Lokal va global tarmoqlar o'rtasida farq nima?", a: ["Faqat nomi boshqacha", "Tarmoq bu infratuzilma, brauzer esa sayt ochuvchi dastur", "Brauzer internetdan tezroq ishlaydi", "Provayder tizimi"], c: 1 },
+      { q: "Internet Explorer (IE) brauzeri qaysi operatsion tizim bilan birga tarqatilgan?", a: ["macOS", "Linux", "Windows", "Android"], c: 2 },
+      { q: "HTML formatidagi web-sahifalarni ochib, vizual ko'rinishga keltiruvchi dastur qanday ataladi?", a: ["Server", "Operatsion tizim", "Brauzer", "Protokol"], c: 2 },
+      { q: "Sayt manzilidagi oxirgi 'HTTPS' qismidagi 'S' harfi nima ma'noni anglatadi?", a: ["Simple (Sodda)", "Speed (Tezkor)", "Secure (Xavfsiz, shifrlangan)", "System (Tizim)"], c: 2 },
+      { q: "https://www.google.com manzilidagi 'google.com' nima hisoblanadi?", a: ["Protokol", "Domen nomi (Domain)", "Sahifa yo'li (Path)", "Kengaytma"], c: 1 },
+      { q: "Bir vaqtning o'zida bir nechta saytlarni bitta brauzer oynasida ochish elementiga nima deyiladi?", a: ["Адресная строка", "Вкладка (Tab)", "Закладки", "История"], c: 1 },
+      { q: "Saytni tezkor ochish uchun xatcho'pga (Закладки) qo'shuvchi hotkey qaysi?", a: ["Ctrl + T", "Ctrl + H", "Ctrl + D", "Ctrl + W"], c: 2 },
+      { q: "Yangi tab (Вкладка) ochish tezkor tugmasi qaysi?", a: ["Ctrl + T", "Ctrl + W", "Ctrl + H", "Ctrl + J"], c: 0 },
+      { q: "Mavjud tabni yopish tezkor tugmasi qaysi?", a: ["Ctrl + Q", "Ctrl + W", "Ctrl + J", "Ctrl + H"], c: 1 },
+      { q: "Kirilgan barcha saytlar tarixini (История) ko'rish hotkeyi qaysi?", a: ["Ctrl + H", "Ctrl + J", "Ctrl + T", "Ctrl + D"], c: 0 },
+      { q: "Fayllar yuklanadigan virtual papka (Загрузки) ro'yxatini ochish hotkeyi qaysi?", a: ["Ctrl + H", "Ctrl + J", "Ctrl + D", "Ctrl + T"], c: 1 },
+      { q: "Incognito (Инкогнито) rejimi nima uchun ishlatiladi?", a: ["Provayderdan butunlay yashirinish uchun", "Kirilgan saytlar tarixda saqlanib qolmasligi uchun", "Internet tezligini 2 barobar oshirish uchun", "Bemor retseptini chop etish uchun"], c: 1 },
+      { q: "Incognito rejimini yoqish hotkeyi qaysi?", a: ["Ctrl + T", "Ctrl + Shift + N", "Ctrl + Shift + H", "Ctrl + P"], c: 1 },
+      { q: "Phishing (Fishinq) nima?", a: ["Brauzer tilini sozlash", "Soxta saytlar orqali foydalanuvchi ma'lumotlarini o'g'irlash", "Antivirus dasturi", "Kompyuterni internetga ulash"], c: 1 },
+      { q: "Yuklab olingan rasmlar va PDF fayllar Windows tizimidagi qaysi papkaga tushadi?", a: ["Рабочий стол", "Документы", "Загрузки (Downloads)", "Корзина"], c: 2 },
+      { q: "Tibbiy ma'lumotlarni ishonchli qidirish uchun dunyodagi eng yirik ochiq portal qaysi?", a: ["Wikipedia", "PubMed", "Yandex", "Yahoo"], c: 1 },
+      { q: "Brauzer kesh (Cache) xotirasini tozalash nima uchun kerak?", a: ["Tizim tezligini tiklash va to'g'ri yuklanishni ta'minlash", "Internet provayderni almashtirish", "Kompyuterni yoqish", "O'yinlarni o'rnatish"], c: 0 },
+      { q: "Quyidagilardan qaysi biri qidiruv tizimi (Search Engine) emas?", a: ["Google", "Yandex", "PubMed", "Bing"], c: 2 },
+      { q: "Sahifani yangilash (Обновить страницу) tugmasining tezkor klaviatura alternativi qaysi?", a: ["F1", "F5 yoki Ctrl+R", "F12", "Enter"], c: 1 }
+    ];
+
+    let currentQuestionIdx = 0;
+    const userQuizAnswers = {};
+
+    function initQuiz() {
+      const container = document.getElementById('quizQuestionsContainer');
+      container.innerHTML = "";
+
+      quizQuestions.forEach((item, idx) => {
+        const qBox = document.createElement('div');
+        qBox.className = `quiz-question-box ${idx === 0 ? 'active' : ''}`;
+        qBox.id = `qBox${idx}`;
+
+        const mappedOptions = item.a.map((opt, optIdx) => ({ text: opt, originalIdx: optIdx }));
+        mappedOptions.sort(() => Math.random() - 0.5);
+
+        qBox.innerHTML = `
+          <h5 class="text-white mb-4">Savol ${idx + 1}: ${item.q}</h5>
+          <div class="row g-2">
+            ${mappedOptions.map((option, optIdx) => `
+              <div class="col-12">
+                <button class="quiz-option-btn" id="q${idx}opt${option.originalIdx}" onclick="selectQuizOption(${idx}, ${option.originalIdx})">
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-secondary rounded-circle" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">${String.fromCharCode(65 + optIdx)}</span>
+                    <span class="option-text text-start">${option.text}</span>
+                  </div>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(qBox);
+      });
+      updateQuizNav();
+    }
+
+    function selectQuizOption(questionIdx, optionIdx) {
+      if (userQuizAnswers[questionIdx] !== undefined) return;
+
+      userQuizAnswers[questionIdx] = optionIdx;
+      const question = quizQuestions[questionIdx];
+      const correctOpt = question.c;
+
+      const optBtn = document.getElementById(`q${questionIdx}opt${optionIdx}`);
+      if (optionIdx === correctOpt) {
+        optBtn.classList.add('correct');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      } else {
+        optBtn.classList.add('incorrect');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-xmark ms-auto"></i>';
+        
+        const correctBtn = document.getElementById(`q${questionIdx}opt${correctOpt}`);
+        correctBtn.classList.add('correct');
+        correctBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      }
+    }
+
+    function prevQuizQuestion() {
+      if (currentQuestionIdx > 0) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx--;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      }
+    }
+
+    function nextQuizQuestion() {
+      if (userQuizAnswers[currentQuestionIdx] === undefined) {
+        alert("Iltimos, keyingi savolga o'tishdan oldin variantlardan birini tanlang!");
+        return;
+      }
+
+      if (currentQuestionIdx < quizQuestions.length - 1) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx++;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function updateQuizNav() {
+      document.getElementById('quizPrevBtn').disabled = currentQuestionIdx === 0;
+      document.getElementById('quizProgressLabel').innerText = `Savol ${currentQuestionIdx + 1} / 20`;
+      
+      const nextBtn = document.getElementById('quizNextBtn');
+      if (currentQuestionIdx === quizQuestions.length - 1) {
+        nextBtn.innerHTML = 'Yakunlash <i class="fa-solid fa-square-poll-vertical ms-2"></i>';
+      } else {
+        nextBtn.innerHTML = 'Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>';
+      }
+    }
+
+    function showQuizResults() {
+      let score = 0;
+      quizQuestions.forEach((q, idx) => {
+        if (userQuizAnswers[idx] === q.c) {
+          score++;
+        }
+      });
+
+      document.getElementById('quizQuestionsContainer').style.display = 'none';
+      document.getElementById('quizPrevBtn').style.display = 'none';
+      document.getElementById('quizNextBtn').style.display = 'none';
+      document.getElementById('quizProgressLabel').style.display = 'none';
+
+      const resultBox = document.getElementById('quizResultBox');
+      resultBox.classList.remove('d-none');
+
+      document.getElementById('quizScoreText').innerText = `${score} / 20`;
+      const percentage = Math.round((score / quizQuestions.length) * 100);
+      document.getElementById('quizPercentageText').innerText = `Foiz ko'rsatkichi: ${percentage}%`;
+
+      const gradeBadge = document.getElementById('quizGradeBadge');
+      const gradeText = document.getElementById('quizGradeText');
+      
+      let grade = "2 (Qoniqarsiz)";
+      gradeBadge.className = "badge bg-danger fs-5 p-3 px-4 rounded-pill mb-3";
+      gradeText.innerText = "Qoniqarsiz natija. Iltimos, darslik materiallarini boshidan diqqat bilan qayta o'rganing va testni qayta topshiring.";
+
+      if (score >= 18) {
+        grade = "5 (A'lo)";
+        gradeBadge.className = "badge bg-success fs-5 p-3 px-4 rounded-pill mb-3";
+        gradeText.innerText = "Ajoyib natija! Siz web-brauzerlar va internet xavfsizligi mavzusini to'liq va mukammal o'zlashtiribsiz.";
+      } else if (score >= 14) {
+        grade = "4 (Yaxshi)";
+        gradeBadge.className = "badge bg-info fs-5 p-3 px-4 rounded-pill mb-3";
+        gradeText.innerText = "Yaxshi natija. Xatolaringiz ustida ishlab, bilimingizni yanada mustahkamlang.";
+      } else if (score >= 10) {
+        grade = "3 (Qoniarli)";
+        gradeBadge.className = "badge bg-warning text-dark fs-5 p-3 px-4 rounded-pill mb-3";
+        gradeText.innerText = "Qoniqarli natija. Brauzer tezkor tugmalari va xavfsizlik qoidalarini qayta o'qib chiqishni tavsiya qilamiz.";
+      }
+
+      gradeBadge.innerText = `Baho: ${grade}`;
+    }
+
+    function restartQuiz() {
+      currentQuestionIdx = 0;
+      quizQuestions.forEach((_, idx) => {
+        delete userQuizAnswers[idx];
+      });
+
+      document.getElementById('quizQuestionsContainer').style.display = 'block';
+      document.getElementById('quizPrevBtn').style.display = 'inline-block';
+      document.getElementById('quizNextBtn').style.display = 'inline-block';
+      document.getElementById('quizProgressLabel').style.display = 'inline-block';
+
+      document.getElementById('quizResultBox').classList.add('d-none');
+      initQuiz();
+    }
+
+    // Init onload
+    window.onload = () => {
+      initTheme();
+      initQuiz();
+      
+      // Init Virtual Simulator UI
+      renderSimTabs();
+      loadSimPage('https://google.com');
+    };
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.href = '../index.html';
+    }
+
+        function applyAuthorName() {
+      const loginName = localStorage.getItem('darslik_login') || 'Napasov';
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      applyAuthorName();
+    });
+  </script>
+
+</body>
+</html>

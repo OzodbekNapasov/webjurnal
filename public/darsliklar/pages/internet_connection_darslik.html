@@ -1,0 +1,2871 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <script>
+    // Immediate login check before rendering
+    const savedLogin = localStorage.getItem('darslik_login');
+    if (savedLogin !== 'Napasov' && savedLogin !== 'Umirov') {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../LOGO.png">
+  <title>Elektron Darslik: Kompyuterni internetga ulash</title>
+  
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Google Fonts: Poppins (headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0a192f;           /* Deep Navy */
+      --secondary-bg: #112240;         /* Navy 800 */
+      --text-main: #ffffff;            /* Pure white */
+      --text-muted: #8892b0;           /* Slate 300 */
+      --text-light: #ccd6f6;           /* Slate 100 */
+      --card-bg: rgba(17, 34, 64, 0.95);/* Glassmorphism Navy */
+      --border-color: rgba(255, 255, 255, 0.12);
+      --accent: #ff6b00;               /* Orange */
+      --accent-glow: rgba(255, 107, 0, 0.35);
+      --primary-cyan: #64ffda;         /* Cyan */
+      --primary-cyan-glow: rgba(100, 255, 218, 0.25);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --error: #ef4444;
+      --error-glow: rgba(239, 68, 68, 0.25);
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 10px 30px rgba(2, 12, 27, 0.5);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;           /* Light Slate */
+      --secondary-bg: #ffffff;
+      --text-main: #0a192f;            /* Deep Blue */
+      --text-muted: #475569;           /* Slate 600 */
+      --text-light: #1e293b;           /* Slate 800 */
+      --card-bg: rgba(255, 255, 255, 0.98);
+      --border-color: rgba(10, 25, 47, 0.12);
+      --accent: #d94e00;               /* Darker orange for text contrast */
+      --accent-glow: rgba(217, 78, 0, 0.20);
+      --primary-cyan: #0f766e;
+      --shadow: 0 10px 30px rgba(10, 25, 47, 0.08);
+    }
+
+    /* Headings font global rule */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Bootstrap Overrides for Readability and Contrast */
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    .text-light {
+      color: var(--text-light) !important;
+    }
+    .lead {
+      color: var(--text-muted) !important;
+      font-weight: 500 !important;
+    }
+    p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    li {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-light);
+    }
+
+    /* Light Theme Specific Readability Overrides */
+    [data-theme="light"] .text-white {
+      color: var(--text-main) !important;
+    }
+    [data-theme="light"] .text-warning {
+      color: #b45309 !important;
+    }
+    [data-theme="light"] .text-info {
+      color: #0369a1 !important;
+    }
+    .text-accent {
+      color: var(--accent) !important;
+    }
+
+    /* Core Styles */
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      position: relative;
+    }
+
+    .logo-img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+      transition: var(--transition-smooth);
+    }
+    .logo-img:hover {
+      transform: scale(1.05);
+    }
+    
+    [data-theme="light"] .logo-img {
+      filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.15));
+    }
+
+    /* Background Gradients */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background-image: 
+        radial-gradient(at 0% 0%, var(--primary-cyan-glow) 0, transparent 40%),
+        radial-gradient(at 100% 100%, var(--accent-glow) 0, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.003) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.003) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    /* Fixed Progress Bar */
+    .top-progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.1);
+      z-index: 1050;
+    }
+
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--primary-cyan), #d946ef);
+      box-shadow: 0 0 10px var(--accent);
+      transition: width 0.1s ease;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: rgba(10, 25, 47, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 6px;
+      z-index: 1000;
+      margin: 0 12px;
+      border-radius: 0 0 16px 16px;
+      transition: background-color 0.4s ease;
+    }
+
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.85);
+      border-bottom: 1px solid rgba(10, 25, 47, 0.08);
+    }
+
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--secondary-accent) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+    .logo-img {
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-img {
+      transform: scale(1.08);
+    }
+
+    .author-badge {
+      background: linear-gradient(135deg, rgba(255, 107, 0, 0.15) 0%, rgba(100, 255, 220, 0.05) 100%);
+      border: 1px solid rgba(255, 107, 0, 0.35);
+      border-radius: 9999px;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 0 15px rgba(255, 107, 0, 0.15), inset 0 0 10px rgba(255, 107, 0, 0.05);
+      backdrop-filter: blur(8px);
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .author-badge {
+      background: linear-gradient(135deg, rgba(217, 78, 0, 0.08) 0%, rgba(15, 118, 110, 0.03) 100%);
+      border: 1px solid rgba(217, 78, 0, 0.25);
+      box-shadow: 0 0 10px rgba(217, 78, 0, 0.02);
+    }
+
+    .author-badge:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(255, 107, 0, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulseDot 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(0.8); opacity: 0.5; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+
+    .author-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    /* Layout structure */
+    .content-wrapper {
+      margin-top: 40px;
+    }
+
+    .sidebar-sticky {
+      position: sticky;
+      top: 90px;
+      height: calc(100vh - 120px);
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    /* Custom scrollbar for sidebar */
+    .sidebar-sticky::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar-sticky::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+    }
+
+    .toc-list {
+      list-style: none;
+      padding-left: 0;
+      border-left: 2px solid var(--border-color);
+    }
+
+    .toc-item a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      display: block;
+      padding: 6px 16px;
+      transition: var(--transition-smooth);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toc-item.active a, .toc-item a:hover {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .toc-item.active {
+      border-left: 2px solid var(--accent);
+      margin-left: -2px;
+    }
+
+    /* Cards design */
+    .custom-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: var(--transition-smooth);
+    }
+
+    .custom-card:hover {
+      border-color: rgba(255, 107, 0, 0.25);
+      box-shadow: 0 15px 35px rgba(255, 107, 0, 0.06);
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      color: var(--text-main);
+    }
+    .section-title i {
+      color: var(--accent);
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+
+    /* Hero section */
+    .hero-section {
+      padding: 60px 0;
+      position: relative;
+    }
+
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.25;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+    }
+
+    .hero-img {
+      max-width: 100%;
+      height: auto;
+      filter: drop-shadow(0 15px 30px rgba(0,0,0,0.3));
+      animation: float 6s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Scroll animation styling */
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .scroll-animate.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Interactive cards (Bo'lim 2) */
+    .interactive-device-card {
+      perspective: 1000px;
+      height: 250px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .interactive-device-card:hover .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card-front {
+      background-color: var(--secondary-bg);
+      color: var(--text-main);
+    }
+
+    .card-back {
+      background-color: var(--primary-bg);
+      color: var(--text-light);
+      transform: rotateY(180deg);
+    }
+
+    .device-icon {
+      font-size: 3rem;
+      color: var(--accent);
+      margin-bottom: 15px;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+    }
+
+    /* Interactive SVG diagram container */
+    .svg-diagram-container {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+    }
+
+    /* Table custom design */
+    .table-custom {
+      color: var(--text-main);
+      border-color: var(--border-color);
+    }
+    .table-custom th {
+      background-color: rgba(255, 107, 0, 0.1) !important;
+      color: var(--accent) !important;
+      border-color: var(--border-color) !important;
+    }
+    .table-custom td {
+      background-color: transparent !important;
+      color: var(--text-light) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    /* Wi-Fi Step-by-Step simulator styles */
+    .wifi-step-container {
+      background-color: #1e1e1e;
+      border-radius: 16px;
+      border: 4px solid #333;
+      padding: 15px;
+      max-width: 500px;
+      margin: 0 auto;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .windows-taskbar-tray {
+      background: #101010;
+      height: 48px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 15px;
+      gap: 15px;
+      color: #ccc;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .windows-taskbar-tray:hover {
+      background: #202020;
+    }
+
+    .wifi-flyout {
+      background: #202020;
+      border: 1px solid #444;
+      border-radius: 8px;
+      margin-top: 10px;
+      padding: 15px;
+      color: white;
+      min-height: 250px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    }
+
+    .wifi-network-item {
+      background: #2b2b2b;
+      border-radius: 6px;
+      padding: 10px 15px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .wifi-network-item:hover {
+      background: #3a3a3a;
+    }
+    .wifi-network-item.selected {
+      border: 1px solid var(--accent);
+      background: #35251b;
+    }
+
+    /* Speed Test Simulator */
+    .speedtest-gauge-box {
+      width: 200px;
+      height: 200px;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    .speedtest-gauge-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .speedtest-value-display {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    /* Interactive Cable Connector */
+    .cable-box {
+      border: 2px dashed var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      min-height: 150px;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .cable-connector {
+      width: 80px;
+      height: 50px;
+      background: #444;
+      border: 2px solid #666;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      user-select: none;
+      transition: var(--transition-smooth);
+    }
+    .cable-connector.connected {
+      background: var(--accent);
+      border-color: #ffa502;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .lan-port {
+      width: 60px;
+      height: 60px;
+      background: #222;
+      border: 3px solid #555;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .lan-port.active {
+      border-color: var(--success);
+      box-shadow: 0 0 10px var(--success-glow);
+    }
+    .lan-port.active::after {
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      top: 5px;
+      right: 5px;
+      box-shadow: 0 0 5px var(--success);
+    }
+
+    /* Diagnostics Simulator */
+    .diag-box {
+      background: #1a1a1a;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 25px;
+      color: white;
+      max-width: 550px;
+      margin: 0 auto;
+    }
+
+    /* CMD Terminal Simulator */
+    .cmd-terminal {
+      background-color: #000000;
+      color: #00ff00;
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+      padding: 20px;
+      border-radius: 12px;
+      border: 3px solid #333;
+      min-height: 300px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      font-size: 0.95rem;
+    }
+    .cmd-header {
+      color: white;
+      border-bottom: 1px solid #222;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+      font-size: 0.85rem;
+    }
+    .cmd-input-line {
+      display: flex;
+      align-items: center;
+    }
+    .cmd-prompt {
+      color: white;
+      margin-right: 10px;
+    }
+    .cmd-input {
+      background: transparent;
+      border: none;
+      color: #00ff00;
+      font-family: inherit;
+      width: 100%;
+      outline: none;
+      font-size: inherit;
+    }
+
+    /* Visual sandbox simulator */
+    .sandbox-canvas {
+      height: 350px;
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      position: relative;
+      background: radial-gradient(circle, rgba(17,34,64,0.4) 0%, rgba(10,25,47,0.8) 100%);
+      overflow: hidden;
+    }
+
+    .sandbox-node {
+      width: 64px;
+      height: 64px;
+      background: var(--secondary-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      cursor: pointer;
+      z-index: 10;
+      transition: transform 0.2s, border-color 0.3s;
+      box-shadow: var(--shadow);
+    }
+    .sandbox-node:hover {
+      transform: scale(1.05);
+      border-color: var(--accent);
+    }
+    .sandbox-node.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+    .sandbox-node i {
+      font-size: 1.8rem;
+      color: var(--text-light);
+    }
+    .sandbox-node.connected i {
+      color: var(--accent);
+    }
+
+    .sandbox-link-line {
+      position: absolute;
+      height: 3px;
+      background: var(--accent);
+      transform-origin: top left;
+      z-index: 5;
+      box-shadow: 0 0 8px var(--accent-glow);
+      animation: linkFlow 2s infinite linear;
+    }
+
+    @keyframes linkFlow {
+      0% { background-position: 0 0; }
+      100% { background-position: 40px 0; }
+    }
+
+    /* Quiz Option Buttons */
+    .quiz-option-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-light);
+      padding: 14px 20px;
+      text-align: left;
+      width: 100%;
+      margin-bottom: 12px;
+      transition: var(--transition-smooth);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .quiz-option-btn:hover:not([disabled]) {
+      background: rgba(255, 107, 0, 0.08);
+      border-color: var(--accent);
+      color: var(--text-main);
+      transform: translateX(4px);
+    }
+
+    .quiz-option-btn.correct {
+      background-color: rgba(16, 185, 129, 0.15) !important;
+      border-color: var(--success) !important;
+      color: #10b981 !important;
+    }
+
+    .quiz-option-btn.incorrect {
+      background-color: rgba(239, 68, 68, 0.15) !important;
+      border-color: var(--error) !important;
+      color: #ef4444 !important;
+    }
+
+    /* Light mode specific correct/incorrect quiz overrides */
+    [data-theme="light"] .quiz-option-btn.correct,
+    [data-theme="light"] .quiz-option-btn.correct * {
+      color: #10b981 !important;
+      background-color: rgba(16, 185, 129, 0.15) !important;
+    }
+    [data-theme="light"] .quiz-option-btn.incorrect,
+    [data-theme="light"] .quiz-option-btn.incorrect * {
+      color: #ef4444 !important;
+      background-color: rgba(239, 68, 68, 0.15) !important;
+    }
+    [data-theme="light"] .bg-dark .bg-secondary-subtle {
+      background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .quiz-question-box {
+      display: none;
+    }
+
+    .quiz-question-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Interactive Checklist */
+    .checklist-card-item {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      transition: var(--transition-smooth);
+    }
+    .checklist-card-item:hover {
+      background-color: rgba(255, 107, 0, 0.03);
+    }
+    .checklist-checkbox {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: transparent;
+      transition: var(--transition-smooth);
+      flex-shrink: 0;
+    }
+    .checklist-checkbox.checked {
+      background-color: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .checklist-progress-bar-inner {
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--primary-cyan));
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .footer {
+      background: rgba(10, 25, 47, 0.95);
+      border-top: 1px solid var(--border-color);
+      transition: background-color 0.4s ease;
+    }
+    [data-theme="light"] .footer {
+      background: #f1f5f9;
+      border-top: 1px solid rgba(10, 25, 47, 0.08);
+    }
+
+    /* Keep background and all text/icons inside permanently dark containers dark & readable in light theme */
+    [data-theme="light"] .bg-dark {
+      background-color: #0a192f !important;
+      color: #e2e8f0 !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    [data-theme="light"] .wifi-step-container {
+      background-color: #1e1e1e !important;
+      color: #e2e8f0 !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    [data-theme="light"] .wifi-flyout {
+      background-color: #202020 !important;
+      color: #e2e8f0 !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    [data-theme="light"] .cmd-terminal {
+      background-color: #000000 !important;
+      color: #00ff00 !important;
+      border-color: #333333 !important;
+    }
+    [data-theme="light"] .sandbox-canvas {
+      background: radial-gradient(circle, rgba(17,34,64,0.4) 0%, rgba(10,25,47,0.8) 100%) !important;
+      color: #e2e8f0 !important;
+    }
+    [data-theme="light"] .diag-box {
+      background-color: #1a1a1a !important;
+      color: #e2e8f0 !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    [data-theme="light"] .windows-taskbar-tray {
+      background-color: #111111 !important;
+      color: #ffffff !important;
+    }
+    [data-theme="light"] .wifi-network-item {
+      background-color: #2b2b2b !important;
+      color: #ffffff !important;
+    }
+    [data-theme="light"] .wifi-network-item:hover {
+      background-color: #3a3a3a !important;
+    }
+    [data-theme="light"] .wifi-network-item.selected {
+      background-color: rgba(255, 107, 0, 0.2) !important;
+      border: 1px solid var(--accent) !important;
+    }
+
+    /* Force all text/icons inside permanently dark elements to stay white/light in light mode */
+    [data-theme="light"] .bg-dark *,
+    [data-theme="light"] .wifi-step-container *,
+    [data-theme="light"] .wifi-flyout *,
+    [data-theme="light"] .cmd-terminal *,
+    [data-theme="light"] .sandbox-canvas *,
+    [data-theme="light"] .windows-taskbar-tray *,
+    [data-theme="light"] .wifi-network-item *,
+    [data-theme="light"] .diag-box * {
+      color: #ffffff !important;
+    }
+
+    /* Specific overrides to allow colored text inside dark containers */
+    [data-theme="light"] .bg-dark .text-muted,
+    [data-theme="light"] .wifi-step-container .text-muted,
+    [data-theme="light"] .wifi-flyout .text-muted,
+    [data-theme="light"] .cmd-terminal .text-muted,
+    [data-theme="light"] .sandbox-canvas .text-muted,
+    [data-theme="light"] .diag-box .text-muted {
+      color: #94a3b8 !important;
+    }
+
+    [data-theme="light"] .bg-dark .text-warning,
+    [data-theme="light"] .wifi-step-container .text-warning,
+    [data-theme="light"] .wifi-flyout .text-warning,
+    [data-theme="light"] .cmd-terminal .text-warning,
+    [data-theme="light"] .sandbox-canvas .text-warning,
+    [data-theme="light"] .diag-box .text-warning {
+      color: #ffc107 !important;
+    }
+
+    [data-theme="light"] .bg-dark .text-success,
+    [data-theme="light"] .wifi-step-container .text-success,
+    [data-theme="light"] .wifi-flyout .text-success,
+    [data-theme="light"] .cmd-terminal .text-success,
+    [data-theme="light"] .sandbox-canvas .text-success,
+    [data-theme="light"] .diag-box .text-success {
+      color: #20c997 !important;
+    }
+
+    [data-theme="light"] .bg-dark .text-info,
+    [data-theme="light"] .wifi-step-container .text-info,
+    [data-theme="light"] .wifi-flyout .text-info,
+    [data-theme="light"] .cmd-terminal .text-info,
+    [data-theme="light"] .sandbox-canvas .text-info,
+    [data-theme="light"] .diag-box .text-info {
+      color: #0dcaf0 !important;
+    }
+
+    [data-theme="light"] .bg-dark .text-accent,
+    [data-theme="light"] .wifi-step-container .text-accent,
+    [data-theme="light"] .wifi-flyout .text-accent,
+    [data-theme="light"] .cmd-terminal .text-accent,
+    [data-theme="light"] .sandbox-canvas .text-accent,
+    [data-theme="light"] .diag-box .text-accent {
+      color: #ff6b00 !important;
+    }
+
+    [data-theme="light"] .cmd-input {
+      color: #00ff00 !important;
+    }
+
+    [data-theme="light"] .bg-dark .text-warning,
+    [data-theme="light"] .wifi-flyout .text-warning,
+    [data-theme="light"] .cmd-terminal .text-warning,
+    [data-theme="light"] .diag-box .text-warning {
+      color: #ffc107 !important; /* Bright yellow */
+    }
+
+    [data-theme="light"] .bg-dark .text-success,
+    [data-theme="light"] .wifi-flyout .text-success,
+    [data-theme="light"] .cmd-terminal .text-success,
+    [data-theme="light"] .diag-box .text-success {
+      color: #20c997 !important; /* Bright teal/green */
+    }
+
+    [data-theme="light"] .bg-dark .text-info,
+    [data-theme="light"] .wifi-flyout .text-info,
+    [data-theme="light"] .cmd-terminal .text-info,
+    [data-theme="light"] .diag-box .text-info {
+      color: #0dcaf0 !important; /* Bright cyan */
+    }
+
+    [data-theme="light"] .wifi-network-item {
+      background: #2b2b2b !important;
+      color: #ffffff !important;
+    }
+    
+    [data-theme="light"] .wifi-network-item:hover {
+      background: #3a3a3a !important;
+    }
+    
+    [data-theme="light"] .wifi-network-item.selected {
+      background: rgba(255, 107, 0, 0.2) !important;
+      border: 1px solid var(--accent) !important;
+    }
+    
+    [data-theme="light"] .cmd-input {
+      color: #00ff00 !important;
+    }
+
+    /* Override Bootstrap bg-secondary-subtle for theme consistency */
+    .bg-secondary-subtle {
+      background-color: rgba(255, 255, 255, 0.03) !important;
+      color: var(--text-main) !important;
+      border-color: var(--border-color) !important;
+    }
+    [data-theme="light"] .bg-secondary-subtle {
+      background-color: rgba(11, 15, 25, 0.04) !important;
+      color: var(--text-main) !important;
+      border-color: var(--border-color) !important;
+    }
+  
+    /* Login Overlay Styling */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    [data-theme="light"] .login-overlay {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white;
+      font-size: 1.7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px var(--primary-cyan-glow);
+    }
+
+    .login-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .login-input-wrapper i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.4) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 50px;
+      padding: 12px 20px 12px 50px;
+      color: var(--text-main) !important;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .login-input {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 15px var(--primary-cyan-glow);
+    }
+
+    .login-error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white !important;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--primary-cyan-glow);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-cyan-glow);
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+  </style>
+  <link rel="stylesheet" href="darslik.css">
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="top-progress-container">
+    <div id="topProgressBar" class="top-progress-bar"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+        <img src="../LOGO.png" alt="Logo" class="logo-img">
+        <span class="logo-text">Axborot texnologiyalari</span>
+      </a>
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <a href="../index.html" class="btn btn-sm btn-outline-light border-0" title="Portalga qaytish">
+          <i class="fa-solid fa-house"></i> <span class="d-none d-sm-inline ms-1">Mundarija</span>
+        </a>
+        <div class="author-badge d-none d-md-flex">
+          <span class="pulse-dot"></span>
+          <span class="author-name">Muallif: {{AUTHOR}}</span>
+        </div>
+                <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- 1. Hero Section -->
+    <section class="hero-section" id="section-1">
+      <div class="row align-items-center">
+        <div class="col-lg-6 mb-5 mb-lg-0 scroll-animate animated">
+          <span class="badge bg-warning-subtle text-accent mb-3 px-3 py-2 rounded-pill font-weight-bold" style="letter-spacing: 0.05em; font-family:'Poppins', sans-serif;">TIBBIYOTDA AKT</span>
+          <h1 class="hero-title">Kompyuterni Internetga Ulash</h1>
+          <p class="lead mb-4">Noutbuk va shaxsiy kompyuterlarni simli va simsiz tarmoqqa ulash, Windows 10/11 tarmoq sozlamalari hamda diagnostika qilish ko'nikmalari.</p>
+          <div class="d-flex gap-3 flex-wrap">
+            <a href="#section-2" class="btn btn-warning text-white btn-lg px-4 py-3 rounded-pill font-weight-bold" style="background-color: var(--accent); border:none; box-shadow: 0 4px 15px var(--accent-glow);">
+              Darsni Boshlash <i class="fa-solid fa-arrow-down ms-2"></i>
+            </a>
+            <div class="d-flex align-items-center gap-2 text-muted fs-6">
+              <i class="fa-solid fa-calendar"></i> 2026-yil
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 text-center scroll-animate animated">
+          <svg class="hero-img" width="400" height="300" viewBox="0 0 600 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Modern Visual SVG for computer networking -->
+            <rect x="150" y="50" width="300" height="200" rx="15" fill="#1e293b" stroke="#ff6b00" stroke-width="4"/>
+            <rect x="170" y="70" width="260" height="160" rx="8" fill="#0f172a"/>
+            <rect x="270" y="250" width="60" height="60" fill="#ff6b00" opacity="0.8"/>
+            <path d="M220 310H380L400 340H200L220 310Z" fill="#1e293b" stroke="#ff6b00" stroke-width="3"/>
+            <!-- Router representation -->
+            <rect x="50" y="280" width="100" height="40" rx="8" fill="#112240" stroke="#64ffda" stroke-width="3"/>
+            <line x1="70" y1="280" x2="70" y2="240" stroke="#64ffda" stroke-width="3"/>
+            <line x1="130" y1="280" x2="130" y2="240" stroke="#64ffda" stroke-width="3"/>
+            <!-- Network connections -->
+            <path d="M150 300C200 300 220 280 270 280" stroke="#64ffda" stroke-width="3" stroke-dasharray="8 6" />
+            <circle cx="70" cy="240" r="5" fill="#64ffda"/>
+            <circle cx="130" cy="240" r="5" fill="#64ffda"/>
+            <!-- Wave signals -->
+            <path d="M60 220 C 70 210, 80 210, 90 220" stroke="#64ffda" stroke-width="2" fill="none"/>
+            <path d="M50 200 C 70 180, 90 180, 110 200" stroke="#64ffda" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Grid Content -->
+    <div class="row content-wrapper">
+      <!-- Sidebar navigation (3 columns) -->
+      <div class="col-lg-3 d-none d-lg-block">
+        <div class="sidebar-sticky">
+          <h5 class="mb-4 text-accent fw-bold"><i class="fa-solid fa-bars-staggered me-2"></i> Mundarija</h5>
+          <ul class="toc-list">
+            <li class="toc-item active" id="toc-section-1"><a href="#section-1">1. Kirish & Tibbiyot</a></li>
+            <li class="toc-item" id="toc-section-2"><a href="#section-2">2. Tarmoq Qurilmalari</a></li>
+            <li class="toc-item" id="toc-section-3"><a href="#section-3">3. Ulanish Turlari</a></li>
+            <li class="toc-item" id="toc-section-4"><a href="#section-4">4. Noutbukda Wi-Fi</a></li>
+            <li class="toc-item" id="toc-section-5"><a href="#section-5">5. Shaxsiy kompyuter Wi-Fi</a></li>
+            <li class="toc-item" id="toc-section-6"><a href="#section-6">6. Ethernet Kabel Ulanishi</a></li>
+            <li class="toc-item" id="toc-section-7"><a href="#section-7">7. Telefon Hotspoti</a></li>
+            <li class="toc-item" id="toc-section-8"><a href="#section-8">8. Windows Sozlamalari</a></li>
+            <li class="toc-item" id="toc-section-9"><a href="#section-9">9. IP Manzil & DNS</a></li>
+            <li class="toc-item" id="toc-section-10"><a href="#section-10">10. Internet Tezlik Testi</a></li>
+            <li class="toc-item" id="toc-section-11"><a href="#section-11">11. Tarmoq Diagnostikasi</a></li>
+            <li class="toc-item" id="toc-section-12"><a href="#section-12">12. CMD buyruqlari</a></li>
+            <li class="toc-item" id="toc-section-13"><a href="#section-13">13. Tarmoq Xavfsizligi</a></li>
+            <li class="toc-item" id="toc-section-14"><a href="#section-14">14. Tibbiy Internet Keyslar</a></li>
+            <li class="toc-item" id="toc-section-15"><a href="#section-15">15. Tarmoq Simulyatori</a></li>
+            <li class="toc-item" id="toc-section-16"><a href="#section-16">16. Amaliy Topshiriqlar</a></li>
+            <li class="toc-item" id="toc-section-17"><a href="#section-17">17. Bilimingizni sinang</a></li>
+            <li class="toc-item" id="toc-section-18"><a href="#section-18">18. Yakuniy Xulosa</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Main textbook columns (9 columns) -->
+      <div class="col-lg-9 col-12">
+
+        <!-- 1-Bo'lim. Kirish -->
+        <section class="custom-card scroll-animate" id="section-1">
+          <h2 class="section-title"><i class="fa-solid fa-circle-info"></i> 1-Bo'lim. Kirish</h2>
+          <p>Zamonaviy dunyoda <strong>Internet</strong> barcha sohalar kabi tibbiyotda ham asosiy boshqaruv va aloqa vositasiga aylandi. Internet — bu butun dunyodagi millionlab kompyuter va tarmoqlarni o'zaro bog'lovchi global axborot tizimidir. U ma'lumotlarni paketlar shaklida uzatish (IP protokoli) yordamida ishlaydi.</p>
+          
+          <div class="row mt-4">
+            <div class="col-md-6 mb-3">
+              <div class="p-3 rounded bg-secondary-subtle border border-secondary">
+                <h5 class="text-accent fw-bold"><i class="fa-solid fa-network-wired me-2"></i> Tarmoq nima?</h5>
+                <p class="small mb-0">Ikki yoki undan ortiq qurilmalarning ma'lumot almashish maqsadida o'zaro simli (kabel) yoki simsiz (Wi-Fi) bog'lanishi <strong>tarmoq</strong> deb ataladi.</p>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="p-3 rounded bg-secondary-subtle border border-secondary">
+                <h5 class="text-accent fw-bold"><i class="fa-solid fa-globe me-2"></i> Internet nima uchun kerak?</h5>
+                <p class="small mb-0">Masofaviy ma'lumotlar omboriga kirish, tezkor xabar almashish, ilmiy manbalardan foydalanish hamda avtomatlashtirilgan xizmatlarni yo'lga qo'yish.</p>
+              </div>
+            </div>
+          </div>
+
+          <h4 class="text-accent mt-4 mb-3"><i class="fa-solid fa-briefcase-medical me-2"></i> Tibbiyotdagi ahamiyati:</h4>
+          <p>Tibbiyot oliygohlari talabalari uchun tarmoq texnologiyalarini bilish quyidagi zamonaviy tizimlar bilan ishlashda o'ta muhim hisoblanadi:</p>
+          <ul>
+            <li><strong>Elektron tibbiy kartalar (E-Health / EHR):</strong> Bemorlar tarixi bulutli ma'lumotlar omborida saqlanadi va internet orqali real vaqtda yangilanadi.</li>
+            <li><strong>Teletibbiyot (Telemedicine):</strong> Shifokorlar uzoq hududlardagi bemorlarni internet orqali video-konsultatsiya qiladilar hamda jarrohlik operatsiyalarini masofadan kuzatadilar.</li>
+            <li><strong>Tibbiy axborot tizimlari (MIS):</strong> Poliklinika va shifoxonalar ma'lumotlarini boshqarish tizimlari butunlay internet ulanishiga tayanadi.</li>
+            <li><strong>Elektron pochta va xabarlar:</strong> Shifoxonalar o'rtasida tahlil natijalari va rentgen/KT tasvirlarini yuborish.</li>
+          </ul>
+        </section>
+
+        <!-- 2-Bo'lim. Internet uchun kerakli qurilmalar -->
+        <section class="custom-card scroll-animate" id="section-2">
+          <h2 class="section-title"><i class="fa-solid fa-server"></i> 2-Bo'lim. Internet uchun kerakli qurilmalar</h2>
+          <p class="mb-4">Kompyuter yoki noutbukni internetga ulash uchun maxsus tarmoq jihozlari talab etiladi. Quyidagi interaktiv kartochkalar orqali har bir qurilmaning ishlash prinsipi va vazifasi bilan tanishing (Karta ustiga sichqonchani olib boring):</p>
+          
+          <div class="row">
+            <!-- Card 1: Modem -->
+            <div class="col-md-4 col-sm-6">
+              <div class="interactive-device-card">
+                <div class="card-inner">
+                  <div class="card-front">
+                    <i class="fa-solid fa-hard-drive device-icon"></i>
+                    <h5 class="fw-bold">Modem</h5>
+                    <span class="badge bg-secondary">Batafsil</span>
+                  </div>
+                  <div class="card-back">
+                    <h6 class="text-accent fw-bold">Modem (Modulyator-Demodulyator)</h6>
+                    <p class="small text-start">Provayderdan kelayotgan analog signalni raqamli signalga o'zgartiradi. Internet signalining manbai.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Router -->
+            <div class="col-md-4 col-sm-6">
+              <div class="interactive-device-card">
+                <div class="card-inner">
+                  <div class="card-front">
+                    <i class="fa-solid fa-wifi device-icon"></i>
+                    <h5 class="fw-bold">Wi-Fi Router</h5>
+                    <span class="badge bg-secondary">Batafsil</span>
+                  </div>
+                  <div class="card-back">
+                    <h6 class="text-accent fw-bold">Wi-Fi Router (Yo'naltirgich)</h6>
+                    <p class="small text-start">Kelgan internet signalini bir nechta qurilmalar (smartfon, noutbuk) o'rtasida simli va simsiz taqsimlaydi.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 3: Switch -->
+            <div class="col-md-4 col-sm-6">
+              <div class="interactive-device-card">
+                <div class="card-inner">
+                  <div class="card-front">
+                    <i class="fa-solid fa-network-wired device-icon"></i>
+                    <h5 class="fw-bold">Switch (Kommutator)</h5>
+                    <span class="badge bg-secondary">Batafsil</span>
+                  </div>
+                  <div class="card-back">
+                    <h6 class="text-accent fw-bold">Switch (Kommutator)</h6>
+                    <p class="small text-start">Faqatgina simli (Ethernet) qurilmalarni mahalliy tarmoqqa (LAN) birlashtirish va ma'lumot uzatish uchun ishlatiladi.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 4: Access Point -->
+            <div class="col-md-4 col-sm-6">
+              <div class="interactive-device-card">
+                <div class="card-inner">
+                  <div class="card-front">
+                    <i class="fa-solid fa-tower-broadcast device-icon"></i>
+                    <h5 class="fw-bold">Access Point</h5>
+                    <span class="badge bg-secondary">Batafsil</span>
+                  </div>
+                  <div class="card-back">
+                    <h6 class="text-accent fw-bold">Access Point (Kirish Nuqtasi)</h6>
+                    <p class="small text-start">Mavjud simli tarmoqni simsiz Wi-Fi hududiga kengaytirib beruvchi qo'shimcha uzatuvchi qurilma.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 5: Tarmoq kartasi -->
+            <div class="col-md-4 col-sm-6">
+              <div class="interactive-device-card">
+                <div class="card-inner">
+                  <div class="card-front">
+                    <i class="fa-solid fa-microchip device-icon"></i>
+                    <h5 class="fw-bold">Tarmoq kartasi</h5>
+                    <span class="badge bg-secondary">Batafsil</span>
+                  </div>
+                  <div class="card-back">
+                    <h6 class="text-accent fw-bold">Tarmoq kartasi (NIC)</h6>
+                    <p class="small text-start">Kompyuter yoki noutbukning ichiga o'rnatilgan mikrosxema bo'lib, LAN kabelni yoki Wi-Fi signalni qabul qilishga javob beradi.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 6: Ethernet kabel -->
+            <div class="col-md-4 col-sm-6">
+              <div class="interactive-device-card">
+                <div class="card-inner">
+                  <div class="card-front">
+                    <i class="fa-solid fa-cable-car device-icon" style="transform: rotate(90deg);"></i>
+                    <h5 class="fw-bold">Ethernet Kabel</h5>
+                    <span class="badge bg-secondary">Batafsil</span>
+                  </div>
+                  <div class="card-back">
+                    <h6 class="text-accent fw-bold">Ethernet Kabel (Patch-kord)</h6>
+                    <p class="small text-start">Kompyuter yoki routerlarni jismoniy ulash uchun ishlatiladigan sakkiz yadroli mis (RJ-45) simlar.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3-Bo'lim. Internetga ulanish turlari -->
+        <section class="custom-card scroll-animate" id="section-3">
+          <h2 class="section-title"><i class="fa-solid fa-sliders"></i> 3-Bo'lim. Internetga ulanish turlari</h2>
+          <p>Internetga ulanishning bir nechta keng tarqalgan texnologiyalari mavjud bo'lib, ular tezligi va ishonchliligi bilan farqlanadi:</p>
+          
+          <div class="table-responsive mt-3">
+            <table class="table table-bordered table-custom">
+              <thead>
+                <tr>
+                  <th>Ulanish turi</th>
+                  <th>Texnologiya</th>
+                  <th>Afzalliklari</th>
+                  <th>Kamchiliklari</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Simli (Ethernet)</strong></td>
+                  <td>RJ-45 kabel orqali to'g'ridan-to'g'ri LAN portga</td>
+                  <td>Eng yuqori va barqaror tezlik, signallar uzilmaydi</td>
+                  <td>Kompyuterni ko'chirib yurish cheklangan, kabellar xalaqit beradi</td>
+                </tr>
+                <tr>
+                  <td><strong>Simsiz (Wi-Fi)</strong></td>
+                  <td>Radio to'lqinlar orqali router orqali ulanish</td>
+                  <td>Harakatlanish erkinligi, bir vaqtda ko'p qurilma ulanishi</td>
+                  <td>Tezlik to'siqlarga (devorlar) qarab pasayishi mumkin</td>
+                </tr>
+                <tr>
+                  <td><strong>Mobil Internet (4G/5G)</strong></td>
+                  <td>SIM-karta orqali mobil minoralardan</td>
+                  <td>Istalgan joyda aloqa mavjudligi, noutbuk va telefonlar uchun qulay</td>
+                  <td>Trafik (Megabayt) cheklanganligi, qimmatroq narx</td>
+                </tr>
+                <tr>
+                  <td><strong>USB Modem</strong></td>
+                  <td>Noutbuk USB portiga o'rnatiladigan SIM modem</td>
+                  <td>Mobil tarmoq bor joyda ishlashi, ixchamlik</td>
+                  <td>Faqat bitta kompyuterga mo'ljallangan</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4-Bo'lim. Noutbukni Wi-Fi orqali internetga ulash -->
+        <section class="custom-card scroll-animate" id="section-4">
+          <h2 class="section-title"><i class="fa-solid fa-laptop"></i> 4-Bo'lim. Noutbukni Wi-Fi ga ulash</h2>
+          <p>Noutbuklar ichki Wi-Fi modulga ega bo'lganligi sababli qo'shimcha qurilmasiz ulanadi. Windows operatsion tizimining <strong>rus tilidagi interfeysi</strong> misolida bosqichma-bosqich jarayonni ko'ring:</p>
+          
+          <div class="row">
+            <div class="col-md-6 mb-4 mb-md-0">
+              <h5 class="text-accent fw-bold"><i class="fa-solid fa-list-ol me-2"></i> Ruscha sozlash ketma-ketligi:</h5>
+              <ol class="ps-3">
+                <li class="mb-2">Ekranning pastki o'ng burchagida joylashgan <strong>Панель задач</strong> (Vazifalar paneli) tizim paneli (tray) hududiga o'ting.</li>
+                <li class="mb-2">Tarmoq belgisi — <strong>Значок Wi-Fi / Сеть</strong> ustiga bosing.</li>
+                <li class="mb-2">Ochilgan oynada faol simsiz tarmoqlar ro'yxatidan keraklisini tanlang.</li>
+                <li class="mb-2"><strong>Подключиться</strong> (Ulanish) tugmasini bosing.</li>
+                <li class="mb-2">Agar tarmoq himoyalangan bo'lsa, xavfsizlik kalitini (parol) kiriting va <strong>Далее</strong> (Keyingi) tugmasini bosing.</li>
+              </ol>
+            </div>
+            
+            <div class="col-md-6">
+              <!-- Interactive Wi-Fi Simulator inside Windows UI style -->
+              <div class="wifi-step-container">
+                <div class="text-center text-white small mb-2"><i class="fa-brands fa-windows"></i> Windows 10/11 Wi-Fi simulyatori</div>
+                
+                <!-- Simulated Windows Tray -->
+                <div class="windows-taskbar-tray" id="winTray" onclick="toggleWifiFlyout()">
+                  <i class="fa-solid fa-volume-high"></i>
+                  <i class="fa-solid fa-wifi text-warning" id="trayWifiIcon"></i>
+                  <span style="font-size: 0.85rem;" id="trayTime">13:02</span>
+                </div>
+
+                <!-- Wi-Fi flyout panel -->
+                <div class="wifi-flyout d-none" id="wifiFlyout">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold text-white small">Wi-Fi: Включено</span>
+                    <i class="fa-solid fa-rotate-right btn btn-sm btn-outline-secondary py-0" onclick="refreshWifiNetworks()"></i>
+                  </div>
+                  
+                  <div id="wifiList">
+                    <div class="wifi-network-item" onclick="selectWifiNetwork(this, 'Hospital_Staff_5G')">
+                      <span><i class="fa-solid fa-lock me-2"></i> Hospital_Staff_5G</span>
+                      <i class="fa-solid fa-signal"></i>
+                    </div>
+                    <div class="wifi-network-item" onclick="selectWifiNetwork(this, 'Bemorlar_Net')">
+                      <span><i class="fa-solid fa-lock me-2"></i> Bemorlar_Net</span>
+                      <i class="fa-solid fa-signal text-secondary"></i>
+                    </div>
+                    <div class="wifi-network-item" onclick="selectWifiNetwork(this, 'Napasov_iPhone')">
+                      <span><i class="fa-solid fa-lock me-2"></i> Napasov_iPhone</span>
+                      <i class="fa-solid fa-signal"></i>
+                    </div>
+                  </div>
+
+                  <!-- Connect password input panel (hidden by default) -->
+                  <div class="mt-3 p-2 bg-dark rounded d-none" id="wifiPasswordBox">
+                    <label class="small text-muted mb-1">Введите сетевой пароль:</label>
+                    <input type="password" id="wifiPasswordInput" class="form-control form-control-sm bg-secondary text-white border-secondary mb-2" value="12345678">
+                    <div class="d-flex justify-content-end gap-2">
+                      <button class="btn btn-sm btn-secondary" onclick="cancelWifiConnect()">Отмена</button>
+                      <button class="btn btn-sm btn-warning text-white" style="background-color: var(--accent);" onclick="submitWifiConnect()">Подключиться</button>
+                    </div>
+                  </div>
+
+                  <div class="text-center text-success mt-3 small d-none" id="wifiSuccessMsg">
+                    <i class="fa-solid fa-circle-check"></i> Подключено, защищено!
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5-Bo'lim. Shaxsiy kompyuterni Wi-Fi ga ulash -->
+        <section class="custom-card scroll-animate" id="section-5">
+          <h2 class="section-title"><i class="fa-solid fa-computer"></i> 5-Bo'lim. Shaxsiy kompyuterni Wi-Fi ga ulash</h2>
+          <p>Aksariyat statsionar shaxsiy kompyuterlar (PC) ona platasida ichki Wi-Fi modul bo'lmaydi. Ularni simsiz tarmoqqa ulash uchun <strong>Wi-Fi adapterlaridan</strong> foydalaniladi:</p>
+          
+          <div class="row mt-4">
+            <div class="col-md-6 mb-3">
+              <div class="p-4 rounded bg-secondary-subtle border border-secondary text-center">
+                <i class="fa-solid fa-usb fs-2 text-accent mb-3"></i>
+                <h5 class="fw-bold">USB Wi-Fi adapter</h5>
+                <p class="small text-muted text-start">Kompyuterning istalgan USB portiga o'rnatiladigan kichik qurilma. O'rnatish juda oson (Plug & Play), lekin tezligi PCIe adapterlariga qaraganda biroz pastroq bo'lishi mumkin.</p>
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <div class="p-4 rounded bg-secondary-subtle border border-secondary text-center">
+                <i class="fa-solid fa-microchip fs-2 text-accent mb-3"></i>
+                <h5 class="fw-bold">PCIe Wi-Fi adapter</h5>
+                <p class="small text-muted text-start">Tizim bloki ichiga, ona plataning PCI Express slotiga o'rnatiladigan tarmoq platasi. Tashqi antennalarga ega bo'lib, tezroq va barqarorroq uzatish tezligini beradi.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6-Bo'lim. Ethernet kabel orqali ulanish -->
+        <section class="custom-card scroll-animate" id="section-6">
+          <h2 class="section-title"><i class="fa-solid fa-plug"></i> 6-Bo'lim. Ethernet kabel orqali ulanish</h2>
+          <p>Ethernet (kabel) orqali ulanish eng tez va barqaror ulanish turi hisoblanadi. Buning uchun <strong>RJ-45</strong> konnektorli tarmoq kabeli va kompyuterdagi <strong>LAN porti</strong> kerak bo'ladi.</p>
+          
+          <div class="row">
+            <div class="col-md-7 mb-4 mb-md-0">
+              <h5 class="text-accent fw-bold"><i class="fa-solid fa-circle-check me-2"></i> Ulanish bosqichlari:</h5>
+              <ul class="ps-3">
+                <li class="mb-2">Kabelning bir uchini Router orqa panelidagi <strong>LAN</strong> portiga, ikkinchi uchini esa shaxsiy kompyuter orqasidagi <strong>LAN portiga</strong> ulaymiz.</li>
+                <li class="mb-2">Windows sozlamalarida ulanishni tekshirish uchun: <strong>Параметры → Сеть и Интернет → Ethernet</strong> menyusiga o'tamiz.</li>
+                <li class="mb-2">Agar ulanish to'g'ri bo'lsa, tarmoq holati <strong>"Сеть"</strong> (yoki tarmoq nomi) va <strong>"Подключено"</strong> rejimida ko'rinadi.</li>
+              </ul>
+            </div>
+
+            <div class="col-md-5">
+              <!-- Interactive Cable Connector -->
+              <div class="p-3 bg-secondary-subtle rounded border border-secondary">
+                <div class="text-center small mb-3 text-white">Kabelni LAN portga ulab ko'ring:</div>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <div class="text-center">
+                    <span class="badge bg-secondary mb-1">Router LAN</span>
+                    <div class="lan-port" id="routerPort">
+                      <i class="fa-solid fa-network-wired text-muted"></i>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <span class="badge bg-secondary mb-1">Kompyuter LAN</span>
+                    <div class="lan-port" id="pcPort">
+                      <i class="fa-solid fa-computer text-muted"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="cable-box" id="cableBox">
+                  <div class="cable-connector" id="ethernetCable" draggable="true" ondragstart="dragCable(event)">
+                    <i class="fa-solid fa-plug text-white"></i>
+                  </div>
+                </div>
+                <div class="text-center text-success small mt-2 d-none" id="cableSuccess">
+                  <i class="fa-solid fa-circle-check"></i> Kabel ulangan va faol!
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7-Bo'lim. Telefon hotspoti orqali internetga ulanish -->
+        <section class="custom-card scroll-animate" id="section-7">
+          <h2 class="section-title"><i class="fa-solid fa-mobile-screen"></i> 7-Bo'lim. Telefon hotspoti orqali internetga ulanish</h2>
+          <p>Tashqarida yoki uydagi router o'chib qolganda smartfon mobil internetini kompyuterga ulash mumkin:</p>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="p-3 rounded bg-secondary-subtle border border-secondary">
+                <h5 class="text-accent fw-bold"><i class="fa-brands fa-android me-2"></i> Android telefonlarida:</h5>
+                <p class="small mb-0"><strong>Настройки → Сеть и Интернет → Точка доступа и модем → Мобильная точка доступа</strong> menyusiga kirib, faollashtiring. Shundan so'ng, noutbuk Wi-Fi ro'yxatida telefon nomi va paroli paydo bo'ladi.</p>
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+              <div class="p-3 rounded bg-secondary-subtle border border-secondary">
+                <h5 class="text-accent fw-bold"><i class="fa-brands fa-apple me-2"></i> iPhone telefonlarida:</h5>
+                <p class="small mb-0"><strong>Настройки → Режим модема</strong> bo'limiga kirib, <strong>"Разрешать другим"</strong> tugmasini yoqing. Wi-Fi orqali ulanish rejimiga o'tadi.</p>
+              </div>
+            </div>
+          </div>
+
+          <h5 class="text-accent mt-3"><i class="fa-solid fa-link me-2"></i> Telefonga kompyuterni ulash usullari:</h5>
+          <ul>
+            <li><strong>Wi-Fi modem:</strong> Telefonni simsiz router sifatida ishlatish (eng keng tarqalgan).</li>
+            <li><strong>USB modem:</strong> Telefonni USB kabel orqali kompyuterga ulab, sozlamalardan "USB-модем" rejimini yoqish. statsionar PC uchun juda mos.</li>
+            <li><strong>Bluetooth modem:</strong> Bluetooth orqali ulash (tezligi sekinroq, lekin energiya kam sarflaydi).</li>
+          </ul>
+        </section>
+
+        <!-- 8-Bo'lim. Internet sozlamalari -->
+        <section class="custom-card scroll-animate" id="section-8">
+          <h2 class="section-title"><i class="fa-solid fa-gear"></i> 8-Bo'lim. Internet sozlamalari</h2>
+          <p>Windows 10/11 operatsion tizimida tarmoqni mukammal sozlash va tekshirish uchun <strong>Параметры</strong> (Sozlamalar) panelidan foydalanamiz:</p>
+          
+          <div class="p-3 rounded bg-dark border border-secondary">
+            <h5 class="text-white mb-3 fw-bold"><i class="fa-solid fa-folder-open text-warning me-2"></i> Параметры &rarr; Сеть и Интернет</h5>
+            
+            <div class="row">
+              <div class="col-md-4 mb-2">
+                <div class="p-2 border border-secondary rounded text-center text-accent small">
+                  <strong>Wi-Fi</strong><br><span class="text-muted" style="font-size:0.75rem;">Simsiz tarmoqlarni yoqish/o'chirish, mavjud routerlarni boshqarish.</span>
+                </div>
+              </div>
+              
+              <div class="col-md-4 mb-2">
+                <div class="p-2 border border-secondary rounded text-center text-accent small">
+                  <strong>Ethernet</strong><br><span class="text-muted" style="font-size:0.75rem;">Simli ulanish drayveri holati, tezlik va IP parametrlarini sozlash.</span>
+                </div>
+              </div>
+
+              <div class="col-md-4 mb-2">
+                <div class="p-2 border border-secondary rounded text-center text-accent small">
+                  <strong>VPN</strong><br><span class="text-muted" style="font-size:0.75rem;">Tashqi xavfsiz kanallarga masofaviy ulanish sozlamalari.</span>
+                </div>
+              </div>
+              
+              <div class="col-md-6 mb-2">
+                <div class="p-2 border border-secondary rounded text-center text-accent small">
+                  <strong>Прокси (Proxy)</strong><br><span class="text-muted" style="font-size:0.75rem;">Tashqi server vositachilari orqali ishlash sozlamalari.</span>
+                </div>
+              </div>
+
+              <div class="col-md-6 mb-2">
+                <div class="p-2 border border-secondary rounded text-center text-accent small">
+                  <strong>Использование данных</strong><br><span class="text-muted" style="font-size:0.75rem;">Oxirgi 30 kunda ishlatilgan internet trafigini tahlil qilish.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9-Bo'lim. IP manzil va DNS -->
+        <section class="custom-card scroll-animate" id="section-9">
+          <h2 class="section-title"><i class="fa-solid fa-network-wired"></i> 9-Bo'lim. IP manzil va DNS</h2>
+          <p>Har bir tarmoqqa ulangan qurilmaning o'zining yagona manzili bo'ladi. Ular <strong>IP-manzil</strong> va <strong>DNS</strong> yordamida muloqot qiladi:</p>
+          
+          <ul>
+            <li><strong>IP address (Internet Protocol Address):</strong> Tarmoqdagi qurilmaning raqamli manzili.
+              <ul>
+                <li><strong>IPv4:</strong> To'rt qismdan iborat raqamlar, masalan: <code>192.168.1.34</code>. Router IP manzili ko'pincha <code>192.168.1.1</code> bo'ladi.</li>
+                <li><strong>IPv6:</strong> Mukammalroq va kengroq harfli-raqamli manzil.</li>
+              </ul>
+            </li>
+            <li><strong>DNS (Domain Name System):</strong> Sayt nomlarini IP manzillariga aylantirib beruvchi tarmoq xizmati. Masalan, siz brauzerda <code>google.com</code> deb yozganingizda, DNS uni <code>142.250.190.46</code> raqamiga o'zgartiradi.
+              <ul>
+                <li>Mashhur ochiq DNS: <code>8.8.8.8</code> (Google DNS), <code>1.1.1.1</code> (Cloudflare).</li>
+              </ul>
+            </li>
+          </ul>
+
+          <!-- Interactive DNS request visualization -->
+          <div class="mt-4 p-3 bg-secondary-subtle rounded border border-secondary">
+            <h6 class="text-accent fw-bold mb-3"><i class="fa-solid fa-diagram-project me-2"></i> DNS so'rovi qanday ishlaydi?</h6>
+            <div class="row align-items-center text-center text-white small">
+              <div class="col-3 border border-secondary p-2 rounded bg-dark">
+                <strong>Kompyuter</strong><br><code>google.com</code> so'rovi
+              </div>
+              <div class="col-1"><i class="fa-solid fa-arrow-right text-accent"></i></div>
+              <div class="col-4 border border-secondary p-2 rounded bg-dark">
+                <strong>DNS Server (8.8.8.8)</strong><br><span class="text-warning">Nomni IPga o'zgartirish</span>
+              </div>
+              <div class="col-1"><i class="fa-solid fa-arrow-right text-accent"></i></div>
+              <div class="col-3 border border-secondary p-2 rounded bg-dark">
+                <strong>Google Server</strong><br><code>142.250.190.46</code>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10-Bo'lim. Internet tezligini tekshirish -->
+        <section class="custom-card scroll-animate" id="section-10">
+          <h2 class="section-title"><i class="fa-solid fa-gauge-high"></i> 10-Bo'lim. Internet tezligini tekshirish</h2>
+          <p>Tarmoq ulanishining sifat ko'rsatkichlari quyidagi uchta mezon bilan o'lchanadi:</p>
+          
+          <div class="row text-center mb-4">
+            <div class="col-md-4">
+              <div class="p-3 bg-secondary-subtle rounded border border-secondary">
+                <h6 class="text-accent fw-bold">Ping (Kechikish)</h6>
+                <p class="mb-0 fs-5 text-white" id="simPing">-- ms</p>
+                <small class="text-muted">Signal serverga yetib borish vaqti. Qanchalik kam bo'lsa shunchalik yaxshi.</small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 bg-secondary-subtle rounded border border-secondary">
+                <h6 class="text-success fw-bold">Download (Yuklash)</h6>
+                <p class="mb-0 fs-5 text-white" id="simDownload">-- Mbps</p>
+                <small class="text-muted">Internetdan fayl va ma'lumotlarni yuklab olish tezligi.</small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 bg-secondary-subtle rounded border border-secondary">
+                <h6 class="text-info fw-bold">Upload (Uzatish)</h6>
+                <p class="mb-0 fs-5 text-white" id="simUpload">-- Mbps</p>
+                <small class="text-muted">Kompyuterdan internetga fayl yuborish tezligi.</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Speed Test Simulator -->
+          <div class="text-center p-3 bg-dark rounded border border-secondary" style="max-width:400px; margin: 0 auto;">
+            <h6 class="text-white mb-3">Tezlikni sinab ko'ring:</h6>
+            <div class="speedtest-gauge-box">
+              <canvas id="speedGauge" class="speedtest-gauge-canvas" width="200" height="200"></canvas>
+              <div class="speedtest-value-display">
+                <h3 class="fw-bold text-accent" id="gaugeVal">0.0</h3>
+                <span class="text-muted small">Mbps</span>
+              </div>
+            </div>
+            <button class="btn btn-warning text-white rounded-pill px-4 mt-3" style="background-color: var(--accent); border:none;" onclick="startSpeedTest()" id="speedTestBtn">
+              <i class="fa-solid fa-play me-2"></i> Тест скорости (Speed Test)
+            </button>
+          </div>
+        </section>
+
+        <!-- 11-Bo'lim. Tarmoq muammolarini aniqlash -->
+        <section class="custom-card scroll-animate" id="section-11">
+          <h2 class="section-title"><i class="fa-solid fa-triangle-exclamation"></i> 11-Bo'lim. Tarmoq muammolarini aniqlash</h2>
+          <p>Internet ishlamay qolganda yoki uzilishlar bo'lganda, quyidagi amallarni ketma-ket bajarish tavsiya qilinadi:</p>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="p-3 bg-secondary-subtle border border-secondary rounded">
+                <h6 class="text-accent fw-bold"><i class="fa-solid fa-wrench me-2"></i> Diagnostic bosqichlari (Ruscha):</h6>
+                <ol class="small ps-3 mb-0">
+                  <li>O'ng pastki tarmoq belgisini sichqoncha o'ng tugmasi bilan bosib, <strong>Диагностика неполадок</strong> (Muammolarni aniqlash) bandini tanlang.</li>
+                  <li>Adapter sozlamalarini tekshiring: <strong>Центр управления сетями → Изменение параметров адаптера</strong> bo'limida tarmoq kartasi o'chib qolmaganini tekshiring (Sifatli ishlashi uchun <strong>Включить</strong> buyrug'ini tanlang).</li>
+                  <li>Routerni elektr tarmog'idan 10 soniyaga uzib, qayta yoqing.</li>
+                </ol>
+              </div>
+            </div>
+
+            <!-- Diagnostics Simulator -->
+            <div class="col-md-6">
+              <div class="diag-box">
+                <h6 class="text-danger fw-bold" id="diagStatus"><i class="fa-solid fa-circle-xmark me-2"></i> Состояние сети: Без доступа к Интернету</h6>
+                <p class="small text-muted mt-2" id="diagLog">Tarmoq kartasi faol emas yoki xatolik yuz berdi.</p>
+                <div class="d-grid gap-2 mt-3">
+                  <button class="btn btn-sm btn-outline-warning text-accent" onclick="runDiagnostics()" id="diagBtn">
+                    <i class="fa-solid fa-circle-nodes me-2"></i> Диагностика неполадок
+                  </button>
+                  <button class="btn btn-sm btn-success d-none" id="restartAdapterBtn" onclick="restartAdapter()">
+                    <i class="fa-solid fa-arrows-rotate me-2"></i> Перезапустить адаптер (Включить)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 12-Bo'lim. CMD orqali tarmoqni tekshirish -->
+        <section class="custom-card scroll-animate" id="section-12">
+          <h2 class="section-title"><i class="fa-solid fa-terminal"></i> 12-Bo'lim. CMD orqali tarmoqni tekshirish</h2>
+          <p>Tizim ma'murlari tarmoqni tekshirish va nosozliklarni izlashda <strong>Командная строка (CMD)</strong> buyruqlaridan foydalanadilar:</p>
+          
+          <ul>
+            <li><strong><code>ipconfig</code>:</strong> Mahalliy IP manzilni, tarmoq niqobini va asosiy shlyuz (gateway) manzilini ko'rsatadi.</li>
+            <li><strong><code>ping [IP/sayt]</code>:</strong> Tashqi server bilan bog'lanish mavjudligini va kechikish vaqtini aniqlaydi. Masalan: <code>ping 8.8.8.8</code>.</li>
+            <li><strong><code>tracert [IP/sayt]</code>:</strong> Signalning qaysi yo'nalishlar (routerlar) orqali o'tayotganini ko'rsatadi (Traceroute).</li>
+            <li><strong><code>nslookup [sayt]</code>:</strong> Kiritilgan saytning IP manzilini DNS serverdan so'rab aniqlaydi.</li>
+          </ul>
+
+          <!-- Interactive CMD Terminal Simulator -->
+          <div class="cmd-terminal">
+            <div class="cmd-header">Microsoft Windows [Version 10.0.19045] - CMD Terminal Simulyatori</div>
+            <div id="cmdOutput">
+              C:\Users\Student> <span class="text-white">Tarmoqni tekshirish uchun ipconfig, ping 8.8.8.8, tracert google.com yoki nslookup yozing...</span>
+            </div>
+            <div class="cmd-input-line mt-2">
+              <span class="cmd-prompt">C:\Users\Student&gt;</span>
+              <input type="text" id="cmdInput" class="cmd-input" autofocus onkeydown="handleCmdInput(event)">
+            </div>
+          </div>
+        </section>
+
+        <!-- 13-Bo'lim. Internet xavfsizligi -->
+        <section class="custom-card scroll-animate" id="section-13">
+          <h2 class="section-title"><i class="fa-solid fa-shield-halved"></i> 13-Bo'lim. Internet xavfsizligi</h2>
+          <p>Internetga ulanish xavfsizlik choralarini bilishni talab qiladi. Ayniqsa tibbiyot muassasalarida bemorlarning shaxsiy va kardiogramma ma'lumotlari maxfiyligini saqlash shart:</p>
+          
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <h5 class="text-accent fw-bold"><i class="fa-solid fa-triangle-exclamation me-2"></i> Asosiy xavflar:</h5>
+              <ul>
+                <li><strong>Ochiq Wi-Fi xavfi:</strong> Parolsiz bepul tarmoqlarda hackerlar ma'lumotlarni o'g'irlashi oson.</li>
+                <li><strong>Phishing (Fishing):</strong> Soxta elektron xatlar orqali shifokorlar tizimiga kirish parollarini aldab olish.</li>
+              </ul>
+            </div>
+            <div class="col-md-6 mb-3">
+              <h5 class="text-success fw-bold"><i class="fa-solid fa-lock me-2"></i> Himoyalanish choralari:</h5>
+              <ul>
+                <li><strong>Kuchli parollar:</strong> Router va foydalanuvchi akkauntlariga murakkab belgili parollar qo'yish.</li>
+                <li><strong>VPN (Virtual Private Network):</strong> Tibbiyot muassasasi ma'lumotlarini shifrlangan maxsus xavfsiz kanal orqali uzatish.</li>
+                <li><strong>Antivirus:</strong> Tarmoq orqali kiruvchi troyan viruslarini bloklash.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 14-Bo'lim. Tibbiyotda internet texnologiyalari -->
+        <section class="custom-card scroll-animate" id="section-14">
+          <h2 class="section-title"><i class="fa-solid fa-user-doctor"></i> 14-Bo'lim. Tibbiyotda internet texnologiyalari</h2>
+          <p>Internet va tarmoq texnologiyalarining zamonaviy shifoxonadagi asosiy amaliyot misollari:</p>
+          
+          <div class="row">
+            <div class="col-md-4 mb-2">
+              <div class="p-3 bg-secondary-subtle border border-secondary rounded text-center h-100">
+                <i class="fa-solid fa-notes-medical fs-3 text-accent mb-2"></i>
+                <h6>Elektron Retseptlar</h6>
+                <p class="small text-muted mb-0">Bemorlar dori-darmon retseptini elektron ravishda dorixonadan olishadi.</p>
+              </div>
+            </div>
+            <div class="col-md-4 mb-2">
+              <div class="p-3 bg-secondary-subtle border border-secondary rounded text-center h-100">
+                <i class="fa-solid fa-video fs-3 text-accent mb-2"></i>
+                <h6>Masofaviy Konsilium</h6>
+                <p class="small text-muted mb-0">Dunyoning turli chekkasidagi yetakchi shifokorlar murakkab operatsiyalarda teletibbiyot orqali yordam berishadi.</p>
+              </div>
+            </div>
+            <div class="col-md-4 mb-2">
+              <div class="p-3 bg-secondary-subtle border border-secondary rounded text-center h-100">
+                <i class="fa-solid fa-cloud fs-3 text-accent mb-2"></i>
+                <h6>Bulutli Laboratoriyalar</h6>
+                <p class="small text-muted mb-0">Qon tahlillari natijalari darhol elektron bazaga (HIS) yuklanadi va bemorga SMS xabar jo'natiladi.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 15-Bo'lim. Interaktiv Tarmoq Simulyatori -->
+        <section class="custom-card scroll-animate" id="section-15">
+          <h2 class="section-title"><i class="fa-solid fa-network-wired"></i> 15-Bo'lim. Interaktiv Tarmoq Simulyatori</h2>
+          <p>Qurilmalarni (tugmalarni) ketma-ket bosish orqali ularni o'zaro bog'lang va tarmoq ulanishi sxemasini hosil qiling:</p>
+          
+          <div class="sandbox-canvas mb-3" id="sandboxCanvas">
+            <!-- Simulated elements inside canvas -->
+            <div class="sandbox-node" id="nodeModem" style="top: 150px; left: 50px;" onclick="selectSandboxNode('Modem')">
+              <i class="fa-solid fa-hard-drive"></i>
+              <span class="position-absolute bottom-0 text-white small" style="font-size:0.6rem;">Modem</span>
+            </div>
+
+            <div class="sandbox-node" id="nodeRouter" style="top: 150px; left: 250px;" onclick="selectSandboxNode('Router')">
+              <i class="fa-solid fa-wifi"></i>
+              <span class="position-absolute bottom-0 text-white small" style="font-size:0.6rem;">Router</span>
+            </div>
+
+            <div class="sandbox-node" id="nodePC" style="top: 50px; left: 500px;" onclick="selectSandboxNode('PC')">
+              <i class="fa-solid fa-computer"></i>
+              <span class="position-absolute bottom-0 text-white small" style="font-size:0.6rem;">PC</span>
+            </div>
+
+            <div class="sandbox-node" id="nodeLaptop" style="top: 230px; left: 500px;" onclick="selectSandboxNode('Laptop')">
+              <i class="fa-solid fa-laptop"></i>
+              <span class="position-absolute bottom-0 text-white small" style="font-size:0.6rem;">Laptop</span>
+            </div>
+            
+            <div id="sandboxLinks"></div>
+          </div>
+
+          <div class="d-flex justify-content-between flex-wrap gap-2">
+            <div class="small text-muted" id="sandboxHelper">Tugunni bosing so'ngra bog'lanadigan ikkinchi tugunni bosing (masalan, Modem va Router).</div>
+            <button class="btn btn-success font-weight-bold" onclick="runSandboxNetwork()" id="sandboxRunBtn" disabled>
+              <i class="fa-solid fa-circle-check me-2"></i> Tarmoqni yoqish (Запуск)
+            </button>
+          </div>
+          <div class="text-center text-success fw-bold mt-2 d-none" id="sandboxStatus">
+            <i class="fa-solid fa-globe"></i> Kompyuterlar internetga muvaffaqiyatli ulandi!
+          </div>
+        </section>
+
+        <!-- 16-Bo'lim. Amaliy topshiriqlar -->
+        <section class="custom-card scroll-animate" id="section-16">
+          <h2 class="section-title"><i class="fa-solid fa-circle-check"></i> 16-Bo'lim. Amaliy topshiriqlar</h2>
+          <p>Mavzuni to'liq o'rganish uchun quyidagi amaliy topshiriqlarni bajaring va har birini bajarib bo'lgach belgilang:</p>
+          
+          <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="fw-bold">Amaliyot bajarilishi:</span>
+              <span id="checklistProgressText" class="fw-bold text-accent">0% Bajarildi</span>
+            </div>
+            <div class="progress" style="height: 10px; background: rgba(255,255,255,0.05);">
+              <div id="checklistProgressBar" class="checklist-progress-bar-inner" role="progressbar"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="checklist-card-item">
+              <div class="checklist-checkbox" id="check-1" onclick="toggleChecklistItem(this, 1)"></div>
+              <div>
+                <h6 class="mb-1 text-white font-weight-bold">Wi-Fi simulyatorida tarmoqqa ulanish</h6>
+                <p class="small text-muted mb-0">Noutbuk tray panelini bosib, parol yordamida 'Hospital_Staff_5G' tarmog'iga ulanish.</p>
+              </div>
+            </div>
+            
+            <div class="checklist-card-item">
+              <div class="checklist-checkbox" id="check-2" onclick="toggleChecklistItem(this, 2)"></div>
+              <div>
+                <h6 class="mb-1 text-white font-weight-bold">Kabelni ulash simulyatorini yakunlash</h6>
+                <p class="small text-muted mb-0">Ethernet kabelini sudrab/birlashtirib Router va PC portlariga ulash.</p>
+              </div>
+            </div>
+
+            <div class="checklist-card-item">
+              <div class="checklist-checkbox" id="check-3" onclick="toggleChecklistItem(this, 3)"></div>
+              <div>
+                <h6 class="mb-1 text-white font-weight-bold">Tarmoq diagnostikasini o'tkazish</h6>
+                <p class="small text-muted mb-0">11-bo'limda tarmoq muammosini tuzatish uchun diagnostikani ishga tushirish.</p>
+              </div>
+            </div>
+
+            <div class="checklist-card-item">
+              <div class="checklist-checkbox" id="check-4" onclick="toggleChecklistItem(this, 4)"></div>
+              <div>
+                <h6 class="mb-1 text-white font-weight-bold">Speed Test bajarish</h6>
+                <p class="small text-muted mb-0">Internet tezligini o'lchash simulyatorini oxirigacha ishga tushirish.</p>
+              </div>
+            </div>
+
+            <div class="checklist-card-item">
+              <div class="checklist-checkbox" id="check-5" onclick="toggleChecklistItem(this, 5)"></div>
+              <div>
+                <h6 class="mb-1 text-white font-weight-bold">CMD orqali 'ipconfig' buyrug'ini kiritish</h6>
+                <p class="small text-muted mb-0">Mahalliy IP manzillarni aniqlash uchun komandalar satrida buyruqni tekshirish.</p>
+              </div>
+            </div>
+
+            <div class="checklist-card-item">
+              <div class="checklist-checkbox" id="check-6" onclick="toggleChecklistItem(this, 6)"></div>
+              <div>
+                <h6 class="mb-1 text-white font-weight-bold">CMD orqali 'ping 8.8.8.8' buyrug'ini tekshirish</h6>
+                <p class="small text-muted mb-0">Google global DNS serveri bilan aloqani CMD terminalida tekshirib ko'rish.</p>
+              </div>
+            </div>
+
+            <div class="checklist-card-item">
+              <div class="checklist-checkbox" id="check-7" onclick="toggleChecklistItem(this, 7)"></div>
+              <div>
+                <h6 class="mb-1 text-white font-weight-bold">Interaktiv tarmoq simulyatorida ulanishni yasash</h6>
+                <p class="small text-muted mb-0">Sandbox panelida barcha qurilmalarni o'zaro to'g'ri ulash va tarmoqni ishga tushirish.</p>
+              </div>
+            </div>
+
+            <div class="checklist-card-item">
+              <div class="checklist-checkbox" id="check-8" onclick="toggleChecklistItem(this, 8)"></div>
+              <div>
+                <h6 class="mb-1 text-white font-weight-bold">Quiz test savollarini yakunlash</h6>
+                <p class="small text-muted mb-0">Mavzu bo'yicha 20 ta test savolini to'liq yechish.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 17-Bo'lim. Bilimingizni sinang -->
+        <section class="custom-card scroll-animate" id="section-17">
+          <h2 class="section-title"><i class="fa-solid fa-graduation-cap"></i> 17-Bo'lim. Bilimingizni sinang (20 ta Test)</h2>
+          <p class="mb-4">Ushbu mavzu bo'yicha bilim darajangizni tekshirib ko'ring. Test yakunida 5 ballik OTM baholash tizimi bo'yicha baholanadi.</p>
+          
+          <div class="p-4 rounded bg-dark border border-secondary" id="quizWrapperBox">
+            <div id="quizQuestionsContainer">
+              <!-- Questions are dynamically inserted here -->
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top border-secondary">
+              <button class="btn btn-secondary" onclick="prevQuizQuestion()" id="quizPrevBtn" disabled>
+                <i class="fa-solid fa-chevron-left me-2"></i> Avvalgisi
+              </button>
+              <span class="fw-bold text-accent" id="quizProgressLabel">Savol 1 / 20</span>
+              <button class="btn btn-info text-white" style="background-color: var(--accent); border:none;" onclick="nextQuizQuestion()" id="quizNextBtn">
+                Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>
+              </button>
+            </div>
+
+            <!-- Result Container (hidden by default) -->
+            <div class="mt-4 p-4 bg-dark border border-secondary rounded text-center d-none" id="quizResultBox">
+              <h3 class="text-white mb-3"><i class="fa-solid fa-circle-check text-success me-2"></i> Test Yakunlandi!</h3>
+              <h4 class="mb-2 text-white">Natija: <span id="quizScoreText" class="text-accent fw-bold">-- / 20</span></h4>
+              <p id="quizPercentageText" class="text-muted">Foiz ko'rsatkichi: --%</p>
+              <div id="quizGradeBadge" class="badge bg-success fs-5 p-3 px-4 rounded-pill mb-3">Baho: --</div>
+              <div>
+                <button class="btn btn-warning text-white font-weight-bold" style="background-color: var(--accent); border:none;" onclick="restartQuiz()"><i class="fa-solid fa-arrows-rotate me-2"></i> Qaytadan topshirish</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 18-Bo'lim. Yakuniy Xulosa -->
+        <section class="custom-card scroll-animate" id="section-18">
+          <h2 class="section-title"><i class="fa-solid fa-flag-checkered"></i> 18-Bo'lim. Yakuniy Xulosa</h2>
+          <p>Ushbu elektron darslik orqali talaba kompyuter va noutbukni internetga ulash texnologiyalari, simli (Ethernet) va simsiz (Wi-Fi) tarmoqlar farqi, Windows ruscha sozlamalari, IP va DNS manzil mantiqiy jarayoni hamda tarmoq diagnostikasi bo'yicha mustahkam amaliy ko'nikmaga ega bo'ldi.</p>
+          
+          <div class="p-3 bg-secondary-subtle border border-secondary rounded">
+            <h6 class="text-accent fw-bold"><i class="fa-solid fa-user-doctor me-2"></i> Talabaning yakuniy AKT kompetensiyasi:</h6>
+            <ul class="mb-0 small">
+              <li>Lokal shifoxona tarmog'idagi Ethernet RJ-45 kabellarini to'g'ri ulash.</li>
+              <li>Bemorlar yoki shifokorlar noutbukida Wi-Fi parollarini kiritib internetga kirish.</li>
+              <li>Windows ruscha menyularida tarmoq drayverini diagnostika va restart qilish.</li>
+              <li>CMD komandalar satrida tarmoq sifatini to'liq tekshirish.</li>
+            </ul>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer mt-5">
+    <div class="container text-center py-4">
+      <p class="mb-0 text-muted">&copy; 2026. Tibbiyotda Axborot Texnologiyalari O'quv Moduli. Barcha huquqlar himoyalangan.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap bundle with Popper CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Javascript Logic -->
+  <script>
+    /* Theme Toggler */
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      const currentTheme = htmlEl.getAttribute('data-theme');
+      const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      htmlEl.setAttribute('data-theme', targetTheme);
+      localStorage.setItem('darslik-theme', targetTheme);
+      
+      if (targetTheme === 'dark') {
+        themeIcon.className = "fa-solid fa-sun";
+      } else {
+        themeIcon.className = "fa-solid fa-moon";
+      }
+    }
+
+    /* Scroll Progress Bar Mechanism */
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      document.getElementById('topProgressBar').style.width = scrolled + "%";
+      
+      // Update sidebar active state
+      updateSidebarActiveState();
+    });
+
+    function updateSidebarActiveState() {
+      const sections = document.querySelectorAll('section');
+      let currentSectionId = '';
+      
+      sections.forEach(sec => {
+        const top = sec.offsetTop - 120;
+        const scroll = window.scrollY;
+        if (scroll >= top) {
+          currentSectionId = sec.getAttribute('id');
+        }
+      });
+
+      if (currentSectionId) {
+        document.querySelectorAll('.toc-item').forEach(item => {
+          item.classList.toggle('active', item.getAttribute('id') === `toc-${currentSectionId}`);
+        });
+      }
+    }
+
+    /* Intersection Observer for Scroll Animations */
+    const scrollAnimateElements = document.querySelectorAll('.scroll-animate');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animated');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    scrollAnimateElements.forEach(el => observer.observe(el));
+
+    /* 4-Bo'lim: Wi-Fi Simulator Logic */
+    let selectedWifiNetworkName = '';
+    
+    function toggleWifiFlyout() {
+      const flyout = document.getElementById('wifiFlyout');
+      flyout.classList.toggle('d-none');
+      markChecklistItem(1); // Checked checklist item 1
+    }
+
+    function selectWifiNetwork(element, netName) {
+      document.querySelectorAll('.wifi-network-item').forEach(item => item.classList.remove('selected'));
+      element.classList.add('selected');
+      selectedWifiNetworkName = netName;
+      
+      const pwdBox = document.getElementById('wifiPasswordBox');
+      pwdBox.classList.remove('d-none');
+      document.getElementById('wifiSuccessMsg').classList.add('d-none');
+    }
+
+    function cancelWifiConnect() {
+      document.getElementById('wifiPasswordBox').classList.add('d-none');
+      document.querySelectorAll('.wifi-network-item').forEach(item => item.classList.remove('selected'));
+      selectedWifiNetworkName = '';
+    }
+
+    function submitWifiConnect() {
+      const pwd = document.getElementById('wifiPasswordInput').value;
+      if (pwd === "12345678") {
+        document.getElementById('wifiPasswordBox').classList.add('d-none');
+        const successMsg = document.getElementById('wifiSuccessMsg');
+        successMsg.classList.remove('d-none');
+        document.getElementById('trayWifiIcon').className = "fa-solid fa-wifi text-success";
+        // Check checklist item
+        markChecklistItem(1);
+      } else {
+        alert("Неверный ключ безопасности сети! (Parol: 12345678)");
+      }
+    }
+
+    function refreshWifiNetworks() {
+      alert("Поиск беспроводных сетей...");
+    }
+
+    /* 6-Bo'lim: Ethernet drag-connect simulator */
+    const cable = document.getElementById('ethernetCable');
+    const pcPort = document.getElementById('pcPort');
+    const routerPort = document.getElementById('routerPort');
+    let connectedToPc = false;
+    let connectedToRouter = false;
+
+    cable.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', 'cable');
+    });
+
+    pcPort.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    pcPort.addEventListener('drop', (e) => {
+      e.preventDefault();
+      connectedToPc = true;
+      pcPort.classList.add('active');
+      checkCableUlanish();
+    });
+
+    routerPort.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    routerPort.addEventListener('drop', (e) => {
+      e.preventDefault();
+      connectedToRouter = true;
+      routerPort.classList.add('active');
+      checkCableUlanish();
+    });
+
+    // Touch click fallback
+    cable.addEventListener('click', () => {
+      if (!connectedToRouter) {
+        connectedToRouter = true;
+        routerPort.classList.add('active');
+      } else if (!connectedToPc) {
+        connectedToPc = true;
+        pcPort.classList.add('active');
+      }
+      checkCableUlanish();
+    });
+
+    function checkCableUlanish() {
+      if (connectedToPc && connectedToRouter) {
+        cable.classList.add('connected');
+        document.getElementById('cableSuccess').classList.remove('d-none');
+        markChecklistItem(2);
+      }
+    }
+
+    /* 10-Bo'lim: Speed Test Gauge Logic */
+    let speedTestRunning = false;
+    function startSpeedTest() {
+      if (speedTestRunning) return;
+      speedTestRunning = true;
+      const btn = document.getElementById('speedTestBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Проверка...`;
+
+      let targetPing = Math.floor(Math.random() * 20) + 5;
+      let targetDownload = (Math.random() * 60 + 35).toFixed(1);
+      let targetUpload = (Math.random() * 30 + 15).toFixed(1);
+
+      animateGauge(targetDownload, () => {
+        document.getElementById('simPing').innerText = `${targetPing} ms`;
+        document.getElementById('simDownload').innerText = `${targetDownload} Mbps`;
+        document.getElementById('simUpload').innerText = `${targetUpload} Mbps`;
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-play me-2"></i> Тест скорости (Speed Test)`;
+        speedTestRunning = false;
+        markChecklistItem(4);
+      });
+    }
+
+    function animateGauge(targetVal, callback) {
+      let currentVal = 0;
+      const gaugeValEl = document.getElementById('gaugeVal');
+      const canvas = document.getElementById('speedGauge');
+      const ctx = canvas.getContext('2d');
+      
+      const interval = setInterval(() => {
+        if (currentVal >= parseFloat(targetVal)) {
+          clearInterval(interval);
+          drawGauge(ctx, parseFloat(targetVal));
+          callback();
+        } else {
+          currentVal += 2.5;
+          gaugeValEl.innerText = currentVal.toFixed(1);
+          drawGauge(ctx, currentVal);
+        }
+      }, 30);
+    }
+
+    function drawGauge(ctx, val) {
+      ctx.clearRect(0, 0, 200, 200);
+      
+      // Draw background arc
+      ctx.beginPath();
+      ctx.arc(100, 100, 80, Math.PI * 0.8, Math.PI * 2.2);
+      ctx.strokeStyle = '#222';
+      ctx.lineWidth = 12;
+      ctx.stroke();
+
+      // Draw value arc
+      ctx.beginPath();
+      let endAngle = Math.PI * 0.8 + (val / 100) * (Math.PI * 1.4);
+      ctx.arc(100, 100, 80, Math.PI * 0.8, endAngle);
+      ctx.strokeStyle = '#ff6b00';
+      ctx.lineWidth = 12;
+      ctx.stroke();
+    }
+
+    /* 11-Bo'lim: Diagnostics Simulator Logic */
+    let diagStep = 0;
+    function runDiagnostics() {
+      const btn = document.getElementById('diagBtn');
+      const log = document.getElementById('diagLog');
+      const status = document.getElementById('diagStatus');
+      
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Проверка сетевого адаптера...`;
+      
+      setTimeout(() => {
+        log.innerHTML = `<span class="text-warning">Сетевой адаптер "Ethernet" отключен вручную в настройках.</span>`;
+        btn.classList.add('d-none');
+        document.getElementById('restartAdapterBtn').classList.remove('d-none');
+        markChecklistItem(3);
+      }, 1500);
+    }
+
+    function restartAdapter() {
+      const btn = document.getElementById('restartAdapterBtn');
+      const log = document.getElementById('diagLog');
+      const status = document.getElementById('diagStatus');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-2"></i> Запуск адаптера...`;
+
+      setTimeout(() => {
+        log.innerHTML = `<span class="text-success"><i class="fa-solid fa-circle-check"></i> Адаптер успешно запущен. Подключение восстановлено!</span>`;
+        status.innerHTML = `<i class="fa-solid fa-circle-check text-success me-2"></i> Состояние сети: Подключено`;
+        status.className = "text-success fw-bold";
+        btn.classList.add('d-none');
+        // Check off checklist item
+        markChecklistItem(3);
+      }, 1500);
+    }
+
+    /* 12-Bo'lim: CMD Terminal Simulator Logic */
+    function handleCmdInput(event) {
+      if (event.key === 'Enter') {
+        const inputEl = document.getElementById('cmdInput');
+        const cmd = inputEl.value.trim().toLowerCase();
+        const outputEl = document.getElementById('cmdOutput');
+
+        let response = ``;
+        if (cmd === 'ipconfig') {
+          response = `
+Настройка протокола IP для Windows
+
+Адаптер беспроводной локальной сети Беспроводная сеть:
+   Состояние среды. . . . . . . . . : Подключено
+   IPv4-адрес. . . . . . . . . . . . : 192.168.1.34
+   Маска подсети . . . . . . . . . . : 255.255.255.0
+   Основной шлюз. . . . . . . . . . : 192.168.1.1
+`;
+          markChecklistItem(5);
+        } else if (cmd.startsWith('ping')) {
+          const target = cmd.split(' ')[1] || '8.8.8.8';
+          response = `
+Обмен пакетами с ${target} по 32 байт:
+Ответ от ${target}: число байт=32 время=12ms TTL=118
+Ответ от ${target}: число байт=32 время=14ms TTL=118
+Ответ от ${target}: число байт=32 время=10ms TTL=118
+
+Статистика Ping для ${target}:
+    Пакетов: отправлено = 3, получено = 3, потеряно = 0 (0% потерь)
+`;
+          if (target === '8.8.8.8') markChecklistItem(6);
+        } else if (cmd.startsWith('tracert')) {
+          const target = cmd.split(' ')[1] || 'google.com';
+          response = `
+Трассировка маршрута к ${target} с максимальным числом прыжков 30:
+  1     2 ms     1 ms     1 ms  192.168.1.1
+  2    12 ms    10 ms    11 ms  10.100.1.1
+  3    15 ms    14 ms    15 ms  ${target}
+Трассировка завершена.
+`;
+        } else if (cmd.startsWith('nslookup')) {
+          const target = cmd.split(' ')[1] || 'google.com';
+          response = `
+Server:  google-public-dns-a.google.com
+Address:  8.8.8.8
+
+Name:    ${target}
+Addresses:  142.250.190.46
+`;
+        } else {
+          response = `'${cmd}' не является внутренней или внешней командой. Доступные команды: ipconfig, ping, tracert, nslookup.`;
+        }
+
+        outputEl.innerHTML += `<br>C:\\Users\\Student&gt; ${inputEl.value}<br>${response.replace(/\n/g, '<br>')}`;
+        inputEl.value = '';
+        
+        // Scroll terminal to bottom
+        const term = document.querySelector('.cmd-terminal');
+        term.scrollTop = term.scrollHeight;
+      }
+    }
+
+    /* 15-Bo'lim: Visual Sandbox Simulator */
+    const sandboxLinks = {};
+    let firstSelectedNode = null;
+
+    function selectSandboxNode(nodeName) {
+      const nodeEl = document.getElementById(`node${nodeName}`);
+      
+      if (firstSelectedNode === null) {
+        firstSelectedNode = nodeName;
+        nodeEl.classList.add('selected');
+      } else {
+        if (firstSelectedNode === nodeName) {
+          nodeEl.classList.remove('selected');
+          firstSelectedNode = null;
+          return;
+        }
+
+        // Draw visual link
+        drawSandboxLink(firstSelectedNode, nodeName);
+        
+        document.getElementById(`node${firstSelectedNode}`).classList.remove('selected');
+        firstSelectedNode = null;
+        
+        checkSandboxCompletion();
+      }
+    }
+
+    function drawSandboxLink(nodeA, nodeB) {
+      const elA = document.getElementById(`node${nodeA}`);
+      const elB = document.getElementById(`node${nodeB}`);
+      const linksContainer = document.getElementById('sandboxLinks');
+      
+      const x1 = elA.offsetLeft + 32;
+      const y1 = elA.offsetTop + 32;
+      const x2 = elB.offsetLeft + 32;
+      const y2 = elB.offsetTop + 32;
+      
+      const dist = Math.sqrt((x2 - x1)**2 + (y2 - y1)**2);
+      const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+      const linkEl = document.createElement('div');
+      linkEl.className = 'sandbox-link-line';
+      linkEl.style.width = `${dist}px`;
+      linkEl.style.left = `${x1}px`;
+      linkEl.style.top = `${y1}px`;
+      linkEl.style.transform = `rotate(${angle}deg)`;
+      
+      linksContainer.appendChild(linkEl);
+      
+      sandboxLinks[`${nodeA}-${nodeB}`] = true;
+      sandboxLinks[`${nodeB}-${nodeA}`] = true;
+
+      elA.classList.add('connected');
+      elB.classList.add('connected');
+    }
+
+    function checkSandboxCompletion() {
+      // Must connect: Modem-Router, Router-PC, Router-Laptop
+      const hasModemRouter = sandboxLinks['Modem-Router'] || sandboxLinks['Router-Modem'];
+      const hasRouterPC = sandboxLinks['Router-PC'] || sandboxLinks['PC-Router'];
+      const hasRouterLaptop = sandboxLinks['Router-Laptop'] || sandboxLinks['Laptop-Router'];
+
+      if (hasModemRouter && hasRouterPC && hasRouterLaptop) {
+        document.getElementById('sandboxRunBtn').disabled = false;
+      }
+    }
+
+    function runSandboxNetwork() {
+      document.getElementById('sandboxStatus').classList.remove('d-none');
+      markChecklistItem(7);
+    }
+
+    /* 16-Bo'lim: Checklist Logics */
+    const checkedItems = {};
+
+    function toggleChecklistItem(element, itemId) {
+      if (checkedItems[itemId]) {
+        delete checkedItems[itemId];
+        element.classList.remove('checked');
+        element.innerHTML = "";
+      } else {
+        checkedItems[itemId] = true;
+        element.classList.add('checked');
+        element.innerHTML = '<i class="fa-solid fa-check"></i>';
+      }
+
+      // Recalculate progress
+      const total = 8;
+      const checkedCount = Object.keys(checkedItems).length;
+      const percentage = Math.round((checkedCount / total) * 100);
+
+      document.getElementById('checklistProgressText').innerText = `${percentage}% Bajarildi`;
+      document.getElementById('checklistProgressBar').style.width = `${percentage}%`;
+    }
+
+    function markChecklistItem(idx) {
+      const el = document.getElementById(`check-${idx}`);
+      if (el && !el.classList.contains('checked')) {
+        toggleChecklistItem(el, idx);
+      }
+    }
+
+    /* 17-Bo'lim: 20-Question Quiz Logic */
+    const quizQuestions = [
+      {
+        q: "Windows sozlamalarining rus tilidagi menyusida tarmoq sozlamalariga kirish qanday yozilgan?",
+        a: ["Параметры &rarr; Сеть и Интернет", "Свойства &rarr; Система", "Панель задач &rarr; Оформление", "Главная &rarr; Ячейки"],
+        c: 0
+      },
+      {
+        q: "Ethernet qanday ulanish turi hisoblanadi?",
+        a: ["Simsiz radio ulanish", "Kabel orqali simli ulanish", "Telefon hotspoti", "Sun'iy yo'ldosh tarmog'i"],
+        c: 1
+      },
+      {
+        q: "Analog signallarni raqamli signallarga o'zgartiruvchi asbob nima deb ataladi?",
+        a: ["Switch", "Router", "Modem", "Access Point"],
+        c: 2
+      },
+      {
+        q: "Foydalanuvchi noutbukida tarmoq ulanish darchasini yoqish uchun tray panelidagi qaysi belgini bosadi?",
+        a: ["Батарея", "Значок Wi-Fi / Сеть", "Громкость", "Дата и время"],
+        c: 1
+      },
+      {
+        q: "Bir varaq qog'ozda cheksiz foydalanish uchun kompyuterni parolsiz ulash xavfi nima deb ataladi?",
+        a: ["Xavfsiz ulanish", "Ochiq Wi-Fi xavfi (Shifrlanmagan tarmoq)", "VPN kanali", "Hotspot ulanish"],
+        c: 1
+      },
+      {
+        q: "Mahalliy simli tarmoq qurilmalarini yagona tizimga kabel bilan birlashtiruvchi ko'p portli tarmoq qurilmasi qaysi?",
+        a: ["Modem", "Switch (Kommutator)", "Access Point", "Simsiz Wi-Fi adapter"],
+        c: 1
+      },
+      {
+        q: "Windows 10/11 CMD terminalida kompyuterning IP manzillarini bilish buyrug'i qaysi?",
+        a: ["ping", "ipconfig", "nslookup", "tracert"],
+        c: 1
+      },
+      {
+        q: "IP manzillarni domen nomlariga (va aksincha) aylantirib beruvchi server qanday ataladi?",
+        a: ["DHCP", "DNS (Domain Name System)", "HTTP", "Proxy"],
+        c: 1
+      },
+      {
+        q: "Internet tezligini aniqlash jarayonida Ping nimani o'lchaydi?",
+        a: ["Fayl yuklash tezligini", "Signalning borib kelish kechikish vaqtini (ms)", "IP manzil sonini", "Megabayt hajmini"],
+        c: 1
+      },
+      {
+        q: "Statsionar kompyuterni (PC) Wi-Fi ga ulash uchun nima ishlatiladi?",
+        a: ["RJ-45 kabeli", "Wi-Fi adapteri (USB yoki PCIe)", "Switch", "Telefon Bluetoothi"],
+        c: 1
+      },
+      {
+        q: "Windows sozlamalarida cheklangan ulanish rus tilida qanday ifodalanadi?",
+        a: ["Без доступа к Интернету", "Подключено, защищено", "Отключено", "Свойства адаптера"],
+        c: 0
+      },
+      {
+        q: "Telefon mobil internetini noutbukka tarqatish rejimi nima deb ataladi?",
+        a: ["Прокси", "Режим модема / Точка доступа", "VPN", "Ethernet sharing"],
+        c: 1
+      },
+      {
+        q: "CMD terminalida 'ping 8.8.8.8' kiritilganda nimani tekshiramiz?",
+        a: ["DNS o'rnatilganini", "Google DNS serveri bilan aloqa mavjudligini", "Kompyuter drayverlarini", "Wi-Fi parolini"],
+        c: 1
+      },
+      {
+        q: "Kabel simlarining kompyuter yoki routerga ulanadigan uchi standart konnektori qaysi?",
+        a: ["USB Type-C", "RJ-45", "HDMI", "PCIe Slot"],
+        c: 1
+      },
+      {
+        q: "Shifrlangan va himoyalangan maxsus virtual tarmoq ulanishi texnologiyasi qaysi?",
+        a: ["Wi-Fi Direct", "VPN (Virtual Private Network)", "Proxy Server", "Access Point"],
+        c: 1
+      },
+      {
+        q: "Tibbiyotda 'MIS' nima?",
+        a: ["Ma'lumotlar uzatish kabeli", "Tibbiy Axborot Tizimi (Medical Information System)", "Router drayveri", "Antivirus markazi"],
+        c: 1
+      },
+      {
+        q: "CMD terminalida tarmoq hop-yo'nalishlarini (routerlarni) ko'rish uchun qaysi buyruq yoziladi?",
+        a: ["ping", "tracert", "nslookup", "ipconfig"],
+        c: 1
+      },
+      {
+        q: "Quyidagilardan qaysi biri global ochiq DNS server hisoblanadi?",
+        a: ["192.168.1.1", "8.8.8.8", "255.255.255.0", "127.0.0.1"],
+        c: 1
+      },
+      {
+        q: "Tibbiyot muassasasida shifokorlar nima uchun bepul ochiq Wi-Fi ishlatmasliklari kerak?",
+        a: ["Internet sekinligi uchun", "Bemorlarning maxfiy shaxsiy ma'lumotlari hackerlar tomonidan o'g'irlanishi xavfi uchun", "Telefon quvvati kamayishi sababli", "Ulanish limiti tugashi tufayli"],
+        c: 1
+      },
+      {
+        q: "Router IP manzili ko'p hollarda standart qanday raqamda bo'ladi?",
+        a: ["8.8.8.8", "192.168.1.1 yoki 192.168.0.1", "1.1.1.1", "10.0.0.1"],
+        c: 1
+      }
+    ];
+
+    let currentQuestionIdx = 0;
+    const userQuizAnswers = {};
+
+    function initQuiz() {
+      const container = document.getElementById('quizQuestionsContainer');
+      container.innerHTML = "";
+
+      quizQuestions.forEach((item, idx) => {
+        const qBox = document.createElement('div');
+        qBox.className = `quiz-question-box ${idx === 0 ? 'active' : ''}`;
+        qBox.id = `qBox${idx}`;
+
+        const mappedOptions = item.a.map((opt, optIdx) => ({ text: opt, originalIdx: optIdx }));
+        mappedOptions.sort(() => Math.random() - 0.5);
+
+        qBox.innerHTML = `
+          <h5 class="text-white mb-4">Savol ${idx + 1}: ${item.q}</h5>
+          <div class="row g-2">
+            ${mappedOptions.map((option, optIdx) => `
+              <div class="col-12">
+                <button class="quiz-option-btn" id="q${idx}opt${option.originalIdx}" onclick="selectQuizOption(${idx}, ${option.originalIdx})">
+                  <div class="d-flex align-items-center gap-3 option-content-wrapper">
+                    <span class="badge bg-secondary rounded-circle" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">${String.fromCharCode(65 + optIdx)}</span>
+                    <span class="option-text text-start">${option.text}</span>
+                  </div>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(qBox);
+      });
+      updateQuizNav();
+    }
+
+    function selectQuizOption(questionIdx, optionIdx) {
+      if (userQuizAnswers[questionIdx] !== undefined) return;
+
+      userQuizAnswers[questionIdx] = optionIdx;
+      const question = quizQuestions[questionIdx];
+      const correctOpt = question.c;
+
+      const optBtn = document.getElementById(`q${questionIdx}opt${optionIdx}`);
+      if (optionIdx === correctOpt) {
+        optBtn.classList.add('correct');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      } else {
+        optBtn.classList.add('incorrect');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-xmark ms-auto"></i>';
+        
+        const correctBtn = document.getElementById(`q${questionIdx}opt${correctOpt}`);
+        correctBtn.classList.add('correct');
+        correctBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      }
+    }
+
+    function prevQuizQuestion() {
+      if (currentQuestionIdx > 0) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx--;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      }
+    }
+
+    function nextQuizQuestion() {
+      if (currentQuestionIdx < quizQuestions.length - 1) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx++;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function updateQuizNav() {
+      document.getElementById('quizProgressLabel').innerText = `Savol ${currentQuestionIdx + 1} / 20`;
+      document.getElementById('quizPrevBtn').disabled = (currentQuestionIdx === 0);
+      
+      const nextBtn = document.getElementById('quizNextBtn');
+      if (currentQuestionIdx === quizQuestions.length - 1) {
+        nextBtn.innerHTML = 'Natijani ko\'rish <i class="fa-solid fa-square-poll-vertical ms-2"></i>';
+        nextBtn.className = "btn btn-success";
+      } else {
+        nextBtn.innerHTML = 'Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>';
+        nextBtn.className = "btn btn-info text-white";
+        nextBtn.style.backgroundColor = "var(--accent)";
+      }
+    }
+
+    function showQuizResults() {
+      document.getElementById('quizQuestionsContainer').style.display = 'none';
+      document.getElementById('quizPrevBtn').style.display = 'none';
+      document.getElementById('quizNextBtn').style.display = 'none';
+      document.getElementById('quizProgressLabel').style.display = 'none';
+
+      let score = 0;
+      quizQuestions.forEach((q, idx) => {
+        if (userQuizAnswers[idx] === q.c) {
+          score++;
+        }
+      });
+
+      const percentage = Math.round((score / quizQuestions.length) * 100);
+      let grade = "2 (Qoniqarsiz)";
+      let gradeClass = "bg-danger";
+
+      if (percentage >= 86) {
+        grade = "5 (A'lo)";
+        gradeClass = "bg-success";
+      } else if (percentage >= 71) {
+        grade = "4 (Yaxshi)";
+        gradeClass = "bg-primary";
+      } else if (percentage >= 55) {
+        grade = "3 (Qoniqarli)";
+        gradeClass = "bg-warning text-dark";
+      }
+
+      document.getElementById('quizScoreText').innerText = `${score} / 20`;
+      document.getElementById('quizPercentageText').innerText = `Foiz ko'rsatkichi: ${percentage}%`;
+      
+      const gradeBadge = document.getElementById('quizGradeBadge');
+      gradeBadge.className = `badge ${gradeClass} fs-5 p-3 px-4 rounded-pill`;
+      gradeBadge.innerText = `Baho: ${grade}`;
+
+      document.getElementById('quizResultBox').classList.remove('d-none');
+      markChecklistItem(8);
+    }
+
+    function restartQuiz() {
+      currentQuestionIdx = 0;
+      for (let i = 0; i < quizQuestions.length; i++) {
+        delete userQuizAnswers[i];
+      }
+
+      document.getElementById('quizQuestionsContainer').style.display = 'block';
+      document.getElementById('quizPrevBtn').style.display = 'inline-block';
+      document.getElementById('quizNextBtn').style.display = 'inline-block';
+      document.getElementById('quizProgressLabel').style.display = 'inline-block';
+      document.getElementById('quizResultBox').classList.add('d-none');
+
+      initQuiz();
+    }
+
+    // Initialize Everything on load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Set Theme from storage
+      const savedTheme = 'dark'; localStorage.setItem('darslik-theme', 'dark');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      const themeIcon = document.getElementById('themeIcon');
+      if (themeIcon) {
+        themeIcon.className = savedTheme === 'dark' ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      }
+
+      initQuiz();
+      drawGauge(document.getElementById('speedGauge').getContext('2d'), 0);
+      
+      // Initialize collapsible sidebar
+      initCollapsibleSidebar();
+    });
+
+    // Collapsible Sidebar Navigation
+    function initCollapsibleSidebar() {
+      const sidebarCol = document.querySelector('.col-lg-3.d-none.d-lg-block');
+      const contentCol = document.querySelector('.col-lg-9.col-12');
+      if (!sidebarCol || !contentCol) return;
+
+      sidebarCol.id = 'sidebarCol';
+      contentCol.id = 'contentCol';
+
+      // Create Hide Button
+      const hideBtn = document.createElement('button');
+      hideBtn.className = 'btn btn-sm w-100 mb-4 d-flex align-items-center justify-content-center gap-2';
+      hideBtn.id = 'hideSidebarBtn';
+      hideBtn.style.border = '1px solid var(--accent)';
+      hideBtn.style.color = 'var(--accent)';
+      hideBtn.style.background = 'transparent';
+      hideBtn.style.borderRadius = '10px';
+      hideBtn.style.padding = '8px 12px';
+      hideBtn.style.fontWeight = '600';
+      hideBtn.style.transition = 'all 0.3s ease';
+      hideBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i> <span>Mundarijani yashirish</span>';
+
+      // Add hover effect
+      hideBtn.addEventListener('mouseenter', () => {
+        hideBtn.style.background = 'var(--accent)';
+        hideBtn.style.color = '#000000';
+      });
+      hideBtn.addEventListener('mouseleave', () => {
+        hideBtn.style.background = 'transparent';
+        hideBtn.style.color = 'var(--accent)';
+      });
+      
+      const sidebarSticky = sidebarCol.querySelector('.sidebar-sticky');
+      if (sidebarSticky) {
+        sidebarSticky.insertBefore(hideBtn, sidebarSticky.firstChild);
+      }
+
+      // Create Floating Show Button
+      const showBtn = document.createElement('button');
+      showBtn.className = 'btn d-none';
+      showBtn.id = 'showSidebarBtn';
+      showBtn.style.position = 'fixed';
+      showBtn.style.left = '20px';
+      showBtn.style.bottom = '80px';
+      showBtn.style.zIndex = '999';
+      showBtn.style.width = '45px';
+      showBtn.style.height = '45px';
+      showBtn.style.borderRadius = '50%';
+      showBtn.style.display = 'flex';
+      showBtn.style.alignItems = 'center';
+      showBtn.style.justifyContent = 'center';
+      showBtn.style.border = 'none';
+      showBtn.style.background = 'linear-gradient(135deg, var(--accent), var(--primary-cyan, #4facfe))';
+      showBtn.style.boxShadow = '0 4px 15px var(--accent-glow)';
+      showBtn.innerHTML = '<i class="fa-solid fa-list-ul" style="color: #000; font-size: 1.1rem;"></i>';
+      document.body.appendChild(showBtn);
+
+      const toggleSidebar = (collapse) => {
+        if (collapse) {
+          sidebarCol.classList.remove('d-lg-block');
+          sidebarCol.classList.add('d-none');
+          contentCol.classList.remove('col-lg-9');
+          contentCol.classList.add('col-lg-12');
+          showBtn.classList.remove('d-none');
+          localStorage.setItem('sidebar-collapsed', 'true');
+        } else {
+          sidebarCol.classList.add('d-lg-block');
+          sidebarCol.classList.remove('d-none');
+          contentCol.classList.add('col-lg-9');
+          contentCol.classList.remove('col-lg-12');
+          showBtn.classList.add('d-none');
+          localStorage.setItem('sidebar-collapsed', 'false');
+        }
+        window.dispatchEvent(new Event('resize'));
+      };
+
+      hideBtn.addEventListener('click', () => toggleSidebar(true));
+      showBtn.addEventListener('click', () => toggleSidebar(false));
+
+      // Restore State
+      const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+      if (isCollapsed) {
+        toggleSidebar(true);
+      }
+    }
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.href = '../index.html';
+    }
+
+        function applyAuthorName() {
+      const loginName = localStorage.getItem('darslik_login') || 'Napasov';
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      applyAuthorName();
+    });
+  </script>
+
+</body>
+</html>

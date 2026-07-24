@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="320" height="200" rx="16" fill="url(#bgGrad)" />
+  <rect width="318" height="198" x="1" y="1" rx="15" fill="none" stroke="#06b6d4" stroke-width="1.5" opacity="0.3"/>
+  
+  <!-- Topic Graphic Art -->
+  
+            <rect x="140" y="65" width="80" height="80" rx="14" fill="rgba(6,182,212,0.2)" stroke="#06b6d4" stroke-width="3"/>
+            <path d="M160,85 H200 V125 H160 Z" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="2"/>
+            <text x="170" y="110" fill="#ffffff" font-family="sans-serif" font-weight="bold" font-size="14">CPU</text>
+            <path d="M140,85 H120 M140,105 H120 M140,125 H120 M220,85 H240 M220,105 H240 M220,125 H240" stroke="#06b6d4" stroke-width="3"/>
+        
+  
+  <!-- Subtle Gradient Overlay -->
+  <rect width="320" height="200" fill="none" opacity="0.1" stroke="#ffffff" stroke-width="1"/>
+</svg>

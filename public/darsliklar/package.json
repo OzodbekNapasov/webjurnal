@@ -1,0 +1,13 @@
+{
+  "name": "htmldarsliklar",
+  "version": "1.0.0",
+  "description": "Elektron Darsliklar Portali",
+  "main": "index.html",
+  "scripts": {
+    "dev": "http-server -p 4000",
+    "start": "http-server -p 4000"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

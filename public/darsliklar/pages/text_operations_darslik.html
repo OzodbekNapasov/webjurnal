@@ -1,0 +1,2604 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <script>
+    // Immediate login check before rendering
+    const savedLogin = localStorage.getItem('darslik_login');
+    if (savedLogin !== 'Napasov' && savedLogin !== 'Umirov') {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elektron Darslik: Matnni belgilash, nusxalash va joylashtirish (Ctrl+C / Ctrl+V)</title>
+  <link rel="icon" type="image/png" href="../LOGO.png">
+  
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Google Fonts: Poppins (headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0b0f19;           /* Cyber Navy Dark */
+      --secondary-bg: #161b26;         /* Slate 900 */
+      --text-main: #f8fafc;            /* White slate */
+      --text-muted: #94a3b8;           /* Muted slate */
+      --text-light: #cbd5e1;           /* Light slate */
+      --card-bg: rgba(22, 27, 38, 0.75);/* Glassmorphism Navy */
+      --border-color: rgba(255, 255, 255, 0.08);
+      --accent: #06b6d4;               /* Emerald Green */
+      --accent-glow: rgba(16, 185, 129, 0.35);
+      --secondary-accent: #10b981;      /* Violet */
+      --secondary-accent-glow: rgba(16, 185, 129, 0.25);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --error: #ef4444;
+      --error-glow: rgba(239, 68, 68, 0.2);
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;           /* Light Slate */
+      --secondary-bg: #ffffff;
+      --text-main: #0b0f19;            /* Deep Blue */
+      --text-muted: #475569;           /* Slate 600 */
+      --text-light: #1e293b;           /* Slate 800 */
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --border-color: rgba(11, 15, 25, 0.08);
+      --accent: #059669;               /* Deep Emerald */
+      --accent-glow: rgba(5, 150, 105, 0.15);
+      --secondary-accent: #7c3aed;      /* Deep Violet */
+      --secondary-accent-glow: rgba(124, 58, 237, 0.10);
+      --shadow: 0 10px 30px rgba(11, 15, 25, 0.05);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      transition: var(--transition-smooth);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-top: 56px;
+    }
+
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    .text-light {
+      color: var(--text-light) !important;
+    }
+    p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    /* Fixed style overrides for light theme unreadable texts */
+    [data-theme="light"] .bg-dark {
+      background-color: #0b0f19 !important;
+      color: #e2e8f0 !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    [data-theme="light"] .bg-dark * {
+      color: #ffffff !important;
+    }
+    [data-theme="light"] .bg-dark .text-muted {
+      color: #94a3b8 !important;
+    }
+    [data-theme="light"] .bg-dark .text-success {
+      color: #10b981 !important;
+    }
+    [data-theme="light"] .bg-dark .text-warning {
+      color: #ffc107 !important;
+    }
+    [data-theme="light"] .bg-dark .text-info {
+      color: #0dcaf0 !important;
+    }
+    [data-theme="light"] .bg-dark .text-accent {
+      color: #10b981 !important;
+    }
+
+    /* Override Bootstrap bg-secondary-subtle for theme consistency */
+    .bg-secondary-subtle {
+      background-color: rgba(255, 255, 255, 0.03) !important;
+      color: var(--text-main) !important;
+      border-color: var(--border-color) !important;
+    }
+    [data-theme="light"] .bg-secondary-subtle {
+      background-color: rgba(11, 15, 25, 0.04) !important;
+      color: var(--text-main) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    /* Simulators Persistence in Light Mode */
+    .simulator-container {
+      background: #020617;
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 30px 0;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+    }
+    [data-theme="light"] .simulator-container {
+      background: #020617 !important;
+      border-color: #059669 !important;
+      box-shadow: 0 10px 25px rgba(5, 150, 105, 0.1) !important;
+    }
+    .simulator-header {
+      background: #0f172a;
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    [data-theme="light"] .simulator-header {
+      background: #0f172a !important;
+      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+      color: #ffffff !important;
+    }
+    .simulator-body {
+      padding: 25px;
+      color: #f8fafc;
+    }
+    [data-theme="light"] .simulator-body {
+      background: transparent !important;
+      color: #ffffff !important;
+    }
+
+    /* Force all text inside simulator to stay white in light theme */
+    [data-theme="light"] .simulator-container *,
+    [data-theme="light"] .simulator-header *,
+    [data-theme="light"] .simulator-body * {
+      color: #ffffff !important;
+    }
+    [data-theme="light"] .simulator-container .text-muted,
+    [data-theme="light"] .simulator-body .text-muted {
+      color: #94a3b8 !important;
+    }
+    [data-theme="light"] .simulator-container .text-success,
+    [data-theme="light"] .simulator-body .text-success {
+      color: #10b981 !important;
+    }
+    [data-theme="light"] .simulator-container .text-warning,
+    [data-theme="light"] .simulator-body .text-warning {
+      color: #ffc107 !important;
+    }
+    [data-theme="light"] .simulator-container .text-info,
+    [data-theme="light"] .simulator-body .text-info {
+      color: #0dcaf0 !important;
+    }
+    [data-theme="light"] .simulator-container .text-accent,
+    [data-theme="light"] .simulator-body .text-accent {
+      color: #10b981 !important;
+    }
+
+    /* Top Scroll Progress */
+    .top-progress-container {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 1050;
+    }
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--secondary-accent));
+      transition: width 0.1s;
+    }
+
+    /* Navigation Bar */
+    .navbar {
+      background: rgba(11, 15, 25, 0.8) !important;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 1090;
+    }
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.8) !important;
+    }
+    .navbar-brand {
+      font-weight: 800;
+      color: var(--text-main) !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--secondary-accent) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+    .logo-img {
+      height: 32px;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-img {
+      transform: scale(1.08);
+    }
+    .author-badge {
+      font-size: 0.75rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid var(--accent);
+      padding: 4px 10px;
+      border-radius: 20px;
+      color: var(--accent) !important;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.6s infinite alternate;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.4; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Floating Collapsible Sidebar */
+    .sidebar-toggle-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 15px var(--accent-glow);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .sidebar-toggle-btn:hover {
+      transform: scale(1.1);
+    }
+    
+    .nav-sidebar {
+      position: fixed;
+      top: 60px;
+      left: -280px;
+      width: 280px;
+      height: calc(100vh - 60px);
+      background-color: var(--secondary-bg);
+      border-right: 1px solid var(--border-color);
+      transition: left 0.3s ease;
+      z-index: 1040;
+      overflow-y: auto;
+      padding: 20px 10px;
+      box-shadow: var(--shadow);
+    }
+    .nav-sidebar.open {
+      left: 0;
+    }
+    .nav-sidebar-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      padding: 0 15px 15px 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .nav-sidebar-list {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0 0 0;
+    }
+    .nav-sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 15px;
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      transition: var(--transition-smooth);
+    }
+    .nav-sidebar-link:hover, .nav-sidebar-link.active {
+      background-color: var(--accent-glow);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    [data-theme="light"] .nav-sidebar-link.active {
+      background-color: var(--accent);
+      color: white;
+    }
+
+    /* Page Layout */
+    .main-container {
+      margin-left: 0;
+      transition: margin-left 0.3s ease;
+      padding: 40px 15px;
+      max-width: 960px;
+    }
+    .main-container.sidebar-open {
+      margin-left: 280px;
+    }
+
+    /* Content Cards */
+    .custom-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: var(--transition-smooth);
+    }
+    .custom-card:hover {
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+    .section-title {
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px dashed var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    /* Interactive highlights */
+    .text-interactive-span {
+      padding: 2px 4px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .text-interactive-span:hover {
+      background-color: rgba(6, 182, 212, 0.2);
+    }
+    .text-interactive-span.highlighted {
+      background-color: rgba(16, 185, 129, 0.3) !important;
+      border-bottom: 2px solid var(--accent);
+      color: #ffffff !important;
+    }
+
+    /* Simulated Mouse Drag Animation */
+    .drag-sim-box {
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+      background-color: #090d16;
+      overflow: hidden;
+      min-height: 120px;
+    }
+    .virtual-cursor {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      width: 14px;
+      height: 18px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18"><path fill="%23ffffff" stroke="%23000000" stroke-width="1.5" d="M0,0 L0,15 L4,11 L8,18 L10.5,16.5 L7,10 L12,10 Z"/></svg>') no-repeat;
+      pointer-events: none;
+      z-index: 10;
+      transition: left 2.5s ease-in-out;
+    }
+    .selection-overlay {
+      position: absolute;
+      top: 48px;
+      left: 55px;
+      height: 24px;
+      width: 0px;
+      background-color: rgba(6, 182, 212, 0.3);
+      border-left: 2px solid var(--accent);
+      pointer-events: none;
+      transition: width 2.5s ease-in-out;
+    }
+
+    /* Simulated Context Menu */
+    .menu-sim-area {
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 25px;
+      background-color: #090d16;
+      position: relative;
+      min-height: 150px;
+    }
+    .custom-ctx-menu {
+      position: absolute;
+      background-color: #1e293b;
+      border: 1px solid #475569;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      border-radius: 8px;
+      width: 160px;
+      z-index: 20;
+      padding: 5px 0;
+    }
+    .custom-ctx-item {
+      padding: 8px 15px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      color: #f8fafc;
+      transition: var(--transition-smooth);
+    }
+    .custom-ctx-item:hover {
+      background-color: var(--accent);
+      color: #000;
+      font-weight: 600;
+    }
+
+    /* Virtual Keyboard styling */
+    .kb-container {
+      background-color: #0f172a;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      padding: 15px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .kb-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .kb-key {
+      background-color: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      color: #ffffff;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      min-width: 36px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition-smooth);
+    }
+    .kb-key.active-key {
+      background-color: var(--accent) !important;
+      color: black !important;
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+    .kb-key.wide {
+      min-width: 80px;
+    }
+
+    /* Clipboard Animation scheme */
+    .cb-flow-box {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      background-color: #070a12;
+      position: relative;
+    }
+    .cb-node {
+      border: 2px solid #475569;
+      border-radius: 10px;
+      padding: 15px;
+      width: 120px;
+      text-align: center;
+      background-color: #1e293b;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .cb-node.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+    .cb-arrow {
+      flex-grow: 1;
+      height: 4px;
+      background-color: #475569;
+      margin: 0 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cb-arrow-flow {
+      position: absolute;
+      top: 0;
+      left: -50px;
+      width: 50px;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+    .cb-arrow-flow.animate {
+      animation: arrowFlow 1.2s infinite linear;
+    }
+    @keyframes arrowFlow {
+      0% { left: -50px; }
+      100% { left: 100%; }
+    }
+
+    /* Simulated Microsoft Word */
+    .word-sim {
+      border: 1px solid #475569;
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: #ffffff;
+      color: #333333;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .word-header-bar {
+      background-color: #2b579a;
+      color: white;
+      padding: 8px 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .word-ribbon {
+      background-color: #f3f2f1;
+      border-bottom: 1px solid #d2d0ce;
+      padding: 8px 15px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .word-ribbon-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-right: 1px solid #d2d0ce;
+      padding-right: 12px;
+    }
+    .word-btn {
+      background: none;
+      border: 1px solid transparent;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #323130;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: var(--transition-smooth);
+    }
+    .word-btn:hover {
+      background-color: #edebe9;
+      border-color: #c8c6c4;
+    }
+    .word-btn i {
+      font-size: 1.1rem;
+      color: #2b579a;
+    }
+    .word-workspace {
+      display: flex;
+      min-height: 250px;
+      background-color: #eaeaea;
+      padding: 15px;
+      position: relative;
+    }
+    .word-clipboard-pane {
+      width: 160px;
+      background-color: #f3f2f1;
+      border: 1px solid #d2d0ce;
+      border-radius: 6px;
+      margin-right: 15px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .word-clipboard-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #605e5c;
+      border-bottom: 1px solid #d2d0ce;
+      padding-bottom: 4px;
+    }
+    .word-clipboard-item {
+      background-color: white;
+      border: 1px solid #a19f9d;
+      border-radius: 4px;
+      padding: 6px;
+      font-size: 0.75rem;
+      word-break: break-all;
+    }
+    .word-editor-box {
+      flex-grow: 1;
+      background-color: white;
+      border: 1px solid #d2d0ce;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 20px;
+      outline: none;
+      font-family: Calibri, sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
+      overflow-y: auto;
+      max-height: 300px;
+    }
+
+    /* Matching Game */
+    .matching-box {
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      background-color: var(--secondary-bg);
+    }
+    .match-item {
+      padding: 12px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background-color: rgba(255,255,255,0.02);
+      text-align: center;
+      font-weight: 700;
+      cursor: grab;
+      transition: var(--transition-smooth);
+    }
+    .match-item:hover {
+      border-color: var(--secondary-accent);
+      transform: translateY(-2px);
+    }
+    .match-slot {
+      border: 2px dashed #475569;
+      border-radius: 8px;
+      min-height: 55px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background-color: rgba(0,0,0,0.2);
+      transition: var(--transition-smooth);
+    }
+    .match-slot.dragover {
+      border-color: var(--accent);
+      background-color: rgba(16, 185, 129, 0.05);
+    }
+    .match-slot.correct {
+      border-color: var(--success);
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--accent);
+    }
+
+    /* Checklist Tasks */
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .task-item:hover {
+      background-color: rgba(255, 255, 255, 0.04);
+      border-color: var(--accent);
+    }
+    .task-checkbox {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--text-muted);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+    }
+    .task-checkbox i {
+      display: none;
+      font-size: 0.75rem;
+      color: white;
+    }
+    .task-item.checked .task-checkbox {
+      background-color: var(--accent);
+      border-color: var(--accent);
+    }
+    .task-item.checked .task-checkbox i {
+      display: block;
+    }
+    .task-item.checked .task-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+    .task-text {
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    /* Guided trainer console */
+    .trainer-console {
+      background-color: #050810;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #a855f7;
+      margin-top: 15px;
+    }
+
+    /* Quiz Option Buttons */
+    .quiz-option-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-light);
+      padding: 14px 20px;
+      text-align: left;
+      width: 100%;
+      margin-bottom: 12px;
+      transition: var(--transition-smooth);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .quiz-option-btn:hover:not([disabled]) {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: var(--accent);
+      color: var(--text-main);
+      transform: translateX(4px);
+    }
+    .quiz-option-btn.correct {
+      background-color: rgba(16, 185, 129, 0.15) !important;
+      border-color: var(--success) !important;
+      color: #10b981 !important;
+    }
+    .quiz-option-btn.incorrect {
+      background-color: rgba(239, 68, 68, 0.15) !important;
+      border-color: var(--error) !important;
+      color: #ef4444 !important;
+    }
+    
+    /* Light mode specific correct/incorrect quiz overrides */
+    [data-theme="light"] .quiz-option-btn.correct,
+    [data-theme="light"] .quiz-option-btn.correct * {
+      color: #10b981 !important;
+      background-color: rgba(16, 185, 129, 0.15) !important;
+    }
+    [data-theme="light"] .quiz-option-btn.incorrect,
+    [data-theme="light"] .quiz-option-btn.incorrect * {
+      color: #ef4444 !important;
+      background-color: rgba(239, 68, 68, 0.15) !important;
+    }
+    [data-theme="light"] .bg-dark .bg-secondary-subtle {
+      background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .quiz-question-box {
+      display: none;
+    }
+    .quiz-question-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Footer styling */
+    footer {
+      background-color: var(--secondary-bg);
+      border-top: 1px solid var(--border-color);
+      padding: 30px 0;
+      margin-top: 60px;
+    }
+    .footer-text {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .footer-author {
+      color: var(--accent) !important;
+      font-weight: 600;
+    }
+
+    /* Theme toggle switch design */
+    .theme-toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .theme-switch-bg {
+      width: 44px;
+      height: 24px;
+      background-color: #334155;
+      border-radius: 12px;
+      position: relative;
+      transition: var(--transition-smooth);
+    }
+    .theme-switch-handle {
+      width: 18px;
+      height: 18px;
+      background-color: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      color: #000;
+    }
+    [data-theme="light"] .theme-switch-bg {
+      background-color: var(--accent);
+    }
+    [data-theme="light"] .theme-switch-handle {
+      left: 23px;
+      color: #059669;
+    }
+
+    @media (max-width: 991.98px) {
+      .main-container.sidebar-open {
+        margin-left: 0;
+      }
+    }
+  
+    /* Login Overlay Styling */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    [data-theme="light"] .login-overlay {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white;
+      font-size: 1.7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px var(--primary-cyan-glow);
+    }
+
+    .login-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .login-input-wrapper i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.4) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 50px;
+      padding: 12px 20px 12px 50px;
+      color: var(--text-main) !important;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .login-input {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 15px var(--primary-cyan-glow);
+    }
+
+    .login-error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white !important;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--primary-cyan-glow);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-cyan-glow);
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+  </style>
+  <link rel="stylesheet" href="darslik.css">
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="top-progress-container">
+    <div class="top-progress-bar" id="scrollProgressBar"></div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid px-3">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+        <img src="../LOGO.png" alt="Logo" class="logo-img">
+        <span class="logo-text d-none d-sm-inline">Axborot Texnologiyalari</span>
+      </a>
+      
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <div class="author-badge">
+          <div class="pulse-dot"></div>
+          <span class="d-none d-md-inline">Tuzuvchi:</span> <strong class="text-white">{{AUTHOR}}</strong>
+        </div>
+        
+                <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        <div class="theme-toggle-container" onclick="toggleTheme()">
+          <i class="fa-solid fa-moon text-muted" id="themeDarkIcon"></i>
+          <div class="theme-switch-bg">
+            <div class="theme-switch-handle" id="themeSwitchHandle">
+              <i class="fa-solid fa-moon" id="handleIcon"></i>
+            </div>
+          </div>
+          <i class="fa-solid fa-sun text-muted" id="themeLightIcon"></i>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Floating Sidebar Toggle Button -->
+  
+
+  <!-- Sidebar Navigation -->
+  
+
+  <!-- Main Content Layout -->
+  <div class="container main-container mx-auto" id="mainContainer">
+    <div class="row justify-content-center">
+      <div class="col-12">
+        
+        <!-- Section 1: Introduction -->
+        <section id="section-1" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-play"></i> 1-Bo'lim. Kirish</h2>
+          <p>
+            Muhtaram bo'lajak tibbiyot xodimlari! Kundalik ish faoliyatingizda kompyuterda matnli ma'lumotlar bilan tezkor va aniq ishlash eng asosiy ko'nikmalardan biridir. Kasalxonalar va poliklinikalar raqamli elektron tizimlarga (masalan, DMED) o'tgan sari, retsept yozish, tashxis qo'yish hamda bemorlar tarixi bilan ishlashda matnlarni qayta ishlash zarurati kundan-kunga ortib bormoqda.
+          </p>
+          <p>
+            <strong>Matn bilan ishlash nima?</strong> Bu kompyuterda matnlarni kiritish, keraksiz qismlarini tahrirlash, ma'lumotlarni belgilash, nusxalash va boshqa hujjatlarga tezkor joylashtirish amallarini qamrab oladi.
+          </p>
+          <p>
+            <strong>Nima uchun matnni nusxalash kerak?</strong> Tasavvur qiling, sizga bemorning murakkab klinik tashxisi yoki laboratoriya tahlillari natijasini 10 ta turli hujjatga kiritish vazifasi yuklatildi. Agar har safar matnni klaviaturada qo'lda terib chiqsangiz, bunga soatlab vaqtingiz ketadi va eng asosiysi — xato yozib yuborish ehtimoli keskin oshadi. Matnni bir marta belgilab, <strong>nusxalab (Копировать)</strong>, boshqa joyga <strong>joylashtirish (Вставить)</strong> esa bu ishni soniyalar ichida bexato bajarish imkonini beradi.
+          </p>
+          <div class="p-3 bg-secondary-subtle border border-secondary rounded">
+            <h6 class="fw-bold text-accent mb-2"><i class="fa-solid fa-laptop-medical me-2"></i> Tibbiyotdagi real misollar:</h6>
+            <ul class="mb-0 ps-3">
+              <li><strong>Bemor ma'lumotlari:</strong> F.I.Sh, Pasport raqami va PINFL kodlarini nusxalab, reyestr bazasiga kiritish.</li>
+              <li><strong>Tibbiy xulosalar:</strong> Rentgen yoki UTT (UZI) xulosasining standart andozalarini nusxalab, bemor kartasiga tushirish.</li>
+              <li><strong>Retseptlar va Dorilar:</strong> Lotin tilidagi dorilar ro'yxatini tezkor nusxalash va elektron retsept loyihasiga qo'shish.</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Section 2: Text Selection -->
+        <section id="section-2" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-arrow-pointer"></i> 2-Bo'lim. Matnni belgilash (Выделение)</h2>
+          <p>
+            Kompyuterda matn ustida biror amal (masalan, nusxalash, shriftini o'zgartirish, qalin qilish yoki o'chirish) bajarishdan oldin, kompyuterga aynan qaysi so'z yoki gap ustida ishlamoqchi ekanligimizni ko'rsatishimiz kerak. Bu jarayon <strong>Matnni belgilash (Выделение)</strong> deb ataladi.
+          </p>
+          <p>
+            Belgilangan matn ekranda maxsus rang (odatda ko'k yoki yashil fon) bilan ajralib turadi. Quyidagi matn bo'laklari ustiga bosib ko'ring va ularni qanday belgilanishini vizual mashq qiling:
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Interaktiv: Klik orqali belgilash</span>
+              <button class="btn btn-sm btn-outline-info" onclick="clearHighlights()">Hammasini tozalash</button>
+            </div>
+            <div class="simulator-body" style="background-color: #090d16;">
+              <p class="text-white mb-3" style="font-size: 1.1rem; line-height: 1.8;">
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">Bemor</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">Napasov</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">Ozodbek</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">1988-yilda</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">tug'ilgan.</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">Unga</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">"Gipertoniya</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">1-bosqichi"</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">tashxisi</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">qo'yildi.</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">Shifokor</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">tomonidan</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">kuniga</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">bir</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">mahal</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">dori</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">ichish</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">tavsiya</span> 
+                <span class="text-interactive-span" onclick="toggleHighlight(this)">etildi.</span>
+              </p>
+              <div class="small text-muted"><i class="fa-solid fa-circle-info me-1"></i> So'zlarni belgilash (yoki o'chirish) uchun ularning ustiga bosing.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3: Mouse Selection -->
+        <section id="section-3" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-hand-pointer"></i> 3-Bo'lim. Sichqoncha yordamida belgilash</h2>
+          <p>
+            Matnni sichqoncha yordamida belgilashning eng keng tarqalgan an'anaviy usuli quyidagicha:
+          </p>
+          <ol>
+            <li class="mb-2">Sichqoncha kursorini belgilamoqchi bo'lgan matningizning eng boshiga (yoki oxiriga) olib parenting.</li>
+            <li class="mb-2">Sichqonchaning <strong>chap tugmasini bosing va qo'yib yubormasdan bosib turing</strong>.</li>
+            <li class="mb-2">Sichqonchani kerakli so'z yoki gaplar ustidan o'ngga (yoki pastga) qarab <strong>sudrang</strong>.</li>
+            <li class="mb-2">Matn oxiriga yetganda, chap tugmani qo'yib yuboring. Matn ko'k rang bilan ajralib qoladi.</li>
+          </ol>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Sichqoncha sudrash (Drag) simulyatori</span>
+              <button class="btn btn-sm btn-info text-white" onclick="startDragSimulation()">Belgilashni boshlash</button>
+            </div>
+            <div class="simulator-body p-0">
+              <div class="drag-sim-box">
+                <div class="virtual-cursor" id="virtualCursor"></div>
+                <div class="selection-overlay" id="selectionOverlay"></div>
+                <p class="text-white fs-5 mt-4 ps-2" style="font-family: monospace;">
+                  Bemor ismini nusxalash: [ Napasov Ozodbek ] tahlili normal.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4: Word Selection -->
+        <section id="section-4" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-circle-dot"></i> 4-Bo'lim. So'zni belgilash (Double Click)</h2>
+          <p>
+            Agar sizga butun gap emas, balki faqatgina <strong>bitta so'zni</strong> tezkor belgilash kerak bo'lsa, sichqoncha bilan sudrab yurish shart emas.
+          </p>
+          <p>
+            Buning uchun sichqoncha kursorini so'z ustiga olib borib, chap tugmani tezlik bilan <strong>ikki marta ketma-ket bosing (Double Click)</strong>. Tizim avtomatik ravishda butun so'zni tanlab beradi.
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Mashq: So'zni ikki marta bosib belgilash</span>
+            </div>
+            <div class="simulator-body" style="background-color: #090d16;">
+              <p class="text-white fs-5">
+                Quyidagi tibbiy atamalardan birini tezda belgilash uchun ustiga <strong>Double-click</strong> qiling:
+              </p>
+              <div class="d-flex flex-wrap gap-2 my-3">
+                <span class="p-3 bg-secondary rounded border border-secondary text-white fw-bold d-inline-block" style="cursor: pointer; user-select: none;" ondblclick="triggerWordSelect(this, 'Kardiogramma')">Kardiogramma</span>
+                <span class="p-3 bg-secondary rounded border border-secondary text-white fw-bold d-inline-block" style="cursor: pointer; user-select: none;" ondblclick="triggerWordSelect(this, 'Stetoskop')">Stetoskop</span>
+                <span class="p-3 bg-secondary rounded border border-secondary text-white fw-bold d-inline-block" style="cursor: pointer; user-select: none;" ondblclick="triggerWordSelect(this, 'Glukoza')">Glukoza</span>
+                <span class="p-3 bg-secondary rounded border border-secondary text-white fw-bold d-inline-block" style="cursor: pointer; user-select: none;" ondblclick="triggerWordSelect(this, 'Antiseptik')">Antiseptik</span>
+              </div>
+              <div class="text-accent fw-bold small" id="wordSelectAlert"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 5: Paragraph Selection -->
+        <section id="section-5" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-align-left"></i> 5-Bo'lim. Abzatsni belgilash (Triple Click)</h2>
+          <p>
+            Hujjatlarda katta bir abzatsni (paragrafni) to'liq belgilash uchun sichqonchaning chap tugmasini o'sha abzatsdagi ixtiyoriy so'z ustida tezlik bilan <strong>uch marta ketma-ket bosing (Triple Click)</strong>.
+          </p>
+          <p>
+            Bu usul vaqtni sezilarli darajada tejaydi, chunki sichqonchani abzats boshi va oxiri bo'ylab sudrab yurish ehtiyojini yo'qotadi.
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Mashq: Abzatsni uch marta bosib belgilash</span>
+            </div>
+            <div class="simulator-body" style="background-color: #090d16;">
+              <div class="p-3 border rounded border-secondary text-white mb-3" style="cursor: pointer; user-select: none;" onclick="resetParagraphSelect(this)" ondblclick="event.preventDefault()" id="simParagraphBox">
+                <strong>[Ushbu abzats ustida tezlik bilan 3-marta kliklang]</strong>: Nevrologiya bo'limining 4-palatasidagi bemor Karimov Sardorning dori-darmonlar varaqasini tahrirlash zarur. Bemorga buyurilgan dori vositalari o'z vaqtida berilishi va elektron reyestrdan o'tkazilishi shart.
+              </div>
+              <div class="text-success fw-bold small" id="paragraphSelectAlert"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 6: Select All -->
+        <section id="section-6" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-keyboard"></i> 6-Bo'lim. Butun matnni belgilash (Ctrl + A)</h2>
+          <p>
+            Agar sizga sahifadagi yoki hujjatdagi <strong>barcha matnlarni</strong> birdaniga tanlash kerak bo'lsa, klaviaturadagi maxsus tezkor tugmalar kombinatsiyasidan foydalanasiz:
+          </p>
+          <div class="my-3 text-center">
+            <span class="fs-2 px-4 py-2 bg-dark border border-secondary text-white rounded-pill fw-bold">Ctrl + A</span>
+          </div>
+          <p>
+            O'zbekcha yoki inglizcha matnlarda <strong>A</strong> harfi <strong>All (Barchasi)</strong> degan ma'noni anglatadi. Rossiya operatsion tizimi (Windows rus tilida) bo'lsa ham, ushbu tezkor tugma kombinatsiyasi o'zgarmasdan ishlayveradi.
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Interaktiv: Barchasini belgilash</span>
+              <button class="btn btn-sm btn-info text-white" onclick="triggerCtrlASandbox()">Barchasini belgilash (Ctrl + A)</button>
+            </div>
+            <div class="simulator-body" style="background-color: #090d16;">
+              <textarea class="form-control bg-black text-white border-secondary mb-2" id="ctrlATextarea" rows="4" style="font-family: monospace;">Bemor: Usmonov Dilshod
+Yoshi: 45 da
+Bo'lim: Terapiya
+Tashxis: Surunkali gastrit. Davolash kursi belgilandi.</textarea>
+              <div class="small text-muted">Matn maydoniga bosib, klaviaturada <strong>Ctrl + A</strong> ni bosing yoki yuqoridagi tugmani ishlating.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 7: Copy -->
+        <section id="section-7" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-copy"></i> 7-Bo'lim. Nusxalash (Копировать)</h2>
+          <p>
+            Matn belgilangandan so'ng, uni nusxalashimiz mumkin. <strong>Nusxalash (Копировать)</strong> — bu belgilangan matnni asl joyida o'chirmasdan saqlab qolgan holda, kompyuterning vaqtinchalik xotirasiga yozib olish jarayonidir.
+          </p>
+          <p>
+            Ushiba vaqtinchalik xotira kompyuter tilida <strong>Буфер обмена (Clipboard)</strong> deb ataladi. Asl matn nusxa olingandan so'ng o'z joyida qoladi va siz uni xohlagan boshqa joyga cheksiz marta joylashtirishingiz mumkin.
+          </p>
+        </section>
+
+        <!-- Section 8: Ctrl + C -->
+        <section id="section-8" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-square-check"></i> 8-Bo'lim. Ctrl + C</h2>
+          <p>
+            Nusxalash amalini tezkor bajarish uchun klaviaturadagi quyidagi tugmalar kombinatsiyasi bosiladi:
+          </p>
+          <div class="my-3 text-center">
+            <span class="fs-2 px-4 py-2 bg-dark border border-secondary text-white rounded-pill fw-bold">Ctrl + C</span>
+          </div>
+          <p>
+            Bu yerda <strong>C</strong> harfi inglizcha <strong>Copy (Nusxalash)</strong> so'zining bosh harfidir.
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Klaviatura simulyatsiyasi: Ctrl + C</span>
+            </div>
+            <div class="simulator-body">
+              <div class="kb-container">
+                <div class="kb-row">
+                  <div class="kb-key">Tab</div>
+                  <div class="kb-key">Q</div>
+                  <div class="kb-key">W</div>
+                  <div class="kb-key">E</div>
+                  <div class="kb-key">R</div>
+                  <div class="kb-key">T</div>
+                  <div class="kb-key">Y</div>
+                </div>
+                <div class="kb-row">
+                  <div class="kb-key">Caps</div>
+                  <div class="kb-key">A</div>
+                  <div class="kb-key">S</div>
+                  <div class="kb-key">D</div>
+                  <div class="kb-key">F</div>
+                  <div class="kb-key">G</div>
+                </div>
+                <div class="kb-row">
+                  <div class="kb-key wide" id="key-ctrl-c">Ctrl</div>
+                  <div class="kb-key">Z</div>
+                  <div class="kb-key">X</div>
+                  <div class="kb-key" id="key-c">C</div>
+                  <div class="kb-key">V</div>
+                  <div class="kb-key">B</div>
+                </div>
+              </div>
+              <div class="text-center mt-3 small text-muted">Virtual klaviaturada Ctrl va C tugmalari yashil bo'lib yoritilguncha jismoniy klaviaturada bosing.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 9: Context Menu Copy -->
+        <section id="section-9" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-list-check"></i> 9-Bo'lim. O'ng tugma orqali nusxalash</h2>
+          <p>
+            Agar siz klaviaturadan foydalanmoqchi bo'lmasangiz, sichqonchaning o'ng tugmasi orqali nusxa olishingiz mumkin:
+          </p>
+          <ol>
+            <li class="mb-2">Kerakli matnni sichqoncha bilan belgilang.</li>
+            <li class="mb-2">Belgilangan matn ustiga sichqonchaning <strong>o'ng tugmasini (Правый клик)</strong> bosing.</li>
+            <li class="mb-2">Ochilgan kontekst menyudan <strong>Копировать</strong> (Nusxalash) buyrug'ini tanlang.</li>
+          </ol>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Interaktiv: Kontekst menyu orqali nusxalash</span>
+            </div>
+            <div class="simulator-body p-0">
+              <div class="menu-sim-area" oncontextmenu="showCopyMenu(event)">
+                <div class="text-center text-muted small mb-2">[Matnni belgilang va o'ng tugmani bosing]</div>
+                <p class="text-white fs-5 text-center" id="copyTargetText" style="user-select: all;">Aliyeva Malika - Nevrologiya</p>
+                
+                <!-- Custom Context Menu -->
+                <div class="custom-ctx-menu d-none" id="copyContextMenu">
+                  <div class="custom-ctx-item" onclick="triggerCtxCopy()">
+                    <span>Копировать</span>
+                    <span class="text-muted">Ctrl+C</span>
+                  </div>
+                  <div class="custom-ctx-item disabled text-muted" style="cursor: not-allowed;">
+                    <span>Вырезать</span>
+                    <span class="text-muted">Ctrl+X</span>
+                  </div>
+                </div>
+              </div>
+              <div class="text-center text-accent fw-bold small mt-2" id="copyMenuAlert"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 10: Paste -->
+        <section id="section-10" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-paste"></i> 10-Bo'lim. Joylashtirish (Вставить)</h2>
+          <p>
+            <strong>Joylashtirish (Вставить)</strong> — bu vaqtinchalik xotirada (Буфер обмена / Clipboard) saqlangan matn nusxasini kursor turgan joyga joylash jarayonidir.
+          </p>
+          <p>
+            Siz matnni bir marta nusxalab, undan keyin uni turli joylarga cheksiz marta joylashtirishingiz mumkin, toki xotiraga yangi ma'lumot nusxalanmaguncha yoki kompyuter o'chirilmaguncha.
+          </p>
+        </section>
+
+        <!-- Section 11: Ctrl + V -->
+        <section id="section-11" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-square-plus"></i> 11-Bo'lim. Ctrl + V</h2>
+          <p>
+            Matnni eng tezkor joylashtirish usuli klaviaturadagi kombinatsiyadir:
+          </p>
+          <div class="my-3 text-center">
+            <span class="fs-2 px-4 py-2 bg-dark border border-secondary text-white rounded-pill fw-bold">Ctrl + V</span>
+          </div>
+          <p>
+            Bu kombinatsiyani bosishdan oldin, <strong>kursorni</strong> matn tushishi kerak bo'lgan aniq katakchaga yoki qatorga qo'yganingizga ishonch hosil qiling.
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Joylashtirish mashqi (Ctrl + V)</span>
+              <button class="btn btn-sm btn-info text-white" onclick="simulateClipboardCopy('Kardio_Normal')">Virtual Clipboardga yuklash</button>
+            </div>
+            <div class="simulator-body" style="background-color: #090d16;">
+              <div class="mb-3">
+                <label class="text-muted small d-block mb-1">Clipboard xotirasidagi ma'lumot:</label>
+                <span class="badge bg-secondary p-2" id="virtualClipboardDisplay">Kardio_Normal</span>
+              </div>
+              <div class="row align-items-center">
+                <div class="col-sm-8 mb-2 mb-sm-0">
+                  <input type="text" class="form-control bg-black text-white border-secondary" id="ctrlVPasteInput" placeholder="Bu yerga bosib Ctrl+V ni bosing" onpaste="handleCtrlVPaste(event)">
+                </div>
+                <div class="col-sm-4 text-start">
+                  <span class="text-success fw-bold small" id="ctrlVPasteAlert"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 12: Context Menu Paste -->
+        <section id="section-12" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-caret-down"></i> 12-Bo'lim. O'ng tugma orqali joylashtirish</h2>
+          <p>
+            Sichqonchaning o'ng tugmasi yordamida matnni joylashtirish:
+          </p>
+          <ol>
+            <li class="mb-2">Kursorni kerakli katakka qo'ying.</li>
+            <li class="mb-2">Katak ustiga sichqonchaning <strong>o'ng tugmasini</strong> bosing.</li>
+            <li class="mb-2">Ochilgan menyudan <strong>Вставить</strong> (Joylashtirish) buyrug'ini tanlang.</li>
+          </ol>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Interaktiv: Kontekst menyu orqali joylashtirish</span>
+            </div>
+            <div class="simulator-body p-0">
+              <div class="menu-sim-area" oncontextmenu="showPasteMenu(event)">
+                <div class="text-center text-muted small mb-2">[Katakka o'ng tugmani bosing va joylashtiring]</div>
+                <div class="mx-auto p-3 border border-secondary rounded bg-black text-center text-white" id="pasteBoxDestination" style="max-width: 300px; min-height: 50px;">
+                  [Bo'sh katak]
+                </div>
+                
+                <!-- Custom Context Menu -->
+                <div class="custom-ctx-menu d-none" id="pasteContextMenu">
+                  <div class="custom-ctx-item" onclick="triggerCtxPaste()">
+                    <span>Вставить</span>
+                    <span class="text-muted">Ctrl+V</span>
+                  </div>
+                </div>
+              </div>
+              <div class="text-center text-success fw-bold small mt-2" id="pasteMenuAlert"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 13: Copy vs Move -->
+        <section id="section-13" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-scale-balanced"></i> 13-Bo'lim. Nusxalash va ko'chirish farqi</h2>
+          <p class="lead text-accent">
+            <strong>DIQQAT:</strong> Bu kompyuter savodxonligidagi eng muhim farqlardan biridir.
+          </p>
+          <p>
+            Ko'plab yangi o'rganuvchilar nusxalash va joyini o'zgartirish (ko'chirish) farqini chalkashtirib yuborishadi. Quyidagi jadvalni diqqat bilan o'rganib chiqing:
+          </p>
+          
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped" style="border-color: var(--border-color);">
+              <thead class="bg-dark text-white">
+                <tr>
+                  <th>Kombinatsiya</th>
+                  <th>Ruscha nomi</th>
+                  <th>O'zbekcha tarjimasi</th>
+                  <th>Asl matn holati</th>
+                  <th>Tushuntirish</th>
+                </tr>
+              </thead>
+              <tbody class="text-light">
+                <tr>
+                  <td class="fw-bold text-accent">Ctrl + C</td>
+                  <td>Копировать</td>
+                  <td>Nusxalash</td>
+                  <td class="text-success"><i class="fa-solid fa-check me-2"></i> Asl joyida qoladi</td>
+                  <td>Matndan nusxa olinadi, eski joyida ham saqlanadi, yangi joyga ham tushadi. (Dublikat)</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-warning">Ctrl + X</td>
+                  <td>Вырезать</td>
+                  <td>Kesib olish</td>
+                  <td class="text-danger"><i class="fa-solid fa-trash me-2"></i> Asl joyidan o'chadi</td>
+                  <td>Matn eski joyidan butunlay kesib olinadi va yangi joyga ko'chiriladi. (Ko'chirish)</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-info">Ctrl + V</td>
+                  <td>Вставить</td>
+                  <td>Joylashtirish</td>
+                  <td>Nusxa yoki Kesilgan ma'lumotni kursor turgan joyga qo'yadi.</td>
+                  <td>Xotiradagi (Clipboard) matnni kerakli joyga tushiradi.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Section 14: Ctrl + X -->
+        <section id="section-14" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-scissors"></i> 14-Bo'lim. Ctrl + X (Вырезать)</h2>
+          <p>
+            <strong>Kesib olish (Вырезать / Ctrl + X)</strong> amali matnning joyini butunlay o'zgartirish (ko'chirish) uchun ishlatiladi.
+          </p>
+          <p>
+            Tugmalar kombinatsiyasidagi <strong>X</strong> belgisi qaychiga (qaychi kesishiga) o'xshash bo'lgani uchun shu harf tanlangan.
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Mashq: Matnni kesib olish va ko'chirish</span>
+            </div>
+            <div class="simulator-body" style="background-color: #090d16;">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="text-muted small">Manba darchasi (Matnni tanlab Ctrl+X ni bosing):</label>
+                  <input type="text" class="form-control bg-black text-white border-secondary" id="cutSourceInput" value="Dorilar: Analgin, Aspirin, Paratsetamol" oncut="handleTextCut(event)">
+                </div>
+                <div class="col-md-6">
+                  <label class="text-muted small">Qabul qiluvchi darcha (Ctrl+V yordamida joylang):</label>
+                  <input type="text" class="form-control bg-black text-white border-secondary" id="cutDestInput" placeholder="Bu yerga joylashtiring..." onpaste="handleCutPaste(event)">
+                </div>
+              </div>
+              <div class="text-accent fw-bold small mt-3" id="cutTrainerAlert"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 15: Clipboard Flow Scheme -->
+        <section id="section-15" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-network-wired"></i> 15-Bo'lim. Clipboard (Буфер обмена)</h2>
+          <p>
+            Tizim orqali nusxa olingan (Ctrl+C) yoki kesib olingan (Ctrl+X) barcha ma'lumotlar kompyuter vaqtinchalik tezkor xotirasida — <strong>Clipboard (Буфер обмена)</strong> da saqlanadi.
+          </p>
+          <p>
+            Quyidagi animatsion sxema yordamida matnni xotiraga o'tish va u yerdan qabul qiluvchi sohaga tushish jarayonini kuzating:
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Clipboard xotirasi va ma'lumotlar oqimi</span>
+            </div>
+            <div class="simulator-body">
+              <div class="cb-flow-box">
+                <div class="cb-node" id="nodeSource">Hujjat A<br><span class="small text-muted">[Matn]</span></div>
+                <div class="cb-arrow"><div class="cb-arrow-flow" id="flowArrow1"></div></div>
+                <div class="cb-node bg-dark border-accent" id="nodeClipboard"><i class="fa-solid fa-clipboard text-accent"></i><br>Clipboard</div>
+                <div class="cb-arrow"><div class="cb-arrow-flow" id="flowArrow2"></div></div>
+                <div class="cb-node" id="nodeDest">Hujjat B<br><span class="small text-muted">[Bo'sh]</span></div>
+              </div>
+              <div class="d-flex justify-content-center gap-3 mt-4">
+                <button class="btn btn-sm btn-outline-warning" onclick="animateClipboardFlow(1)">Nusxa olish (Ctrl+C)</button>
+                <button class="btn btn-sm btn-outline-info" onclick="animateClipboardFlow(2)">Joylashtirish (Ctrl+V)</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 16: MS Word Simulator -->
+        <section id="section-16" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-file-word"></i> 16-Bo'lim. MS Wordda amaliy mashqlar</h2>
+          <p>
+            Keling, endi olgan bilimlarimizni Microsoft Word matn muharriri simulyatorida sinab ko'ramiz.
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Simulyator: Microsoft Word 2021 (Ruscha interfeys)</span>
+            </div>
+            <div class="simulator-body p-0">
+              <div class="word-sim">
+                <div class="word-header-bar">
+                  <i class="fa-solid fa-file-word text-white"></i>
+                  <span>Dokument1 - Microsoft Word</span>
+                </div>
+                <!-- Ribbon toolbar -->
+                <div class="word-ribbon">
+                  <div class="word-ribbon-group">
+                    <button class="word-btn" onclick="executeWordCommand('copy')" title="Копировать (Ctrl+C)">
+                      <i class="fa-regular fa-copy"></i>
+                      <span>Копировать</span>
+                    </button>
+                    <button class="word-btn" onclick="executeWordCommand('cut')" title="Вырезать (Ctrl+X)">
+                      <i class="fa-solid fa-scissors"></i>
+                      <span>Вырезать</span>
+                    </button>
+                    <button class="word-btn" onclick="executeWordCommand('paste')" title="Вставить (Ctrl+V)">
+                      <i class="fa-solid fa-paste"></i>
+                      <span>Вставить</span>
+                    </button>
+                  </div>
+                  <div class="word-ribbon-group">
+                    <button class="word-btn" onclick="executeWordCommand('bold')" title="Qalin (Bold)">
+                      <i class="fa-solid fa-bold"></i>
+                      <span>Ж</span>
+                    </button>
+                    <button class="word-btn" onclick="executeWordCommand('italic')" title="Kursiv">
+                      <i class="fa-solid fa-italic"></i>
+                      <span>К</span>
+                    </button>
+                    <button class="word-btn" onclick="executeWordCommand('underline')" title="Tagiga chizilgan">
+                      <i class="fa-solid fa-underline"></i>
+                      <span>Ч</span>
+                    </button>
+                  </div>
+                  <div class="word-ribbon-group" style="border:none;">
+                    <button class="word-btn" onclick="executeWordCommand('selectall')" title="Barchasini belgilash (Ctrl+A)">
+                      <i class="fa-solid fa-border-all"></i>
+                      <span>Выделить все</span>
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Workspace -->
+                <div class="word-workspace">
+                  <div class="word-clipboard-pane">
+                    <div class="word-clipboard-title">Буфер обмена</div>
+                    <div id="wordClipboardValue" class="word-clipboard-item text-muted">[Bo'sh]</div>
+                  </div>
+                  <div class="word-editor-box" contenteditable="true" id="wordEditor">
+                    Bemor Napasov Ozodbek 1988-yilda tug'ilgan. Nevrologiya bo'limida davolanmoqda. Tahlillar ijobiy.
+                  </div>
+                </div>
+              </div>
+              <div class="p-3 bg-dark text-white-50 small">
+                <i class="fa-solid fa-lightbulb text-warning me-2"></i><strong>Qo'llanma:</strong> Matndagi ixtiyoriy so'zni belgilang va ribbon panelidagi tugmalarni bosib ishlatib ko'ring (yoki klaviaturadagi Ctrl+C / Ctrl+V dan foydalaning).
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 17: Medical Practical Use -->
+        <section id="section-17" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-notes-medical"></i> 17-Bo'lim. Tibbiyotdagi qo'llanilishi</h2>
+          <p>
+            AKT darslarida olgan matn operatsiyalaringizni haqiqiy tibbiyot andozalarini to'ldirishda sinab ko'ring. Bemorning laboratoriya tahlillari va F.I.Sh ma'lumotlarini nusxalab, yakuniy tibbiy ma'lumotnomaga to'g'ri joylashtiring.
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Amaliy andoza: Bemor tibbiy xulosasini tayyorlash</span>
+            </div>
+            <div class="simulator-body" style="background-color: #090d16;">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <div class="p-3 border border-secondary rounded bg-dark mb-2">
+                    <span class="text-muted small">Bemor kartasi (F.I.Sh):</span>
+                    <h6 class="text-white fw-bold mb-0" id="medPatientName" style="user-select: all;">Napasov Ozodbek 1988</h6>
+                  </div>
+                  <div class="p-3 border border-secondary rounded bg-dark">
+                    <span class="text-muted small">Tashxis xulosasi:</span>
+                    <h6 class="text-white fw-bold mb-0" id="medDiagnosis" style="user-select: all;">Vegetodistoniya, asab charchashi.</h6>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="p-3 border border-secondary rounded bg-dark h-100">
+                    <h6 class="text-accent border-bottom border-secondary pb-2 mb-2"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Yakuniy tibbiy ma'lumotnoma:</h6>
+                    
+                    <div class="mb-2">
+                      <label class="text-muted small">Bemor F.I.Sh:</label>
+                      <input type="text" class="form-control bg-black text-white border-secondary" id="medInputName" placeholder="Nusxalab bu yerga joylang">
+                    </div>
+                    <div class="mb-2">
+                      <label class="text-muted small">Klinik tashxis:</label>
+                      <input type="text" class="form-control bg-black text-white border-secondary" id="medInputDiag" placeholder="Nusxalab bu yerga joylang">
+                    </div>
+                    <button class="btn btn-sm btn-success w-100 mt-2" onclick="verifyMedicalForm()">Ma'lumotnomani tasdiqlash</button>
+                  </div>
+                </div>
+              </div>
+              <div class="text-center text-success fw-bold small mt-3" id="medicalVerifyAlert"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 18: Match Game -->
+        <section id="section-18" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-gamepad"></i> 18-Bo'lim. O'yinli topshiriqlar</h2>
+          <p>
+            Tezkor tugmalar kombinatsiyalari va ularning tegishli vazifalarini sudrab joylashtirish (Drag-and-Drop) orqali o'zaro moslashtiring:
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Moslashtirish o'yini: Hotkeys</span>
+            </div>
+            <div class="simulator-body">
+              <div class="row">
+                <div class="col-md-6 mb-3 mb-md-0">
+                  <h6 class="text-accent mb-3">Tugmalar:</h6>
+                  <div class="d-flex flex-column gap-2" id="dragMatchItems">
+                    <div class="match-item" draggable="true" ondragstart="dragHotkey(event, 'Ctrl+A')">Ctrl + A</div>
+                    <div class="match-item" draggable="true" ondragstart="dragHotkey(event, 'Ctrl+C')">Ctrl + C</div>
+                    <div class="match-item" draggable="true" ondragstart="dragHotkey(event, 'Ctrl+V')">Ctrl + V</div>
+                    <div class="match-item" draggable="true" ondragstart="dragHotkey(event, 'Ctrl+X')">Ctrl + X</div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="text-accent mb-3">Vazifalari:</h6>
+                  <div class="d-flex flex-column gap-3">
+                    <div class="row align-items-center">
+                      <div class="col-6 small">Nusxalash (Копировать)</div>
+                      <div class="col-6"><div class="match-slot" id="slot-Ctrl+C" ondragover="allowMatchDrop(event)" ondrop="dropMatchHotkey(event, 'Ctrl+C')">Sudrab tashlang</div></div>
+                    </div>
+                    <div class="row align-items-center">
+                      <div class="col-6 small">Joylashtirish (Вставить)</div>
+                      <div class="col-6"><div class="match-slot" id="slot-Ctrl+V" ondragover="allowMatchDrop(event)" ondrop="dropMatchHotkey(event, 'Ctrl+V')">Sudrab tashlang</div></div>
+                    </div>
+                    <div class="row align-items-center">
+                      <div class="col-6 small">Kesib olish (Вырезать)</div>
+                      <div class="col-6"><div class="match-slot" id="slot-Ctrl+X" ondragover="allowMatchDrop(event)" ondrop="dropMatchHotkey(event, 'Ctrl+X')">Sudrab tashlang</div></div>
+                    </div>
+                    <div class="row align-items-center">
+                      <div class="col-6 small">Barchasini belgilash</div>
+                      <div class="col-6"><div class="match-slot" id="slot-Ctrl+A" ondragover="allowMatchDrop(event)" ondrop="dropMatchHotkey(event, 'Ctrl+A')">Sudrab tashlang</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="text-center text-success fw-bold small mt-3" id="matchGameAlert"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 19: Practical Checklist -->
+        <section id="section-19" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-circle-check"></i> 19-Bo'lim. Amaliy checklist</h2>
+          <p>
+            Darslik davomida bajargan amaliy operatsiyalaringizni nazorat qilib boring. Bajarilgan amallarni belgilash orqali bilimingizni tekshiring:
+          </p>
+          
+          <div class="progress mb-4" style="height: 25px; background: rgba(255,255,255,0.05); border-radius: 12px; overflow:hidden;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="checklistProgress" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+          </div>
+
+          <div class="task-list">
+            <div class="task-item" onclick="toggleTask(this, 1)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Double Click yordamida yakka so'zni belgilash amalini bajardim.</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this, 2)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Triple Click yordamida butun abzatsni tezkor belgiladim.</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this, 3)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Klaviaturada Ctrl + A ni bosib barcha matnlarni tanladim.</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this, 4)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Belgilangan matnni Ctrl + C (yoki o'ng tugma orqali) nusxaladim.</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this, 5)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Nusxalangan matnni Ctrl + V (yoki o'ng tugma orqali) katakka joyladim.</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this, 6)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Ctrl + X (Kesib olish) amali orqali matnning joyini butunlay o'zgartirdim.</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this, 7)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">MS Word simulyatorida amaliy mashqlarni yakunladim.</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this, 8)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Hotkeys moslashtirish o'yinini yakunlab barcha tugmalarni to'g'ri bog'ladim.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 20: Guided Interactive Trainer -->
+        <section id="section-20" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-dumbbell"></i> 20-Bo'lim. Interaktiv trenajyor</h2>
+          <p>
+            Ushbu trenajyor sizga bosqichma-bosqich tarmoqli topshiriqlarni beradi va ularning to'g'ri bajarilganligini avtomatik ravishda tekshiradi.
+          </p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <span>Avtomatik trenajyor: Matn bilan ishlash</span>
+              <span class="badge bg-success" id="trainerScoreBadge">Muvaffaqiyatli: 0 / 3</span>
+            </div>
+            <div class="simulator-body" style="background-color: #090d16;">
+              <h5 class="text-white mb-3" id="trainerInstruction">Topshiriq 1: Quyidagi matndan faqat "Gipoglikemiya" so'zini Double-click yordamida belgilang va uni nusxalang (Ctrl+C).</h5>
+              
+              <div class="p-3 border border-secondary rounded bg-dark mb-3" style="font-family: monospace;">
+                Bemor holati og'ir. Tashxis: <span class="text-warning fw-bold px-1" style="cursor: pointer; user-select: all;" id="trainerSecretWord" ondblclick="handleTrainerWordDblClick()">Gipoglikemiya</span>. Zudlik bilan glyukoza kiritilsin.
+              </div>
+
+              <div class="row align-items-center g-2">
+                <div class="col-sm-8">
+                  <input type="text" class="form-control bg-black text-white border-secondary" id="trainerPasteBox" placeholder="Bu yerga Ctrl+V yordamida joylang" disabled onpaste="handleTrainerPaste(event)">
+                </div>
+                <div class="col-sm-4 text-start">
+                  <span class="text-success fw-bold small" id="trainerAlert"></span>
+                </div>
+              </div>
+
+              <div class="trainer-console" id="trainerConsoleLog">> Trenajyor ishga tushirildi. Kutilmoqda...</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 21: Quiz / Test -->
+        <section id="section-21" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-graduation-cap"></i> 21-Bo'lim. Bilimingizni sinang (20 ta Test)</h2>
+          <p class="mb-4">Ushbu mavzu bo'yicha bilim darajangizni tekshirib ko'ring. Test yakunida 5 ballik OTM baholash tizimi bo'yicha baholanadi.</p>
+          
+          <div class="p-4 rounded bg-dark border border-secondary" id="quizWrapperBox">
+            <div id="quizQuestionsContainer">
+              <!-- Questions are dynamically inserted here -->
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top border-secondary">
+              <button class="btn btn-secondary" onclick="prevQuizQuestion()" id="quizPrevBtn" disabled>
+                <i class="fa-solid fa-chevron-left me-2"></i> Avvalgisi
+              </button>
+              <span class="fw-bold text-accent" id="quizProgressLabel">Savol 1 / 20</span>
+              <button class="btn btn-info text-white" style="background-color: var(--accent); border:none;" onclick="nextQuizQuestion()" id="quizNextBtn">
+                Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>
+              </button>
+            </div>
+
+            <!-- Result Container (hidden by default) -->
+            <div class="mt-4 p-4 bg-dark border border-secondary rounded text-center d-none" id="quizResultBox">
+              <h3 class="text-white mb-3"><i class="fa-solid fa-circle-check text-success me-2"></i> Test Yakunlandi!</h3>
+              <h4 class="mb-2 text-white">Natija: <span id="quizScoreText" class="text-accent fw-bold">-- / 20</span></h4>
+              <p id="quizPercentageText" class="text-muted">Foiz ko'rsatkichi: --%</p>
+              <div id="quizGradeBadge" class="badge bg-success fs-5 p-3 px-4 rounded-pill mb-3">Baho: --</div>
+              <div>
+                <button class="btn btn-warning text-white font-weight-bold" style="background-color: var(--accent); border:none;" onclick="restartQuiz()"><i class="fa-solid fa-arrows-rotate me-2"></i> Qaytadan topshirish</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 22: Conclusion -->
+        <section id="section-22" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-award"></i> 22-Bo'lim. Xulosa</h2>
+          <p>
+            Ushbu darsda siz kompyuterda matn bilan ishlashning eng hayotiy va zarur ko'nikmalarini — matnni belgilash usullari, Ctrl+C yordamida nusxalash, Ctrl+V yordamida joylashtirish, Ctrl+X yordamida kesib olish va Clipboard tushunchasini mukammal o'zlashtirib oldingiz.
+          </p>
+          <p>
+            Tibbiyot xodimi sifatida ushbu amallarni mukammal bilishingiz va tezkor tugmalar (Hotkeys) yordamida ishlashingiz sizning ish unumdorligingizni oshiradi, vaqtni tejaydi va bemorlar xulosalarini tayyorlashda xatoliklar kelib chiqishini keskin kamaytiradi.
+          </p>
+          <div class="quote-box p-3 border-start border-4 border-success bg-secondary-subtle">
+            <p class="mb-0 text-light fw-bold">
+              Ushbu ko'nikmalarni amalda tez-tez takrorlab turing, shunda ular sizning doimiy amaliy mahoratingizga aylanadi. O'qishlaringizda muvaffaqiyatlar tilaymiz!
+            </p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container text-center">
+      <p class="footer-text mb-1">&copy; 2026 Axborot Texnologiyalari Elektron Darsliklar Portali. Barcha huquqlar himoyalangan.</p>
+      <p class="footer-text mb-0">
+        Muallif: <a href="https://t.me/Ozodbek_Napasov" target="_blank" class="footer-author text-decoration-none">{{AUTHOR}}</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Theme Manager
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeUI(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeUI(newTheme);
+    }
+
+    function updateThemeUI(theme) {
+      const darkIcon = document.getElementById('themeDarkIcon');
+      const lightIcon = document.getElementById('themeLightIcon');
+      if (theme === 'dark') {
+        darkIcon.classList.add('text-accent');
+        lightIcon.classList.remove('text-accent');
+      } else {
+        darkIcon.classList.remove('text-accent');
+        lightIcon.classList.add('text-accent');
+      }
+    }
+
+    // Sidebar Management
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebarMenu');
+      const main = document.getElementById('mainContainer');
+      const icon = document.getElementById('sidebarIcon');
+      
+      sidebar.classList.toggle('open');
+      main.classList.toggle('sidebar-open');
+
+      if (sidebar.classList.contains('open')) {
+        icon.className = 'fa-solid fa-xmark';
+      } else {
+        icon.className = 'fa-solid fa-bars';
+      }
+    }
+
+    function closeSidebarOnSelect() {
+      if (window.innerWidth < 992) {
+        toggleSidebar();
+      }
+    }
+
+    // Scroll progress bar
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      document.getElementById('scrollProgressBar').style.width = scrollPercent + '%';
+
+      // Update active sidebar link on scroll
+      const sections = document.querySelectorAll('section');
+      const sidebarLinks = document.querySelectorAll('.nav-sidebar-link');
+      
+      let currentSectionId = '';
+      sections.forEach(sec => {
+        const top = sec.offsetTop - 120;
+        if (scrollTop >= top) {
+          currentSectionId = sec.getAttribute('id');
+        }
+      });
+
+      if (currentSectionId) {
+        sidebarLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + currentSectionId) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+
+    // 2-Bo'lim: Highlight
+    function toggleHighlight(element) {
+      element.classList.toggle('highlighted');
+    }
+
+    // 3-Bo'lim: Drag Simulation
+    let dragTimeout = null;
+    function startDragSimulation() {
+      const cursor = document.getElementById('virtualCursor');
+      const selection = document.getElementById('selectionOverlay');
+      
+      cursor.style.left = '15px';
+      selection.style.width = '0px';
+
+      clearTimeout(dragTimeout);
+      dragTimeout = setTimeout(() => {
+        cursor.style.left = '230px';
+        selection.style.width = '175px';
+      }, 100);
+    }
+
+    // 4-Bo'lim: Word Select
+    function triggerWordSelect(element, word) {
+      element.classList.add('bg-success');
+      element.classList.remove('bg-secondary');
+      document.getElementById('wordSelectAlert').innerText = `"${word}" so'zi Double-click orqali muvaffaqiyatli belgilandi!`;
+      setTimeout(() => {
+        element.classList.remove('bg-success');
+        element.classList.add('bg-secondary');
+        document.getElementById('wordSelectAlert').innerText = '';
+      }, 2500);
+    }
+
+    // 5-Bo'lim: Paragraph Select
+    let clickCount = 0;
+    let clickTimer = null;
+    function resetParagraphSelect(element) {
+      clickCount++;
+      if (clickCount === 1) {
+        clickTimer = setTimeout(() => {
+          clickCount = 0;
+        }, 400);
+      } else if (clickCount === 3) {
+        clearTimeout(clickTimer);
+        clickCount = 0;
+        element.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+        element.style.borderColor = 'var(--accent)';
+        document.getElementById('paragraphSelectAlert').innerText = 'Abzats 3-marta bosish (Triple-click) orqali belgilandi!';
+        setTimeout(() => {
+          element.style.backgroundColor = '';
+          element.style.borderColor = 'rgba(255,255,255,0.1)';
+          document.getElementById('paragraphSelectAlert').innerText = '';
+        }, 3000);
+      }
+    }
+
+    // 6-Bo'lim: Ctrl+A Sandbox
+    function triggerCtrlASandbox() {
+      const textarea = document.getElementById('ctrlATextarea');
+      textarea.focus();
+      textarea.select();
+    }
+
+    // Keyboard simulation & Hotkeys Ctrl+C / Ctrl+V
+    let physicalClipboard = "Kardio_Normal";
+
+    document.addEventListener('keydown', (e) => {
+      // Check if Ctrl+C or Ctrl+V is pressed
+      if (e.ctrlKey && e.key.toLowerCase() === 'c') {
+        const ctrlKey = document.getElementById('key-ctrl-c');
+        const cKey = document.getElementById('key-c');
+        if (ctrlKey && cKey) {
+          ctrlKey.classList.add('active-key');
+          cKey.classList.add('active-key');
+          setTimeout(() => {
+            ctrlKey.classList.remove('active-key');
+            cKey.classList.remove('active-key');
+          }, 1000);
+        }
+      }
+    });
+
+    // 9-Bo'lim: Context Menu Copy
+    function showCopyMenu(e) {
+      e.preventDefault();
+      const menu = document.getElementById('copyContextMenu');
+      const rect = e.currentTarget.getBoundingClientRect();
+      menu.classList.remove('d-none');
+      menu.style.top = (e.clientY - rect.top) + 'px';
+      menu.style.left = (e.clientX - rect.left) + 'px';
+
+      document.addEventListener('click', closeMenus);
+    }
+
+    function closeMenus() {
+      document.getElementById('copyContextMenu').classList.add('d-none');
+      document.getElementById('pasteContextMenu').classList.add('d-none');
+      document.removeEventListener('click', closeMenus);
+    }
+
+    function triggerCtxCopy() {
+      const text = document.getElementById('copyTargetText').innerText;
+      physicalClipboard = text;
+      document.getElementById('virtualClipboardDisplay').innerText = text;
+      document.getElementById('copyMenuAlert').innerText = `"${text}" matni bufer xotirasiga nusxalandi!`;
+      setTimeout(() => {
+        document.getElementById('copyMenuAlert').innerText = '';
+      }, 2500);
+    }
+
+    // 11-Bo'lim: Ctrl + V
+    function simulateClipboardCopy(text) {
+      physicalClipboard = text;
+      document.getElementById('virtualClipboardDisplay').innerText = text;
+    }
+
+    function handleCtrlVPaste(e) {
+      e.preventDefault();
+      const input = document.getElementById('ctrlVPasteInput');
+      input.value = physicalClipboard;
+      document.getElementById('ctrlVPasteAlert').innerText = 'Muvaffaqiyatli joylandi! (Ctrl+V)';
+      setTimeout(() => {
+        document.getElementById('ctrlVPasteAlert').innerText = '';
+      }, 2500);
+    }
+
+    // 12-Bo'lim: Context Menu Paste
+    function showPasteMenu(e) {
+      e.preventDefault();
+      const menu = document.getElementById('pasteContextMenu');
+      const rect = e.currentTarget.getBoundingClientRect();
+      menu.classList.remove('d-none');
+      menu.style.top = (e.clientY - rect.top) + 'px';
+      menu.style.left = (e.clientX - rect.left) + 'px';
+
+      document.addEventListener('click', closeMenus);
+    }
+
+    function triggerCtxPaste() {
+      const dest = document.getElementById('pasteBoxDestination');
+      dest.innerText = physicalClipboard;
+      dest.classList.add('border-success');
+      document.getElementById('pasteMenuAlert').innerText = 'Xotiradagi matn o\'ng tugma orqali joylashtirildi!';
+      setTimeout(() => {
+        dest.classList.remove('border-success');
+        document.getElementById('pasteMenuAlert').innerText = '';
+      }, 2500);
+    }
+
+    // 14-Bo'lim: Ctrl+X cut trainer
+    let cutClipboard = '';
+    function handleTextCut(e) {
+      const source = document.getElementById('cutSourceInput');
+      const start = source.selectionStart;
+      const end = source.selectionEnd;
+      const text = source.value;
+
+      if (start !== end) {
+        cutClipboard = text.substring(start, end);
+        source.value = text.substring(0, start) + text.substring(end);
+        document.getElementById('cutTrainerAlert').innerText = `"${cutClipboard}" matni kesib olindi!`;
+      } else {
+        cutClipboard = text;
+        source.value = '';
+        document.getElementById('cutTrainerAlert').innerText = `Barcha matn kesib olindi!`;
+      }
+      e.preventDefault();
+    }
+
+    function handleCutPaste(e) {
+      e.preventDefault();
+      const dest = document.getElementById('cutDestInput');
+      dest.value = cutClipboard;
+      document.getElementById('cutTrainerAlert').innerText = 'Kesib olingan matn yangi joyga ko\'chirildi!';
+      setTimeout(() => {
+        document.getElementById('cutTrainerAlert').innerText = '';
+      }, 2500);
+    }
+
+    // 15-Bo'lim: Clipboard Flow Animation
+    function animateClipboardFlow(step) {
+      const arrow1 = document.getElementById('flowArrow1');
+      const arrow2 = document.getElementById('flowArrow2');
+      const nodeSource = document.getElementById('nodeSource');
+      const nodeClipboard = document.getElementById('nodeClipboard');
+      const nodeDest = document.getElementById('nodeDest');
+
+      if (step === 1) {
+        arrow1.classList.add('animate');
+        nodeSource.classList.add('active');
+        setTimeout(() => {
+          arrow1.classList.remove('animate');
+          nodeSource.classList.remove('active');
+          nodeClipboard.classList.add('active');
+          setTimeout(() => nodeClipboard.classList.remove('active'), 1000);
+        }, 1200);
+      } else if (step === 2) {
+        arrow2.classList.add('animate');
+        nodeClipboard.classList.add('active');
+        setTimeout(() => {
+          arrow2.classList.remove('animate');
+          nodeClipboard.classList.remove('active');
+          nodeDest.classList.add('active');
+          nodeDest.innerHTML = 'Hujjat B<br><span class="text-success">[Nusxa yuklandi]</span>';
+          setTimeout(() => nodeDest.classList.remove('active'), 1000);
+        }, 1200);
+      }
+    }
+
+    // 16-Bo'lim: Word Simulator
+    let wordLocalClipboard = '';
+    function executeWordCommand(command) {
+      const editor = document.getElementById('wordEditor');
+      editor.focus();
+
+      if (command === 'bold') {
+        document.execCommand('bold', false, null);
+      } else if (command === 'italic') {
+        document.execCommand('italic', false, null);
+      } else if (command === 'underline') {
+        document.execCommand('underline', false, null);
+      } else if (command === 'selectall') {
+        document.execCommand('selectAll', false, null);
+      } else if (command === 'copy') {
+        const sel = window.getSelection().toString();
+        if (sel) {
+          wordLocalClipboard = sel;
+          document.getElementById('wordClipboardValue').innerText = sel;
+          document.getElementById('wordClipboardValue').classList.remove('text-muted');
+        }
+      } else if (command === 'cut') {
+        const sel = window.getSelection().toString();
+        if (sel) {
+          wordLocalClipboard = sel;
+          document.getElementById('wordClipboardValue').innerText = sel;
+          document.getElementById('wordClipboardValue').classList.remove('text-muted');
+          document.execCommand('delete', false, null);
+        }
+      } else if (command === 'paste') {
+        if (wordLocalClipboard) {
+          document.execCommand('insertText', false, wordLocalClipboard);
+        }
+      }
+    }
+
+    // 17-Bo'lim: Medical Form Verification
+    function verifyMedicalForm() {
+      const name = document.getElementById('medInputName').value.trim();
+      const diag = document.getElementById('medInputDiag').value.trim();
+
+      if (name.includes('Napasov Ozodbek') && diag.includes('Vegetodistoniya')) {
+        document.getElementById('medicalVerifyAlert').className = 'text-center text-success fw-bold small mt-3';
+        document.getElementById('medicalVerifyAlert').innerText = 'Muvaffaqiyatli! Bemor ma\'lumotnomasi to\'g\'ri to\'ldirildi va tasdiqlandi.';
+      } else {
+        document.getElementById('medicalVerifyAlert').className = 'text-center text-danger fw-bold small mt-3';
+        document.getElementById('medicalVerifyAlert').innerText = 'Xatolik! Manba ma\'lumotlarni nusxalashda xatolikka yo\'l qo\'yilgan. Iltimos, qaytadan tekshiring.';
+      }
+    }
+
+    // 18-Bo'lim: Drag and Drop Matching Game
+    let draggedHotkey = '';
+    function dragHotkey(e, val) {
+      draggedHotkey = val;
+      e.dataTransfer.setData('text', val);
+    }
+
+    function allowMatchDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('dragover');
+    }
+
+    function dropMatchHotkey(e, targetVal) {
+      e.preventDefault();
+      const slot = e.currentTarget;
+      slot.classList.remove('dragover');
+
+      if (draggedHotkey === targetVal) {
+        slot.innerText = draggedHotkey;
+        slot.classList.add('correct');
+        checkMatchingGameSuccess();
+      } else {
+        alert("Noto'g'ri bog'lanish! Iltimos, qaytadan urinib ko'ring.");
+      }
+    }
+
+    function checkMatchingGameSuccess() {
+      const slots = document.querySelectorAll('.match-slot');
+      let allCorrect = true;
+      slots.forEach(slot => {
+        if (!slot.classList.contains('correct')) {
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        document.getElementById('matchGameAlert').innerText = 'Tabriklaymiz! Barcha tugmalar va vazifalar to\'g\'ri moslashtirildi.';
+      }
+    }
+
+    // 19-Bo'lim: Checklist Progress
+    const completedTasks = {};
+    function toggleTask(element, taskId) {
+      element.classList.toggle('checked');
+      if (element.classList.contains('checked')) {
+        completedTasks[taskId] = true;
+      } else {
+        delete completedTasks[taskId];
+      }
+
+      const totalTasks = 8;
+      const checkedTasks = Object.keys(completedTasks).length;
+      const percent = Math.round((checkedTasks / totalTasks) * 100);
+
+      const pb = document.getElementById('checklistProgress');
+      pb.style.width = percent + '%';
+      pb.innerText = percent + '%';
+    }
+
+    // 20-Bo'lim: Guided Trainer logic
+    let trainerStep = 1;
+    let trainerClipboard = '';
+    let selectedTrainerWord = false;
+
+    function handleTrainerWordDblClick() {
+      selectedTrainerWord = true;
+      document.getElementById('trainerConsoleLog').innerText = '> Gipoglikemiya so\'zi belgilandi! Uni Ctrl+C orqali nusxalang.';
+      document.getElementById('trainerPasteBox').disabled = false;
+    }
+
+    // Simulating copy in trainer
+    document.addEventListener('copy', (e) => {
+      if (selectedTrainerWord) {
+        trainerClipboard = "Gipoglikemiya";
+        document.getElementById('trainerConsoleLog').innerText = '> Matn xotiraga nusxalandi. Uni pastdagi katakka Ctrl+V yordamida joylashtiring.';
+      }
+    });
+
+    function handleTrainerPaste(e) {
+      e.preventDefault();
+      const input = document.getElementById('trainerPasteBox');
+      
+      if (trainerStep === 1) {
+        if (trainerClipboard === 'Gipoglikemiya') {
+          input.value = 'Gipoglikemiya';
+          document.getElementById('trainerScoreBadge').innerText = 'Muvaffaqiyatli: 1 / 3';
+          document.getElementById('trainerScoreBadge').className = 'badge bg-warning';
+          
+          // Advance to Step 2
+          trainerStep = 2;
+          trainerClipboard = '';
+          selectedTrainerWord = false;
+          input.value = '';
+          input.disabled = true;
+          input.placeholder = "Bu yerga joylashtiring...";
+
+          document.getElementById('trainerInstruction').innerText = 'Topshiriq 2: Endi jismoniy klaviaturada Ctrl + A ni bosing va barcha matnni nusxalab, pastdagi darchaga joylang.';
+          document.getElementById('trainerConsoleLog').innerText = '> Qadam 2: Ctrl+A orqali barcha matnni belgilang, Ctrl+C qiling, so\'ng bu yerga joylang.';
+          input.disabled = false;
+        } else {
+          document.getElementById('trainerConsoleLog').innerText = '> Xato! Clipboardda boshqa matn saqlangan. Iltimos, Gipoglikemiya so\'zini nusxalang.';
+        }
+      } else if (trainerStep === 2) {
+        // We expect some clipboard content
+        if (trainerClipboard.length > 5) {
+          input.value = trainerClipboard;
+          document.getElementById('trainerScoreBadge').innerText = 'Muvaffaqiyatli: 2 / 3';
+          
+          // Advance to Step 3
+          trainerStep = 3;
+          input.value = '';
+          input.disabled = true;
+          
+          document.getElementById('trainerInstruction').innerText = 'Topshiriq 3: Amaliy trenajyor yakunlandi! Quyidagi konsolga Ctrl + V ni bosing va yakunlang.';
+          document.getElementById('trainerConsoleLog').innerText = '> Qadam 3: Tabriklaymiz! Mashq to\'liq muvaffaqiyatli bajarildi.';
+          document.getElementById('trainerScoreBadge').innerText = 'Muvaffaqiyatli: 3 / 3';
+          document.getElementById('trainerScoreBadge').className = 'badge bg-success';
+        }
+      }
+    }
+
+    // Set listener for global keys in trainer for step 2
+    document.addEventListener('keydown', (e) => {
+      if (trainerStep === 2 && e.ctrlKey && e.key.toLowerCase() === 'a') {
+        document.getElementById('trainerConsoleLog').innerText = '> Barcha matn Ctrl+A yordamida belgilandi! Uni Ctrl+C orqali nusxalang.';
+        trainerClipboard = 'Bemor holati og\'ir. Tashxis: Gipoglikemiya. Zudlik bilan glyukoza kiritilsin.';
+      }
+    });
+
+
+    // 21-Bo'lim: Quiz Engine (20 Questions, OTM Scale)
+    const quizQuestions = [
+      { q: "Matnni nusxalashda asl matn o'chib ketadimi yoki joyida qoladimi?", a: ["O'chib ketadi", "Joyida qoladi", "Faqat birinchi harfi qoladi", "Clipboardga o'tgan zahoti o'chadi"], c: 1 },
+      { q: "Klaviaturada barcha matnlarni birdaniga belgilash tugmalari qaysi?", a: ["Ctrl + C", "Ctrl + V", "Ctrl + A", "Ctrl + X"], c: 2 },
+      { q: "Matnni nusxalash (Копировать) uchun qaysi tugmalar bosiladi?", a: ["Ctrl + V", "Ctrl + C", "Ctrl + X", "Ctrl + A"], c: 1 },
+      { q: "Nusxalangan matn vaqtincha saqlanadigan xotira sohasi nima deyiladi?", a: ["Qattiq disk (HDD)", "Tezkor xotira (RAM)", "Clipboard (Буфер обмена)", "Protsessor kesh xotirasi"], c: 2 },
+      { q: "Ctrl + V kombinatsiyasining vazifasi nima?", a: ["Matnni nusxalash", "Matnni kesib olish", "Matnni joylashtirish (Вставить)", "Matnni o'chirish"], c: 2 },
+      { q: "Sichqoncha bilan bitta so'zni tezkor belgilash uchun nima qilinadi?", a: ["Bir marta bosiladi", "Ustiga ikki marta kliklanadi (Double-click)", "Ustiga uch marta kliklanadi (Triple-click)", "O'ng tugma bosiladi"], c: 1 },
+      { q: "Sichqoncha bilan butun abzatsni tezkor belgilash usuli qaysi?", a: ["Double-click", "Triple-click (3 marta ketma-ket bosish)", "Sichqonchani o'ngga sudramoq", "Ctrl+V ni bosish"], c: 1 },
+      { q: "Matnni kesib olish (Вырезать) va joyini butunlay o'zgartirish tugmalari qaysi?", a: ["Ctrl + C", "Ctrl + X", "Ctrl + V", "Ctrl + Z"], c: 1 },
+      { q: "Ctrl + X kombinatsiyasi bosilganda asl matn nima bo'ladi?", a: ["Joyida qoladi (dublikat bo'ladi)", "Asl joyidan o'chadi (buferga o'tadi)", "Formatlanib qalin bo'ladi", "Faqat nusxa olinadi"], c: 1 },
+      { q: "Ctrl + A kombinatsiyasidagi 'A' harfi qaysi so'zdan olingan?", a: ["Action (Harakat)", "All (Barchasi)", "Abort (Bekor qilish)", "Add (Qo'shish)"], c: 1 },
+      { q: "Windows ruscha interfeysida 'Вставить' buyrug'i o'zbekchada nima degani?", a: ["Nusxalash", "Kesib olish", "Joylashtirish", "O'chirish"], c: 2 },
+      { q: "Windows ruscha interfeysida 'Копировать' buyrug'i o'zbekchada nima?", a: ["Kesib olish", "Nusxalash", "Barchasini belgilash", "Chop etish"], c: 1 },
+      { q: "Windows ruscha interfeysida 'Вырезать' buyrug'i qaysi tezkor tugmaga mos keladi?", a: ["Ctrl + C", "Ctrl + V", "Ctrl + X", "Ctrl + A"], c: 2 },
+      { q: "Tibbiyotda bemor F.I.Sh ma'lumotlarini qo'lda yozmasdan kiritish afzalligi nimada?", a: ["Vaqtni tejaydi va xatolikka yo'l qo'ymaydi", "Kompyuterni tezroq o'chiradi", "Internet tezligini oshiradi", "Elektron retsept narxini kamaytiradi"], c: 0 },
+      { q: "Bir marta nusxalangan (Ctrl+C) matnni necha marta joylashtirish (Ctrl+V) mumkin?", a: ["Faqat bir marta", "Faqat besh marta", "Cheksiz marta (yangi ma'lumot olinmaguncha)", "Uch marta"], c: 2 },
+      { q: "Qaychi belgisiga o'xshash bo'lganligi sababli tanlangan tezkor tugma qaysi?", a: ["Ctrl + C", "Ctrl + V", "Ctrl + X", "Ctrl + A"], c: 2 },
+      { q: "Hujjatga matn joylashtirishdan oldin nima qilish shart?", a: ["Kompyuterni qayta yoqish", "Kursorni kerakli joyga qo'yish", "Dasturni o'chirib qayta o'rnatish", "Sichqoncha g'ildiragini aylantirish"], c: 1 },
+      { q: "Sichqonchaning o'ng tugmasi orqali matnni nusxalash uchun menyuning qaysi bandi tanlanadi?", a: ["Вырезать", "Копировать", "Вставить", "Обновить"], c: 1 },
+      { q: "Sichqonchaning o'ng tugmasi orqali matnni joylashtirish uchun menyuning qaysi bandi tanlanadi?", a: ["Копировать", "Вставить", "Свойства", "Создать"], c: 1 },
+      { q: "Clipboard (Буфер обмена) xotirasi qachon tozalab yuboriladi?", a: ["Word dasturi yopilganda", "Kompyuter o'chirilganda yoki qayta yoqilganda", "Sichqoncha chap tugmasi bosilganda", "Ctrl+A bosilganda"], c: 1 }
+    ];
+
+    let currentQuestionIdx = 0;
+    const userQuizAnswers = {};
+
+    function initQuiz() {
+      const container = document.getElementById('quizQuestionsContainer');
+      container.innerHTML = "";
+
+      quizQuestions.forEach((item, idx) => {
+        const qBox = document.createElement('div');
+        qBox.className = `quiz-question-box ${idx === 0 ? 'active' : ''}`;
+        qBox.id = `qBox${idx}`;
+
+        const mappedOptions = item.a.map((opt, optIdx) => ({ text: opt, originalIdx: optIdx }));
+        // Shuffle/sort options randomly for variety, keeping correct index reference
+        mappedOptions.sort(() => Math.random() - 0.5);
+
+        qBox.innerHTML = `
+          <h5 class="text-white mb-4">Savol ${idx + 1}: ${item.q}</h5>
+          <div class="row g-2">
+            ${mappedOptions.map((option, optIdx) => `
+              <div class="col-12">
+                <button class="quiz-option-btn" id="q${idx}opt${option.originalIdx}" onclick="selectQuizOption(${idx}, ${option.originalIdx})">
+                  <div class="d-flex align-items-center gap-3 option-content-wrapper">
+                    <span class="badge bg-secondary rounded-circle" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">${String.fromCharCode(65 + optIdx)}</span>
+                    <span class="option-text text-start">${option.text}</span>
+                  </div>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(qBox);
+      });
+      updateQuizNav();
+    }
+
+    function selectQuizOption(questionIdx, optionIdx) {
+      if (userQuizAnswers[questionIdx] !== undefined) return;
+
+      userQuizAnswers[questionIdx] = optionIdx;
+      const question = quizQuestions[questionIdx];
+      const correctOpt = question.c;
+
+      const optBtn = document.getElementById(`q${questionIdx}opt${optionIdx}`);
+      if (optionIdx === correctOpt) {
+        optBtn.classList.add('correct');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      } else {
+        optBtn.classList.add('incorrect');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-xmark ms-auto"></i>';
+        
+        const correctBtn = document.getElementById(`q${questionIdx}opt${correctOpt}`);
+        correctBtn.classList.add('correct');
+        correctBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      }
+    }
+
+    function prevQuizQuestion() {
+      if (currentQuestionIdx > 0) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx--;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      }
+    }
+
+    function nextQuizQuestion() {
+      if (userQuizAnswers[currentQuestionIdx] === undefined) {
+        alert("Iltimos, javob variantlaridan birini tanlang!");
+        return;
+      }
+
+      if (currentQuestionIdx < quizQuestions.length - 1) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx++;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function updateQuizNav() {
+      document.getElementById('quizPrevBtn').disabled = currentQuestionIdx === 0;
+      document.getElementById('quizProgressLabel').innerText = `Savol ${currentQuestionIdx + 1} / 20`;
+      
+      const nextBtn = document.getElementById('quizNextBtn');
+      if (currentQuestionIdx === quizQuestions.length - 1) {
+        nextBtn.innerHTML = 'Yakunlash <i class="fa-solid fa-square-poll-vertical ms-2"></i>';
+      } else {
+        nextBtn.innerHTML = 'Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>';
+      }
+    }
+
+    function showQuizResults() {
+      let score = 0;
+      quizQuestions.forEach((q, idx) => {
+        if (userQuizAnswers[idx] === q.c) {
+          score++;
+        }
+      });
+
+      document.getElementById('quizQuestionsContainer').style.display = 'none';
+      document.getElementById('quizPrevBtn').style.display = 'none';
+      document.getElementById('quizNextBtn').style.display = 'none';
+      document.getElementById('quizProgressLabel').style.display = 'none';
+
+      const resultBox = document.getElementById('quizResultBox');
+      resultBox.classList.remove('d-none');
+
+      document.getElementById('quizScoreText').innerText = `${score} / 20`;
+      const percentage = Math.round((score / quizQuestions.length) * 100);
+      document.getElementById('quizPercentageText').innerText = `Foiz ko'rsatkichi: ${percentage}%`;
+
+      const gradeBadge = document.getElementById('quizGradeBadge');
+      let grade = "2 (Qoniqarsiz)";
+      gradeBadge.className = "badge bg-danger fs-5 p-3 px-4 rounded-pill mb-3";
+
+      if (score >= 18) {
+        grade = "5 (A'lo)";
+        gradeBadge.className = "badge bg-success fs-5 p-3 px-4 rounded-pill mb-3";
+      } else if (score >= 14) {
+        grade = "4 (Yaxshi)";
+        gradeBadge.className = "badge bg-info fs-5 p-3 px-4 rounded-pill mb-3";
+      } else if (score >= 10) {
+        grade = "3 (Qoniqarli)";
+        gradeBadge.className = "badge bg-warning text-dark fs-5 p-3 px-4 rounded-pill mb-3";
+      }
+
+      gradeBadge.innerText = `Baho: ${grade}`;
+      
+      // Update task list item if exists
+      const tasks = document.querySelectorAll('.task-item');
+      if (tasks[6]) toggleTask(tasks[6], 7);
+    }
+
+    function restartQuiz() {
+      currentQuestionIdx = 0;
+      quizQuestions.forEach((_, idx) => {
+        delete userQuizAnswers[idx];
+      });
+
+      document.getElementById('quizQuestionsContainer').style.display = 'block';
+      document.getElementById('quizPrevBtn').style.display = 'inline-block';
+      document.getElementById('quizNextBtn').style.display = 'inline-block';
+      document.getElementById('quizProgressLabel').style.display = 'inline-block';
+
+      document.getElementById('quizResultBox').classList.add('d-none');
+      initQuiz();
+    }
+
+    function clearHighlights() {
+      const spans = document.querySelectorAll('.text-interactive-span');
+      spans.forEach(span => span.classList.remove('highlighted'));
+    }
+
+    // Init onload
+    window.onload = () => {
+      initTheme();
+      initQuiz();
+    };
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.href = '../index.html';
+    }
+
+        function applyAuthorName() {
+      const loginName = localStorage.getItem('darslik_login') || 'Napasov';
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      applyAuthorName();
+    });
+  </script>
+
+</body>
+</html>

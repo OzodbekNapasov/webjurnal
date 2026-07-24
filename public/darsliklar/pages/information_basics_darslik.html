@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <script>
+    // Immediate login check before rendering
+    const savedLogin = localStorage.getItem('darslik_login');
+    if (savedLogin !== 'Napasov' && savedLogin !== 'Umirov') {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../LOGO.png">
+  <title>Elektron Darslik: Axborot va Axborot Texnologiyalari Asoslari</title>
+  
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Google Fonts: Poppins (headings), Montserrat (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0b0f19;           /* Cyber Navy Dark */
+      --secondary-bg: #161b26;         /* Slate 900 */
+      --text-main: #f8fafc;            /* White slate */
+      --text-muted: #94a3b8;           /* Muted slate */
+      --text-light: #cbd5e1;           /* Light slate */
+      --card-bg: rgba(22, 27, 38, 0.75);/* Glassmorphism Navy */
+      --border-color: rgba(255, 255, 255, 0.08);
+      --accent: #06b6d4;               /* Medical Cyan */
+      --accent-glow: rgba(6, 182, 212, 0.35);
+      --secondary-accent: #10b981;      /* Emerald Green */
+      --secondary-accent-glow: rgba(16, 185, 129, 0.25);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --error: #ef4444;
+      --error-glow: rgba(239, 68, 68, 0.2);
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;           /* Light Slate */
+      --secondary-bg: #ffffff;
+      --text-main: #0b0f19;            /* Deep Blue */
+      --text-muted: #475569;           /* Slate 600 */
+      --text-light: #1e293b;           /* Slate 800 */
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --border-color: rgba(11, 15, 25, 0.08);
+      --accent: #0891b2;               /* Deep Cyan */
+      --accent-glow: rgba(8, 145, 178, 0.15);
+      --secondary-accent: #059669;      /* Deep Emerald */
+      --secondary-accent-glow: rgba(5, 150, 105, 0.10);
+      --shadow: 0 10px 30px rgba(11, 15, 25, 0.05);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: 'Montserrat', sans-serif;
+      transition: var(--transition-smooth);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-top: 56px;
+    }
+
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    .text-light {
+      color: var(--text-light) !important;
+    }
+    .text-accent {
+      color: var(--accent) !important;
+    }
+    .text-emerald {
+      color: var(--secondary-accent) !important;
+    }
+    p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    /* Fixed style overrides for light theme unreadable texts */
+    [data-theme="light"] .bg-dark {
+      background-color: #0b0f19 !important;
+      color: #e2e8f0 !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    [data-theme="light"] .bg-dark * {
+      color: #ffffff !important;
+    }
+    [data-theme="light"] .bg-dark .text-muted {
+      color: #94a3b8 !important;
+    }
+
+    /* Override Bootstrap bg-secondary-subtle for theme consistency */
+    .bg-secondary-subtle {
+      background-color: rgba(255, 255, 255, 0.03) !important;
+      color: var(--text-main) !important;
+      border-color: var(--border-color) !important;
+    }
+    [data-theme="light"] .bg-secondary-subtle {
+      background-color: rgba(11, 15, 25, 0.04) !important;
+      color: var(--text-main) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    /* Top Scroll Progress */
+    .top-progress-container {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 1050;
+    }
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--secondary-accent));
+      transition: width 0.1s;
+    }
+
+    /* Navigation Bar */
+    .navbar {
+      background: rgba(11, 15, 25, 0.8) !important;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 1090;
+    }
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.8) !important;
+    }
+    .navbar-brand {
+      font-weight: 800;
+      color: var(--text-main) !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--secondary-accent) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+    .logo-img {
+      height: 32px;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-img {
+      transform: scale(1.08);
+    }
+
+    .author-badge {
+      font-size: 0.75rem;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid var(--accent);
+      padding: 4px 10px;
+      border-radius: 20px;
+      color: var(--accent) !important;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.6s infinite alternate;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.4; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Theme toggle switch design */
+    .theme-toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .theme-switch-bg {
+      width: 44px;
+      height: 24px;
+      background-color: #334155;
+      border-radius: 12px;
+      position: relative;
+      transition: var(--transition-smooth);
+    }
+    .theme-switch-handle {
+      width: 18px;
+      height: 18px;
+      background-color: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      color: #000;
+    }
+    [data-theme="light"] .theme-switch-bg {
+      background-color: var(--accent);
+    }
+    [data-theme="light"] .theme-switch-handle {
+      left: 23px;
+      color: #059669;
+    }
+
+    /* Floating Collapsible Sidebar */
+    .sidebar-toggle-btn {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      box-shadow: 0 4px 15px var(--accent-glow);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .sidebar-toggle-btn:hover {
+      transform: scale(1.1);
+    }
+    
+    .nav-sidebar {
+      position: fixed;
+      top: 60px;
+      left: -280px;
+      width: 280px;
+      height: calc(100vh - 60px);
+      background-color: var(--secondary-bg);
+      border-right: 1px solid var(--border-color);
+      transition: left 0.3s ease;
+      z-index: 1040;
+      overflow-y: auto;
+      padding: 20px 10px;
+      box-shadow: var(--shadow);
+    }
+    .nav-sidebar.open {
+      left: 0;
+    }
+    .nav-sidebar-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      padding: 0 15px 15px 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .nav-sidebar-list {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0 0 0;
+    }
+    .nav-sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 15px;
+      color: var(--text-light);
+      text-decoration: none;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      transition: var(--transition-smooth);
+    }
+    .nav-sidebar-link:hover, .nav-sidebar-link.active {
+      background-color: var(--accent-glow);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    [data-theme="light"] .nav-sidebar-link.active {
+      background-color: var(--accent);
+      color: white;
+    }
+
+    /* Page Layout */
+    .main-container {
+      margin-left: 0;
+      transition: margin-left 0.3s ease;
+      padding: 40px 15px;
+      max-width: 1280px;
+    }
+    .main-container.sidebar-open {
+      margin-left: 280px;
+    }
+
+    /* Hero Section Specifics */
+    .hero-box {
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 50px 30px;
+      background: linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(16,185,129,0.03) 100%);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 50px;
+    }
+    .hero-glow-blob {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: var(--accent);
+      filter: blur(120px);
+      opacity: 0.12;
+      top: -50px;
+      right: -50px;
+      pointer-events: none;
+    }
+
+    /* Content Cards */
+    .custom-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: var(--transition-smooth);
+    }
+    .custom-card:hover {
+      border-color: rgba(6, 182, 212, 0.25);
+    }
+    .section-title {
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px dashed var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    /* Interactive 3D Flip/Expand Cards */
+    .info-card-container {
+      perspective: 1000px;
+      min-height: 200px;
+      cursor: pointer;
+    }
+    .info-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .info-card-container.flipped .info-card-inner {
+      transform: rotateY(180deg);
+    }
+    .info-card-front, .info-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .info-card-front {
+      background-color: var(--secondary-bg);
+      color: var(--text-main);
+    }
+    .info-card-back {
+      background-color: #0c1524;
+      color: #ffffff !important;
+      transform: rotateY(180deg);
+    }
+    .info-card-back * {
+      color: #ffffff !important;
+    }
+
+    /* Info Features Grid (Xususiyatlar) */
+    .feature-icon-box {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent-glow);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      transition: var(--transition-smooth);
+    }
+    .feature-item-col:hover .feature-icon-box {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    /* Timeline Styling */
+    .timeline-container {
+      position: relative;
+      padding-left: 30px;
+      margin: 20px 0;
+    }
+    .timeline-container::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      width: 2px;
+      height: 100%;
+      background-color: var(--border-color);
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 30px;
+      cursor: pointer;
+    }
+    .timeline-badge {
+      position: absolute;
+      left: -30px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: var(--secondary-bg);
+      border: 3px solid var(--accent);
+      transition: var(--transition-smooth);
+      z-index: 2;
+    }
+    .timeline-item:hover .timeline-badge,
+    .timeline-item.active .timeline-badge {
+      background-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+      transform: scale(1.2);
+    }
+    .timeline-card {
+      background-color: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 15px 20px;
+      transition: var(--transition-smooth);
+    }
+    .timeline-item:hover .timeline-card {
+      border-color: var(--accent);
+      background-color: rgba(6, 182, 212, 0.03);
+    }
+    .timeline-item.active .timeline-card {
+      border-color: var(--secondary-accent);
+      background-color: rgba(16, 185, 129, 0.05);
+    }
+    .timeline-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-out;
+    }
+    .timeline-item.active .timeline-detail {
+      max-height: 200px;
+    }
+
+    /* Stats Dashboard */
+    .stat-counter-box {
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      background-color: rgba(255,255,255,0.01);
+      transition: var(--transition-smooth);
+    }
+    .stat-counter-box:hover {
+      transform: translateY(-5px);
+      border-color: var(--secondary-accent);
+    }
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--secondary-accent);
+      margin-bottom: 5px;
+    }
+
+    /* Quiz Option Buttons */
+    .quiz-option-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-light);
+      padding: 14px 20px;
+      text-align: left;
+      width: 100%;
+      margin-bottom: 12px;
+      transition: var(--transition-smooth);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .quiz-option-btn:hover:not([disabled]) {
+      background: rgba(6, 182, 212, 0.08);
+      border-color: var(--accent);
+      color: var(--text-main);
+      transform: translateX(4px);
+    }
+    .quiz-option-btn.correct {
+      background-color: rgba(16, 185, 129, 0.15) !important;
+      border-color: var(--success) !important;
+      color: #10b981 !important;
+    }
+    .quiz-option-btn.incorrect {
+      background-color: rgba(239, 68, 68, 0.15) !important;
+      border-color: var(--error) !important;
+      color: #ef4444 !important;
+    }
+    
+    /* Light mode specific correct/incorrect quiz overrides */
+    [data-theme="light"] .quiz-option-btn.correct,
+    [data-theme="light"] .quiz-option-btn.correct * {
+      color: #10b981 !important;
+      background-color: rgba(16, 185, 129, 0.15) !important;
+    }
+    [data-theme="light"] .quiz-option-btn.incorrect,
+    [data-theme="light"] .quiz-option-btn.incorrect * {
+      color: #ef4444 !important;
+      background-color: rgba(239, 68, 68, 0.15) !important;
+    }
+
+    .quiz-question-box {
+      display: none;
+    }
+    .quiz-question-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--secondary-bg);
+      border-top: 1px solid var(--border-color);
+      padding: 30px 0;
+      margin-top: 60px;
+    }
+    .footer-text {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .footer-author {
+      color: var(--accent) !important;
+      font-weight: 600;
+    }
+
+    @media (max-width: 991.98px) {
+      .main-container.sidebar-open {
+        margin-left: 0;
+      }
+    }
+  
+    /* Login Overlay Styling */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    [data-theme="light"] .login-overlay {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white;
+      font-size: 1.7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px var(--primary-cyan-glow);
+    }
+
+    .login-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .login-input-wrapper i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.4) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 50px;
+      padding: 12px 20px 12px 50px;
+      color: var(--text-main) !important;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .login-input {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 15px var(--primary-cyan-glow);
+    }
+
+    .login-error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white !important;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--primary-cyan-glow);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-cyan-glow);
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+  </style>
+  <link rel="stylesheet" href="darslik.css">
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="top-progress-container">
+    <div class="top-progress-bar" id="scrollProgressBar"></div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid px-3">
+      <a class="navbar-brand animate-brand d-flex align-items-center gap-2" href="../index.html">
+        <img src="../LOGO.png" alt="Logo" class="logo-img">
+        <span class="logo-text d-none d-sm-inline">Axborot Texnologiyalari</span>
+      </a>
+      
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <div class="author-badge">
+          <div class="pulse-dot"></div>
+          <span class="d-none d-md-inline">Tuzuvchi:</span> <strong class="text-white">{{AUTHOR}}</strong>
+        </div>
+        
+                <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        <div class="theme-toggle-container" onclick="toggleTheme()">
+          <i class="fa-solid fa-moon text-muted" id="themeDarkIcon"></i>
+          <div class="theme-switch-bg">
+            <div class="theme-switch-handle" id="themeSwitchHandle">
+              <i class="fa-solid fa-moon" id="handleIcon"></i>
+            </div>
+          </div>
+          <i class="fa-solid fa-sun text-muted" id="themeLightIcon"></i>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Floating Sidebar Toggle Button -->
+  <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Mundarijani ochish">
+    <i class="fa-solid fa-bars" id="sidebarIcon"></i>
+  </button>
+
+  <!-- Sidebar Navigation -->
+  <div class="nav-sidebar" id="sidebarMenu">
+    <div class="nav-sidebar-title">Mundarija</div>
+    <ul class="nav-sidebar-list">
+      <li><a href="#section-1" class="nav-sidebar-link active" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-play"></i> 1. Kirish</a></li>
+      <li><a href="#section-2" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-circle-info"></i> 2. Axborot nima?</a></li>
+      <li><a href="#section-3" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-tags"></i> 3. Axborot turlari</a></li>
+      <li><a href="#section-4" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-star"></i> 4. Axborot xususiyatlari</a></li>
+      <li><a href="#section-5" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-desktop"></i> 5. Axborot texnologiyalari</a></li>
+      <li><a href="#section-6" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-clock-rotate-left"></i> 6. Rivojlanish bosqichlari</a></li>
+      <li><a href="#section-7" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-laptop-medical"></i> 7. Tibbiyotda IT</a></li>
+      <li><a href="#section-8" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-chart-line"></i> 8. IT afzalliklari</a></li>
+      <li><a href="#section-9" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-graduation-cap"></i> 9. Bilimingizni sinang</a></li>
+      <li><a href="#section-10" class="nav-sidebar-link" onclick="closeSidebarOnSelect()"><i class="fa-solid fa-award"></i> 10. Xulosa</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content Layout -->
+  <div class="container main-container mx-auto" id="mainContainer">
+    <div class="row justify-content-center">
+      <div class="col-12">
+        
+        <!-- Section 1: Hero & Introduction -->
+        <section id="section-1" class="hero-box">
+          <div class="hero-glow-blob"></div>
+          <div class="row align-items-center">
+            <div class="col-lg-8">
+              <span class="badge bg-info-subtle text-accent px-3 py-2 mb-3 rounded-pill text-uppercase fw-bold"><i class="fa-solid fa-book-open me-2"></i> 1-Modul</span>
+              <h1 class="display-5 fw-extrabold mb-3" style="font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                Axborot haqida tushuncha. Axborot texnologiyalari
+              </h1>
+              <p class="lead mb-4 text-light">
+                Kiber-tibbiyot asrida axborot va axborot texnologiyalari hayotiy zaruriyatdir. Darsni boshlang va raqamli tibbiyot poydevorini o'rganing.
+              </p>
+              <a href="#section-2" class="btn btn-info text-white px-4 py-2 rounded-pill fw-bold shadow-sm" style="background-color: var(--accent); border: none;">
+                Darsni Boshlash <i class="fa-solid fa-circle-arrow-down ms-2"></i>
+              </a>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block text-center">
+              <!-- Premium Medical IT SVG -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="160" height="160">
+                <circle cx="100" cy="100" r="90" fill="none" stroke="url(#heroGrad)" stroke-width="3" stroke-dasharray="10 5" />
+                <path d="M60,100 L85,100 L95,60 L105,140 L115,100 L140,100" fill="none" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                <rect x="85" y="85" width="30" height="30" rx="6" fill="#06b6d4" opacity="0.8" />
+                <path d="M93,100 H107 M100,93 V107" fill="none" stroke="white" stroke-width="3" />
+                <defs>
+                  <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#06b6d4" />
+                    <stop offset="100%" stop-color="#10b981" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2: Understanding Information -->
+        <section id="section-2" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-circle-info"></i> 2-Bo'lim. Axborot haqida tushuncha</h2>
+          <p>
+            自由 hayotimiz va ayniqsa kasbiy faoliyatimiz har soniyada ma'lumotlar qabul qilish va ularni qayta ishlash bilan bog'liq. Fan tilida ushbu tushunchani tushuntirish uchun maxsus ta'riflar qo'llaniladi.
+          </p>
+          <div class="p-3 bg-secondary-subtle border border-secondary rounded mb-4">
+            <h6 class="fw-bold text-accent mb-2"><i class="fa-solid fa-quote-left me-2"></i> Axborot ta'rifi:</h6>
+            <p class="mb-0 text-light italic">
+              <strong>Axborot (Информация)</strong> — atrof-muhitdagi ob'ektlar, hodisalar va jarayonlar to'g'risidagi xabarlar, ma'lumotlar hamda bilimlar yig'indisidir. Axborot lotincha "informatio" so'zidan olingan bo'lib, tushuntirish, bayon etish degan ma'noni anglatadi.
+            </p>
+          </div>
+          
+          <h4 class="text-accent mb-3"><i class="fa-solid fa-notes-medical me-2"></i> Tibbiyotdagi o'rni va ahamiyati</h4>
+          <p>
+            Shifokor yoki hamshiraning deyarli har bir qarori bemor haqidagi to'g'ri olingan axborotga bog'liq. Masalan:
+          </p>
+          <ul>
+            <li class="mb-2">Bemor shikoyatlari va simptomlari — bu tashxis qo'yish uchun boshlang'ich axborot.</li>
+            <li class="mb-2">Laboratoriya tahlillari va rentgen natijalari — davolash rejasini tuzish uchun tayanch klinik axborot.</li>
+            <li class="mb-2">Elektron retseptlar va dori dozalari — xatoliklarning oldini olish uchun muhim farmatsevtik axborot.</li>
+          </ul>
+        </section>
+
+        <!-- Section 3: Types of Information -->
+        <section id="section-3" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-tags"></i> 3-Bo'lim. Axborot turlari</h2>
+          <p>
+            Inson atrof-muhitdan keladigan signallarni va kompyuter ma'lumotlarini turli ko'rinishlarda qabul qiladi. Quyidagi interaktiv kartalarni bosib, axborotning turlari va ularning tibbiyotdagi real misollarini o'rganing:
+          </p>
+
+          <div class="row g-3 mt-2">
+            <!-- Text Information -->
+            <div class="col-md-4 col-sm-6 col-12 info-card-container" onclick="flipCard(this)">
+              <div class="info-card-inner">
+                <div class="info-card-front">
+                  <i class="fa-solid fa-file-lines fs-2 text-accent mb-3"></i>
+                  <h5 class="fw-bold">Matnli axborot</h5>
+                  <span class="badge bg-secondary-subtle text-accent mt-2">Batafsil ko'rish</span>
+                </div>
+                <div class="info-card-back">
+                  <h6 class="fw-bold mb-2">Matnli ko'rinish</h6>
+                  <p class="small mb-0">Harf va so'zlardan tashkil topgan axborot. <br><br><strong>Tibbiy misol:</strong> Bemorning kasallik tarixi (Анамнез), shifokor konsultatsiyasi bayonnomasi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Numeric Information -->
+            <div class="col-md-4 col-sm-6 col-12 info-card-container" onclick="flipCard(this)">
+              <div class="info-card-inner">
+                <div class="info-card-front">
+                  <i class="fa-solid fa-calculator fs-2 text-accent mb-3"></i>
+                  <h5 class="fw-bold">Sonli axborot</h5>
+                  <span class="badge bg-secondary-subtle text-accent mt-2">Batafsil ko'rish</span>
+                </div>
+                <div class="info-card-back">
+                  <h6 class="fw-bold mb-2">Raqamli ko'rinish</h6>
+                  <p class="small mb-0">Raqamlar va matematik ifodalar. <br><br><strong>Tibbiy misol:</strong> Tana harorati (36.6 °C), qon bosimi (120/80), puls tezligi (75 ta/min).</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Graphic Information -->
+            <div class="col-md-4 col-sm-6 col-12 info-card-container" onclick="flipCard(this)">
+              <div class="info-card-inner">
+                <div class="info-card-front">
+                  <i class="fa-solid fa-image fs-2 text-accent mb-3"></i>
+                  <h5 class="fw-bold">Grafik axborot</h5>
+                  <span class="badge bg-secondary-subtle text-accent mt-2">Batafsil ko'rish</span>
+                </div>
+                <div class="info-card-back">
+                  <h6 class="fw-bold mb-2">Tasviriy ko'rinish</h6>
+                  <p class="small mb-0">Rasm, chizma, grafik yoki xaritalar. <br><br><strong>Tibbiy misol:</strong> EKG grafigi, Rentgen plyonkasi, MRT va UTT (UZI) tasvirlari.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Audio Information -->
+            <div class="col-md-4 col-sm-6 col-12 info-card-container" onclick="flipCard(this)">
+              <div class="info-card-inner">
+                <div class="info-card-front">
+                  <i class="fa-solid fa-volume-high fs-2 text-accent mb-3"></i>
+                  <h5 class="fw-bold">Audio axborot</h5>
+                  <span class="badge bg-secondary-subtle text-accent mt-2">Batafsil ko'rish</span>
+                </div>
+                <div class="info-card-back">
+                  <h6 class="fw-bold mb-2">Tovushli ko'rinish</h6>
+                  <p class="small mb-0">Ovoz signallari va shovqinlar. <br><br><strong>Tibbiy misol:</strong> Stetoskop orqali eshitiladigan yurak urishi tovushlari, shifokor diktofon yozuvi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Video Information -->
+            <div class="col-md-4 col-sm-6 col-12 info-card-container" onclick="flipCard(this)">
+              <div class="info-card-inner">
+                <div class="info-card-front">
+                  <i class="fa-solid fa-video fs-2 text-accent mb-3"></i>
+                  <h5 class="fw-bold">Video axborot</h5>
+                  <span class="badge bg-secondary-subtle text-accent mt-2">Batafsil ko'rish</span>
+                </div>
+                <div class="info-card-back">
+                  <h6 class="fw-bold mb-2">Harakatli tasvir</h6>
+                  <p class="small mb-0">Harakatli vizual tasvirlar yig'indisi. <br><br><strong>Tibbiy misol:</strong> Endoskopik va Laparoskopik jarrohlik jarayoni video-yozuvlari.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Multi-media Information -->
+            <div class="col-md-4 col-sm-6 col-12 info-card-container" onclick="flipCard(this)">
+              <div class="info-card-inner">
+                <div class="info-card-front">
+                  <i class="fa-solid fa-photo-film fs-2 text-accent mb-3"></i>
+                  <h5 class="fw-bold">Multimedia</h5>
+                  <span class="badge bg-secondary-subtle text-accent mt-2">Batafsil ko'rish</span>
+                </div>
+                <div class="info-card-back">
+                  <h6 class="fw-bold mb-2">Aralash ko'rinish</h6>
+                  <p class="small mb-0">Matn, audio, tasvir va videolarning birgalikdagi uyg'unligi. <br><br><strong>Tibbiy misol:</strong> Talabalar uchun jarrohlik darsligi video-darslari.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="small text-muted mt-3 text-center"><i class="fa-solid fa-circle-info me-1"></i> Kartani bosib uning orqa tomonidagi tibbiy misollarni o'qing.</div>
+        </section>
+
+        <!-- Section 4: Basic Characteristics of Information -->
+        <section id="section-4" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-star"></i> 4-Bo'lim. Axborotning asosiy xususiyatlari</h2>
+          <p>
+            Har qanday ma'lumot ham foydali va qimmatli bo'lavermaydi. Buning uchun u quyidagi 5 ta eng muhim sifat ko'rsatkichlariga ega bo'lishi shart:
+          </p>
+
+          <div class="row g-4 mt-2">
+            <!-- Reliability -->
+            <div class="col-md-4 col-sm-6 col-12 feature-item-col">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle">
+                <div class="feature-icon-box"><i class="fa-solid fa-shield-halved"></i></div>
+                <h5 class="fw-bold text-accent">1. Ishonchlilik</h5>
+                <p class="small text-muted mb-0">
+                  Axborotning haqiqatga mosligi. Tibbiyotda tahlil natijalarining bexatoligi bunga yaqqol misol. Xato tahlil noto'g'ri tashxis va noto'g'ri davolashga olib keladi.
+                </p>
+              </div>
+            </div>
+
+            <!-- Completeness -->
+            <div class="col-md-4 col-sm-6 col-12 feature-item-col">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle">
+                <div class="feature-icon-box"><i class="fa-solid fa-battery-full"></i></div>
+                <h5 class="fw-bold text-accent">2. To'liqlik</h5>
+                <p class="small text-muted mb-0">
+                  Qaror qabul qilish uchun axborot hajmining yetarli bo'lishi. Bemor haroratidan tashqari, uning qon tahlillari va instrumental tekshiruvlari mavjud bo'lishi kerak.
+                </p>
+              </div>
+            </div>
+
+            <!-- Relevance -->
+            <div class="col-md-4 col-sm-6 col-12 feature-item-col">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle">
+                <div class="feature-icon-box"><i class="fa-solid fa-clock"></i></div>
+                <h5 class="fw-bold text-accent">3. Dolzarblik</h5>
+                <p class="small text-muted mb-0">
+                  Axborotning ayni vaqtdagi foydaliligi. Bemorning 3 yil oldingi qon bosimi ko'rsatkichi bugungi infarkt holatini aniqlash uchun o'z dolzarbligini yo'qotgan.
+                </p>
+              </div>
+            </div>
+
+            <!-- Understandability -->
+            <div class="col-md-4 col-sm-6 col-12 feature-item-col">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle">
+                <div class="feature-icon-box"><i class="fa-solid fa-language"></i></div>
+                <h5 class="fw-bold text-accent">4. Tushunarlilik</h5>
+                <p class="small text-muted mb-0">
+                  Ma'lumotlar foydalanuvchiga tushunarli tilda bo'lishi. Masalan, shifokor hamshiraga dori dozasini yozib qoldirganda, uning xati va terminlari aniq tushunarli bo'lishi shart.
+                </p>
+              </div>
+            </div>
+
+            <!-- Value -->
+            <div class="col-md-4 col-sm-6 col-12 feature-item-col text-md-center offset-md-2">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle text-start">
+                <div class="feature-icon-box"><i class="fa-solid fa-gem"></i></div>
+                <h5 class="fw-bold text-accent">5. Qimmatlilik</h5>
+                <p class="small text-muted mb-0">
+                  Muammoni hal qilishga yordam berish darajasi. Masalan, tez yordam kelganda bemorning qon guruhi va allergiyalari haqidagi ma'lumot hayotiy qimmatga egadir.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 5: Information Technology -->
+        <section id="section-5" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-desktop"></i> 5-Bo'lim. Axborot texnologiyalari haqida ma'lumot</h2>
+          <p>
+            Raqamli asrda axborot shunchaki ma'lumot emas, balki qimmatli resursdir. Uni qayta ishlash va boshqarish uchun maxsus fan sohasi — Axborot Texnologiyalari xizmat qiladi.
+          </p>
+          <div class="p-3 bg-secondary-subtle border border-secondary rounded mb-4">
+            <h6 class="fw-bold text-accent mb-2"><i class="fa-solid fa-laptop-code me-2"></i> Axborot Texnologiyasi (AT / IT) nima?</h6>
+            <p class="mb-0 text-light italic">
+              <strong>Axborot texnologiyalari (Информационные технологии)</strong> — bu axborotni to'plash, saqlash, qayta ishlash, uzatish va uni himoya qilish uchun foydalaniladigan usullar, texnologik jarayonlar hamda texnik vositalar (kompyuter, smartfon, tarmoqlar, dasturiy ta'minot) majmuidir.
+            </p>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="p-3 border border-secondary rounded h-100 bg-dark text-white">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-bullseye me-2"></i> Bosh maqsadi:</h6>
+                <p class="small mb-0 text-white-50">Inson tomonidan tahlil qilinishi va qaror qabul qilinishi uchun zarur axborotni ishlab chiqarish va boshqarish.</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 border border-secondary rounded h-100 bg-dark text-white">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-list-check me-2"></i> Asosiy vazifalari:</h6>
+                <p class="small mb-0 text-white-50">Katal hajmdagi ma'lumotlarni tartibga solish, tezkor qidirish, elektron reyestrlar yaratish va xavfsiz kanallar orqali uzatish.</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="p-3 border border-secondary rounded h-100 bg-dark text-white">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-globe me-2"></i> Qo'llanish sohalari:</h6>
+                <p class="small mb-0 text-white-50">Davlat boshqaruvi, Iqtisodiyot va moliya, Ta'lim (masalan, ushbu elektron darslik) va Tibbiyot (DMED raqamli tizimlari).</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 6: IT Development Stages (Timeline) -->
+        <section id="section-6" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> 6-Bo'lim. Rivojlanish bosqichlari</h2>
+          <p>
+            Insoniyat tarixi davomida axborot bilan ishlash texnologiyalari bir necha bosqichlarni bosib o'tdi. Quyidagi xronologik interaktiv yo'nalishni (Timeline) bosib, taraqqiyot bosqichlarini o'rganing:
+          </p>
+
+          <div class="timeline-container">
+            <!-- Stage 1 -->
+            <div class="timeline-item active" id="time-item-1" onclick="selectTimeline(1)">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">1. Qog'ozli texnologiyalar (Mexanik bosqich)</h6>
+                  <span class="badge bg-secondary">XIX asrgacha</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-1" style="max-height: 200px;">
+                  <p class="small text-muted mb-0">
+                    Axborotni qo'lda qog'ozga yozish, kitoblar, jurnallar va qog'oz kartoteka tizimlari. <br><strong>Tibbiyotda:</strong> Har bir bemor haqidagi ma'lumotlar shifoxona jurnaliga to'liq qo'lda yozilgan.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 2 -->
+            <div class="timeline-item" id="time-item-2" onclick="selectTimeline(2)">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">2. Kompyuter texnologiyalari (Elektron bosqich)</h6>
+                  <span class="badge bg-secondary">XX asr o'rtalari</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-2">
+                  <p class="small text-muted mb-0">
+                    Shaxsiy kompyuterlar va elektron ma'lumotlar bazalarining (database) yaratilishi. Hujjatlarni raqamlashtirish. <br><strong>Tibbiyotda:</strong> Tibbiy xulosalarni Word dasturida chop etish, sodda elektron reyestrlar bilan ishlash boshlandi.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 3 -->
+            <div class="timeline-item" id="time-item-3" onclick="selectTimeline(3)">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">3. Internet texnologiyalari (Tarmoq bosqich)</h6>
+                  <span class="badge bg-secondary">1990-yillar</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-3">
+                  <p class="small text-muted mb-0">
+                    Lokal va global tarmoqlarning kirib kelishi. Elektron pochta, veb-saytlar va masofaviy aloqa kanallari. <br><strong>Tibbiyotda:</strong> Kasalxonalararo ma'lumot almashish tizimlari, internet orqali tahlil natijalarini yuborish yo'lga qo'yildi.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 4 -->
+            <div class="timeline-item" id="time-item-4" onclick="selectTimeline(4)">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">4. Mobil texnologiyalar</h6>
+                  <span class="badge bg-secondary">2000-yillar</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-4">
+                  <p class="small text-muted mb-0">
+                    Smartfonlar, planshetlar, simsiz internet (3G/4G/5G) va mobil ilovalar. <br><strong>Tibbiyotda:</strong> Shifokorlar va hamshiralar uchun maxsus klinik ilovalar, planshet orqali palatadagi bemor tahlillarini ko'rish.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage 5 -->
+            <div class="timeline-item" id="time-item-5" onclick="selectTimeline(5)">
+              <div class="timeline-badge"></div>
+              <div class="timeline-card">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="fw-bold text-accent mb-1">5. Sun'iy Intellekt texnologiyalari (AI)</h6>
+                  <span class="badge bg-secondary">Hozirgi davr</span>
+                </div>
+                <div class="timeline-detail mt-2" id="time-detail-5">
+                  <p class="small text-muted mb-0">
+                    Neyron tarmoqlar, kompyuter ko'rishi, avtomatlashtirilgan qaror qabul qiluvchi aqlli dasturlar. <br><strong>Tibbiyotda:</strong> Rentgen, MRT tasvirlarini tahlil qibly o'smalarni topish, bemor holati monitoringi va aqlli tashxislar.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="small text-muted text-center"><i class="fa-solid fa-circle-info me-1"></i> Bosqichlar ustiga bosib, ularning tavsifini va tibbiy ta'sirini ko'ring.</div>
+        </section>
+
+        <!-- Section 7: Medical IT -->
+        <section id="section-7" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-laptop-medical"></i> 7-Bo'lim. Tibbiyotda axborot texnologiyalari</h2>
+          <p>
+            Raqamli tibbiyot (Digital Medicine) bugungi kunda shifoxonalar faoliyatini butunlay o'zgartirdi. Quyidagi asosiy yo'nalishlar tibbiyotda AKT fanining asosiy o'rganish ob'ektlaridir:
+          </p>
+
+          <div class="row g-3 mt-2">
+            <!-- 1. EMK -->
+            <div class="col-md-6">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-id-card-clip me-2"></i> Elektron tibbiy karta (EMK / ЭМК)</h6>
+                <p class="small text-muted mb-0">
+                  Bemorning barcha klinik ma'lumotlari, tashxislari, tahlil natijalari va retseptlari saqlanadigan yagona raqamli pasport. Shifokor kompyuter orqali bir necha soniyada barcha tarixni ko'ra oladi.
+                </p>
+              </div>
+            </div>
+
+            <!-- 2. Telemeditsina -->
+            <div class="col-md-6">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-circle-nodes me-2"></i> Telemeditsina (Onlayn konsulturalash)</h6>
+                <p class="small text-muted mb-0">
+                  Uzoq qishloqlardagi yoki viloyatlardagi bemorlarni poytaxtdagi yetakchi shifokorlar bilan internet kanallari orqali video-konsultatsiya qilish, masofadan tashxis qo'yish imkoniyati.
+                </p>
+              </div>
+            </div>
+
+            <!-- 3. MIS -->
+            <div class="col-md-6">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-hospital me-2"></i> Kasalxona axborot tizimlari (MIS)</h6>
+                <p class="small text-muted mb-0">
+                  Shifoxonadagi bemorlarni ro'yxatga olish, shifokorlar ish jadvalini rejalashtirish, dorilar omborini to'liq nazorat qilish va moliyaviy hisobotlarni avtomatlashtiradigan boshqaruv tizimi.
+                </p>
+              </div>
+            </div>
+
+            <!-- 4. Elektron retsept -->
+            <div class="col-md-6">
+              <div class="p-3 border border-secondary rounded h-100 bg-secondary-subtle">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-prescription-bottle-medical me-2"></i> Elektron retsept (E-Prescribing)</h6>
+                <p class="small text-muted mb-0">
+                  Shifokor yozgan dori retsepti to'g'ridan-to'g'ri dorixonalar bazasiga elektron tarzda yuklanadi. Bemor dorixonaga pasport kodi yoki elektron ID bilan borib, kerakli dorilarni oladi.
+                </p>
+              </div>
+            </div>
+
+            <!-- 5. AI in Medicine -->
+            <div class="col-12">
+              <div class="p-3 border border-secondary rounded bg-secondary-subtle">
+                <h6 class="fw-bold text-emerald"><i class="fa-solid fa-brain me-2"></i> Sun'iy Intellekt va Tashxislar (AI Assistant)</h6>
+                <p class="small text-muted mb-0">
+                  Neyron tarmoqlar o'pkadagi pnevmoniya alomatlarini, saraton shishlarini rentgen va MRT tasvirlari asosida 98% aniqlik bilan avtomatik tahlil qibly, shifokorga hisobot beradi. Bu inson xatolarini minimallashtiradi.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 8: Advantages of IT (Stats) -->
+        <section id="section-8" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-chart-line"></i> 8-Bo'lim. Axborot texnologiyalarining afzalliklari</h2>
+          <p>
+            Tibbiyot va ijtimoiy hayotga IT tizimlarining joriy etilishi ish samaradorligi va xizmat sifatini yangi bosqichga olib chiqdi:
+          </p>
+
+          <div class="row g-3 mt-2">
+            <!-- Stat 1 -->
+            <div class="col-md-3 col-sm-6">
+              <div class="stat-counter-box">
+                <div class="stat-number" data-target="10">0</div>
+                <div class="small fw-bold text-light mb-1">Tezlik ko'rsatkichi</div>
+                <div class="small text-muted" style="font-size: 0.75rem;">Hujjatlar aylanmasi 10 barobar tezlashdi.</div>
+              </div>
+            </div>
+
+            <!-- Stat 2 -->
+            <div class="col-md-3 col-sm-6">
+              <div class="stat-counter-box">
+                <div class="stat-number" data-target="99">0</div>
+                <div class="small fw-bold text-light mb-1">Tashxis aniqligi (%)</div>
+                <div class="small text-muted" style="font-size: 0.75rem;">AI va aqlli tizimlar yordamida aniqlik darajasi.</div>
+              </div>
+            </div>
+
+            <!-- Stat 3 -->
+            <div class="col-md-3 col-sm-6">
+              <div class="stat-counter-box">
+                <div class="stat-number" data-target="85">0</div>
+                <div class="small fw-bold text-light mb-1">Qog'oz tejalishi (%)</div>
+                <div class="small text-muted" style="font-size: 0.75rem;">Elektron kartaga o'tish hisobiga tejalgan qog'oz.</div>
+              </div>
+            </div>
+
+            <!-- Stat 4 -->
+            <div class="col-md-3 col-sm-6">
+              <div class="stat-counter-box">
+                <div class="stat-number" data-target="70">0</div>
+                <div class="small fw-bold text-light mb-1">Vaqt tejalishi (%)</div>
+                <div class="small text-muted" style="font-size: 0.75rem;">Kasalxona navbatlarining kamayishi.</div>
+              </div>
+            </div>
+          </div>
+          <div class="text-center mt-3">
+            <button class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="triggerCounters()">Hisoblagichlarni qayta faollashtirish</button>
+          </div>
+        </section>
+
+        <!-- Section 9: Quiz / Test -->
+        <section id="section-9" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-graduation-cap"></i> 9-Bo'lim. Bilimingizni sinang (10 ta Test)</h2>
+          <p class="mb-4">Mavzu yuzasidan 10 ta test savolini yechib, bilimingizni baholang. Test yakunida 5 ballik tizim bo'yicha baholanadi.</p>
+          
+          <div class="p-4 rounded bg-dark border border-secondary" id="quizWrapperBox">
+            <div id="quizQuestionsContainer">
+              <!-- Questions are dynamically inserted here -->
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top border-secondary">
+              <button class="btn btn-secondary" onclick="prevQuizQuestion()" id="quizPrevBtn" disabled>
+                <i class="fa-solid fa-chevron-left me-2"></i> Avvalgisi
+              </button>
+              <span class="fw-bold text-accent" id="quizProgressLabel">Savol 1 / 10</span>
+              <button class="btn btn-info text-white" style="background-color: var(--accent); border:none;" onclick="nextQuizQuestion()" id="quizNextBtn">
+                Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>
+              </button>
+            </div>
+
+            <!-- Result Container (hidden by default) -->
+            <div class="mt-4 p-4 bg-dark border border-secondary rounded text-center d-none" id="quizResultBox">
+              <h3 class="text-white mb-3"><i class="fa-solid fa-circle-check text-success me-2"></i> Test Yakunlandi!</h3>
+              <h4 class="mb-2 text-white">Natija: <span id="quizScoreText" class="text-accent fw-bold">-- / 10</span></h4>
+              <p id="quizPercentageText" class="text-muted">Foiz ko'rsatkichi: --%</p>
+              <div id="quizGradeBadge" class="badge bg-success fs-5 p-3 px-4 rounded-pill mb-3">Baho: --</div>
+              <div>
+                <button class="btn btn-warning text-white font-weight-bold" style="background-color: var(--accent); border:none;" onclick="restartQuiz()"><i class="fa-solid fa-arrows-rotate me-2"></i> Qaytadan topshirish</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 10: Conclusion -->
+        <section id="section-10" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-award"></i> 10-Bo'lim. Xulosa</h2>
+          <p>
+            Ushbu 1-modulda siz axborotning fundamental nazariyasi, uning beshta asosiy xususiyati hamda insoniyat tarixidagi axborot texnologiyalarining rivojlanish bosqichlari bilan tanishdingiz.
+          </p>
+          <p>
+            Kelajak shifokori va hamshirasi sifatida raqamli shifoxona tizimlarini samarali boshqarish, bemorlar elektron kartalarini bexato to'ldirish va telemeditsina texnologiyalaridan to'g'ri foydalanish uchun ushbu boshlang'ich bilimlar mustahkam poydevor vazifasini o'taydi.
+          </p>
+          <div class="quote-box p-3 border-start border-4 border-success bg-secondary-subtle">
+            <p class="mb-0 text-light fw-bold">
+              Axborot texnologiyalari — bu shunchaki yordamchi vosita emas, balki shifo berish jarayonini tezlashtiradigan raqamli asbobdir. O'qishlaringizda omad tilaymiz!
+            </p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container text-center">
+      <p class="footer-text mb-1">&copy; 2026 Axborot Texnologiyalari Elektron Darsliklar Portali. Barcha huquqlar himoyalangan.</p>
+      <p class="footer-text mb-0">
+        Muallif: <a href="https://t.me/Ozodbek_Napasov" target="_blank" class="footer-author text-decoration-none">{{AUTHOR}}</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Theme Manager
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeUI(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeUI(newTheme);
+    }
+
+    function updateThemeUI(theme) {
+      const darkIcon = document.getElementById('themeDarkIcon');
+      const lightIcon = document.getElementById('themeLightIcon');
+      if (theme === 'dark') {
+        darkIcon.classList.add('text-accent');
+        lightIcon.classList.remove('text-accent');
+      } else {
+        darkIcon.classList.remove('text-accent');
+        lightIcon.classList.add('text-accent');
+      }
+    }
+
+    // Sidebar Management
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebarMenu');
+      const main = document.getElementById('mainContainer');
+      const icon = document.getElementById('sidebarIcon');
+      
+      sidebar.classList.toggle('open');
+      main.classList.toggle('sidebar-open');
+
+      if (sidebar.classList.contains('open')) {
+        icon.className = 'fa-solid fa-xmark';
+      } else {
+        icon.className = 'fa-solid fa-bars';
+      }
+    }
+
+    // Close sidebar on small screen link select
+    function closeSidebarOnSelect() {
+      if (window.innerWidth < 992) {
+        toggleSidebar();
+      }
+    }
+
+    // Scroll progress bar
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = (scrollTop / docHeight) * 100;
+      document.getElementById('scrollProgressBar').style.width = scrollPercent + '%';
+
+      // Update active sidebar link on scroll
+      const sections = document.querySelectorAll('section');
+      const sidebarLinks = document.querySelectorAll('.nav-sidebar-link');
+      
+      let currentSectionId = '';
+      sections.forEach(sec => {
+        const top = sec.offsetTop - 120;
+        if (scrollTop >= top) {
+          currentSectionId = sec.getAttribute('id');
+        }
+      });
+
+      if (currentSectionId) {
+        sidebarLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + currentSectionId) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+
+    // 3-Bo'lim: 3D Flip Card Toggle
+    function flipCard(element) {
+      element.classList.toggle('flipped');
+    }
+
+    // 6-Bo'lim: Timeline Select logic
+    function selectTimeline(step) {
+      const items = document.querySelectorAll('.timeline-item');
+      items.forEach((item, idx) => {
+        item.classList.remove('active');
+        const detail = document.getElementById(`time-detail-${idx+1}`);
+        if (detail) {
+          detail.style.maxHeight = '0px';
+        }
+      });
+
+      const selectedItem = document.getElementById(`time-item-${step}`);
+      selectedItem.classList.add('active');
+      const selectedDetail = document.getElementById(`time-detail-${step}`);
+      selectedDetail.style.maxHeight = '200px';
+    }
+
+    // 8-Bo'lim: Stats Counters Animation
+    let countersActivated = false;
+    function triggerCounters() {
+      const counters = document.querySelectorAll('.stat-number');
+      counters.forEach(counter => {
+        counter.innerText = '0';
+        const target = parseInt(counter.getAttribute('data-target'));
+        const isRatio = target === 10; // For '10x'
+        
+        let count = 0;
+        const increment = target / 30; // speed
+        const timer = setInterval(() => {
+          count += increment;
+          if (count >= target) {
+            clearInterval(timer);
+            counter.innerText = target + (isRatio ? 'x' : '%');
+          } else {
+            counter.innerText = Math.floor(count) + (isRatio ? 'x' : '%');
+          }
+        }, 30);
+      });
+    }
+
+    // Auto trigger counters when scrolled to Section 8
+    window.addEventListener('scroll', () => {
+      const statsSection = document.getElementById('section-8');
+      if (statsSection && !countersActivated) {
+        const rect = statsSection.getBoundingClientRect();
+        if (rect.top <= window.innerHeight - 100) {
+          countersActivated = true;
+          triggerCounters();
+        }
+      }
+    });
+
+
+    // 9-Bo'lim: Quiz Engine (10 Questions, OTM Scale)
+    const quizQuestions = [
+      { q: "Lotincha 'informatio' so'zidan kelib chiqqan 'axborot' so'zining ma'nosi nima?", a: ["Tahlil qilish, xulosa chiqarish", "Tushuntirish, bayon etish", "Kompyuter dasturi, kodlash", "Internet tarmog'i"], c: 1 },
+      { q: "Shifokorning bemor kardiogrammasini (EKG) o'rganishi axborotning qaysi turiga kiradi?", a: ["Matnli axborot", "Sonli axborot", "Grafik axborot", "Audio axborot"], c: 2 },
+      { q: "Bemor tana harorati 38.5 °C ekanligi axborotning qaysi turiga yaqqol misol bo'ladi?", a: ["Matnli", "Sonli", "Grafik", "Video"], c: 1 },
+      { q: "Qaror qabul qilish uchun axborot hajmining yetarli bo'lishi uning qaysi xususiyatidir?", a: ["Dolzarblik", "To'liqlik", "Ishonchlilik", "Tushunarlilik"], c: 1 },
+      { q: "Eski yoki eskirgan (masalan, bemorning 5 yil oldingi EKG natijasi) ma'lumot axborotning qaysi sifat ko'rsatkichini yo'qotgan?", a: ["Ishonchlilik", "Tushunarlilik", "Dolzarblik (Актуальность)", "Qimmatlilik"], c: 2 },
+      { q: "Axborot texnologiyalari (IT) nima?", a: ["Faqat kompyuter qurilmalarini yig'ish usuli", "Axborotni yig'ish, saqlash, qayta ishlash, uzatish va himoyalash vositalari hamda usullari majmuasi", "Faqat internet tarmoqlari ro'yxati", "Matn muharrirlari"], c: 1 },
+      { q: "Bemorlar tarixi, tashxislari va retseptlari yagona raqamli pasportda saqlanishi nima deyiladi?", a: ["Kasalxona ombori", "Elektron tibbiy karta (EMK / ЭМК)", "Telemeditsina xizmati", "Elektron xat"], c: 1 },
+      { q: "Kompyuter va elektron ma'lumotlar bazalarining joriy qilinishi IT taraqqiyotining qaysi bosqichiga to'g'ri keladi?", a: ["Mobil bosqich", "Internet tarmoq bosqichi", "Kompyuter (Elektron) bosqichi", "Mexanik (Qog'ozli) bosqich"], c: 2 },
+      { q: "Neyron tarmoqlar yordamida rentgen va MRT tasvirlarini avtomatik tahlil qilish tibbiyotning qaysi IT tarmog'iga kiradi?", a: ["Telemeditsina", "Elektron retsept", "Sun'iy Intellekt (AI)", "Kasalxona boshqaruvi"], c: 2 },
+      { q: "Axborot texnologiyalari yordamida shifoxonalarda qog'ozbozlik va ish yuritish qancha foizgacha kamaydi?", a: ["10%", "30%", "85% gacha", "50%"], c: 2 }
+    ];
+
+    let currentQuestionIdx = 0;
+    const userQuizAnswers = {};
+
+    function initQuiz() {
+      const container = document.getElementById('quizQuestionsContainer');
+      container.innerHTML = "";
+
+      quizQuestions.forEach((item, idx) => {
+        const qBox = document.createElement('div');
+        qBox.className = `quiz-question-box ${idx === 0 ? 'active' : ''}`;
+        qBox.id = `qBox${idx}`;
+
+        const mappedOptions = item.a.map((opt, optIdx) => ({ text: opt, originalIdx: optIdx }));
+        // Shuffle options randomly
+        mappedOptions.sort(() => Math.random() - 0.5);
+
+        qBox.innerHTML = `
+          <h5 class="text-white mb-4">Savol ${idx + 1}: ${item.q}</h5>
+          <div class="row g-2">
+            ${mappedOptions.map((option, optIdx) => `
+              <div class="col-12">
+                <button class="quiz-option-btn" id="q${idx}opt${option.originalIdx}" onclick="selectQuizOption(${idx}, ${option.originalIdx})">
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-secondary rounded-circle" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">${String.fromCharCode(65 + optIdx)}</span>
+                    <span class="option-text text-start">${option.text}</span>
+                  </div>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(qBox);
+      });
+      updateQuizNav();
+    }
+
+    function selectQuizOption(questionIdx, optionIdx) {
+      if (userQuizAnswers[questionIdx] !== undefined) return;
+
+      userQuizAnswers[questionIdx] = optionIdx;
+      const question = quizQuestions[questionIdx];
+      const correctOpt = question.c;
+
+      const optBtn = document.getElementById(`q${questionIdx}opt${optionIdx}`);
+      if (optionIdx === correctOpt) {
+        optBtn.classList.add('correct');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      } else {
+        optBtn.classList.add('incorrect');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-xmark ms-auto"></i>';
+        
+        const correctBtn = document.getElementById(`q${questionIdx}opt${correctOpt}`);
+        correctBtn.classList.add('correct');
+        correctBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      }
+    }
+
+    function prevQuizQuestion() {
+      if (currentQuestionIdx > 0) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx--;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      }
+    }
+
+    function nextQuizQuestion() {
+      if (userQuizAnswers[currentQuestionIdx] === undefined) {
+        alert("Iltimos, javob variantlaridan birini tanlang!");
+        return;
+      }
+
+      if (currentQuestionIdx < quizQuestions.length - 1) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx++;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function updateQuizNav() {
+      document.getElementById('quizPrevBtn').disabled = currentQuestionIdx === 0;
+      document.getElementById('quizProgressLabel').innerText = `Savol ${currentQuestionIdx + 1} / 10`;
+      
+      const nextBtn = document.getElementById('quizNextBtn');
+      if (currentQuestionIdx === quizQuestions.length - 1) {
+        nextBtn.innerHTML = 'Yakunlash <i class="fa-solid fa-square-poll-vertical ms-2"></i>';
+      } else {
+        nextBtn.innerHTML = 'Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>';
+      }
+    }
+
+    function showQuizResults() {
+      let score = 0;
+      quizQuestions.forEach((q, idx) => {
+        if (userQuizAnswers[idx] === q.c) {
+          score++;
+        }
+      });
+
+      document.getElementById('quizQuestionsContainer').style.display = 'none';
+      document.getElementById('quizPrevBtn').style.display = 'none';
+      document.getElementById('quizNextBtn').style.display = 'none';
+      document.getElementById('quizProgressLabel').style.display = 'none';
+
+      const resultBox = document.getElementById('quizResultBox');
+      resultBox.classList.remove('d-none');
+
+      document.getElementById('quizScoreText').innerText = `${score} / 10`;
+      const percentage = Math.round((score / quizQuestions.length) * 100);
+      document.getElementById('quizPercentageText').innerText = `Foiz ko'rsatkichi: ${percentage}%`;
+
+      const gradeBadge = document.getElementById('quizGradeBadge');
+      let grade = "2 (Qoniqarsiz)";
+      gradeBadge.className = "badge bg-danger fs-5 p-3 px-4 rounded-pill mb-3";
+
+      if (score >= 9) {
+        grade = "5 (A'lo)";
+        gradeBadge.className = "badge bg-success fs-5 p-3 px-4 rounded-pill mb-3";
+      } else if (score >= 7) {
+        grade = "4 (Yaxshi)";
+        gradeBadge.className = "badge bg-info fs-5 p-3 px-4 rounded-pill mb-3";
+      } else if (score >= 5) {
+        grade = "3 (Qoniqarli)";
+        gradeBadge.className = "badge bg-warning text-dark fs-5 p-3 px-4 rounded-pill mb-3";
+      }
+
+      gradeBadge.innerText = `Baho: ${grade}`;
+    }
+
+    function restartQuiz() {
+      currentQuestionIdx = 0;
+      quizQuestions.forEach((_, idx) => {
+        delete userQuizAnswers[idx];
+      });
+
+      document.getElementById('quizQuestionsContainer').style.display = 'block';
+      document.getElementById('quizPrevBtn').style.display = 'inline-block';
+      document.getElementById('quizNextBtn').style.display = 'inline-block';
+      document.getElementById('quizProgressLabel').style.display = 'inline-block';
+
+      document.getElementById('quizResultBox').classList.add('d-none');
+      initQuiz();
+    }
+
+    // Init onload
+    window.onload = () => {
+      initTheme();
+      initQuiz();
+      
+      // Trigger counters on load if visible
+      setTimeout(() => {
+        const statsSection = document.getElementById('section-8');
+        if (statsSection) {
+          const rect = statsSection.getBoundingClientRect();
+          if (rect.top <= window.innerHeight) {
+            countersActivated = true;
+            triggerCounters();
+          }
+        }
+      }, 500);
+    };
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.href = '../index.html';
+    }
+
+        function applyAuthorName() {
+      const loginName = localStorage.getItem('darslik_login') || 'Napasov';
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      applyAuthorName();
+    });
+  </script>
+
+</body>
+</html>

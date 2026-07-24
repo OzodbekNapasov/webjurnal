@@ -1,0 +1,2718 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <script>
+    // Immediate login check before rendering
+    const savedLogin = localStorage.getItem('darslik_login');
+    if (savedLogin !== 'Napasov' && savedLogin !== 'Umirov') {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../LOGO.png">
+  <title>Elektron Darslik: MS Word dasturida printerdan bosmaga chiqarish</title>
+  
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Google Fonts: Poppins (headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0a192f;           /* Deep Blue */
+      --secondary-bg: #112240;         /* Navy 800 */
+      --text-main: #ffffff;            /* Pure white for contrast */
+      --text-muted: #8892b0;           /* Slate 300 */
+      --text-light: #ccd6f6;           /* Slate 100 */
+      --card-bg: rgba(17, 34, 64, 0.95);/* Opaque Navy card */
+      --border-color: rgba(255, 255, 255, 0.12);
+      --accent: #185abd;               /* MS Word Blue */
+      --accent-glow: rgba(24, 90, 189, 0.35);
+      --primary-cyan: #64ffda;         /* Cyber Teal */
+      --primary-cyan-glow: rgba(100, 255, 218, 0.25);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --error: #ef4444;
+      --error-glow: rgba(239, 68, 68, 0.25);
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 10px 30px rgba(2, 12, 27, 0.5);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;           /* Light Slate */
+      --secondary-bg: #ffffff;
+      --text-main: #0a192f;            /* Deep Blue */
+      --text-muted: #475569;           /* Slate 600 */
+      --text-light: #1e293b;           /* Slate 800 */
+      --card-bg: rgba(255, 255, 255, 0.98);
+      --border-color: rgba(10, 25, 47, 0.12);
+      --accent: #1e40af;               /* Darker blue for text contrast */
+      --accent-glow: rgba(30, 64, 175, 0.2);
+      --primary-cyan: #0f766e;
+      --shadow: 0 10px 30px rgba(10, 25, 47, 0.08);
+    }
+
+    /* Headings font global rule */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Bootstrap Overrides for Readability and Contrast */
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    .text-light {
+      color: var(--text-light) !important;
+    }
+    .lead {
+      color: var(--text-muted) !important;
+      font-weight: 500 !important;
+    }
+    p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    li {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-light);
+    }
+
+    /* Light Theme Specific Readability Overrides */
+    [data-theme="light"] .text-white {
+      color: var(--text-main) !important;
+    }
+    [data-theme="light"] .text-warning {
+      color: #b45309 !important; /* Amber 700 - dark, readable orange */
+    }
+    [data-theme="light"] .text-info {
+      color: #0369a1 !important; /* Sky 700 - readable dark cyan */
+    }
+    .text-accent {
+      color: var(--accent) !important;
+    }
+
+    /* Theme-specific custom styles for background subtle helper classes to fix contrast */
+    .bg-dark-subtle {
+      background-color: var(--secondary-bg) !important;
+      border: 1px solid var(--border-color) !important;
+    }
+    
+    .bg-info-subtle {
+      background-color: rgba(100, 255, 218, 0.08) !important;
+      border: 1px solid rgba(100, 255, 218, 0.25) !important;
+      color: var(--text-main) !important;
+    }
+    .bg-info-subtle h1, .bg-info-subtle h2, .bg-info-subtle h3, 
+    .bg-info-subtle h4, .bg-info-subtle h5, .bg-info-subtle h6, 
+    .bg-info-subtle p, .bg-info-subtle span, .bg-info-subtle div {
+      color: var(--text-main) !important;
+    }
+
+    /* Core Styles */
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      position: relative;
+    }
+
+    .logo-img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+      transition: var(--transition-smooth);
+    }
+    .logo-img:hover {
+      transform: scale(1.05);
+    }
+    
+    [data-theme="light"] .logo-img {
+      filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.15));
+    }
+
+    /* Background Gradients */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background-image: 
+        radial-gradient(at 0% 0%, var(--primary-cyan-glow) 0, transparent 40%),
+        radial-gradient(at 100% 100%, var(--accent-glow) 0, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.003) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.003) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    /* Fixed Progress Bar */
+    .top-progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.1);
+      z-index: 1050;
+    }
+
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--primary-cyan), #d946ef);
+      box-shadow: 0 0 10px var(--accent);
+      transition: width 0.1s ease;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: rgba(10, 25, 47, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 6px;
+      z-index: 1000;
+      margin: 0 12px;
+      border-radius: 0 0 16px 16px;
+      transition: background-color 0.4s ease;
+    }
+
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.85);
+      border-bottom: 1px solid rgba(10, 25, 47, 0.08);
+    }
+
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--secondary-accent) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+    .logo-img {
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-img {
+      transform: scale(1.08);
+    }
+
+    /* Premium Author Badge */
+    .author-badge {
+      background: linear-gradient(135deg, rgba(24, 90, 189, 0.15) 0%, rgba(100, 255, 220, 0.05) 100%);
+      border: 1px solid rgba(24, 90, 189, 0.35);
+      border-radius: 9999px;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 0 15px rgba(24, 90, 189, 0.15), inset 0 0 10px rgba(24, 90, 189, 0.05);
+      backdrop-filter: blur(8px);
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .author-badge {
+      background: linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(15, 118, 110, 0.03) 100%);
+      border: 1px solid rgba(30, 64, 175, 0.25);
+      box-shadow: 0 0 10px rgba(30, 64, 175, 0.05);
+    }
+
+    .author-badge:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 22px rgba(24, 90, 189, 0.35);
+      transform: translateY(-2px);
+    }
+    
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulseDot 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(0.85); opacity: 0.6; box-shadow: 0 0 6px var(--accent); }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px var(--accent); }
+    }
+
+    .author-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent) !important;
+      letter-spacing: 0.05em;
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+      transition: var(--transition-smooth);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(24, 90, 189, 0.25);
+      box-shadow: 0 12px 30px var(--accent-glow);
+    }
+
+    /* Scroll animations */
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .scroll-animate.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Section Styles */
+    section {
+      padding: 80px 0;
+    }
+
+    .section-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--primary-cyan));
+      border-radius: 2px;
+      margin: 12px auto 0 auto;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 50px auto;
+      font-size: 1.1rem;
+    }
+
+    /* 1. Hero Section */
+    .hero-section {
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding-top: 120px;
+    }
+
+    .hero-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.85rem;
+      font-weight: 800;
+      line-height: 1.25;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent) 80%, var(--primary-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 24px;
+    }
+
+    [data-theme="light"] .hero-title {
+      background: linear-gradient(135deg, #0a192f 40%, var(--accent) 80%, var(--primary-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-primary-custom {
+      background: linear-gradient(135deg, var(--accent), var(--primary-cyan));
+      border: none;
+      color: #ffffff;
+      padding: 12px 30px;
+      border-radius: 30px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px var(--accent-glow);
+      transition: var(--transition-smooth);
+    }
+
+    .btn-primary-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--accent-glow);
+      color: #ffffff;
+    }
+
+    /* 2. Word Mockup Window styling */
+    .word-window-mockup {
+      background-color: #f3f2f1;
+      border-radius: 12px;
+      border: 1px solid #d2d0ce;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      color: #323130;
+      overflow: hidden;
+      font-family: 'Segoe UI', -apple-system, sans-serif;
+    }
+
+    .word-title-bar {
+      background-color: #185abd;
+      color: #ffffff;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .word-window-controls span {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-left: 6px;
+      background-color: #ffffff;
+      opacity: 0.8;
+    }
+
+    .word-ribbon-tabs {
+      background-color: #f3f2f1;
+      border-bottom: 1px solid #d2d0ce;
+      display: flex;
+      padding-top: 4px;
+    }
+
+    .word-tab {
+      padding: 6px 16px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border-radius: 4px 4px 0 0;
+      transition: var(--transition-smooth);
+      color: #323130;
+    }
+
+    .word-tab:hover {
+      background-color: #e1dfdd;
+    }
+
+    .word-tab.active {
+      background-color: #ffffff;
+      font-weight: 600;
+      border-left: 1px solid #d2d0ce;
+      border-right: 1px solid #d2d0ce;
+      border-top: 1.5px solid #185abd;
+    }
+
+    .word-ribbon-content {
+      background-color: #ffffff;
+      padding: 10px;
+      border-bottom: 1px solid #d2d0ce;
+      min-height: 45px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .word-ribbon-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.7rem;
+      color: #605e5c;
+      border-right: 1px solid #e1dfdd;
+      padding-right: 15px;
+    }
+
+    .word-ribbon-group:last-child {
+      border-right: none;
+    }
+
+    .word-workspace {
+      display: flex;
+      height: 420px;
+      background-color: #eaeaea;
+      position: relative;
+    }
+
+    .word-backstage-menu {
+      width: 180px;
+      background-color: #185abd;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      padding-top: 10px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    .backstage-item {
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .backstage-item:hover, .backstage-item.active {
+      background-color: #104a9b;
+    }
+
+    .backstage-back-btn {
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: inline-block;
+    }
+
+    .word-backstage-workspace {
+      flex-grow: 1;
+      background-color: #ffffff;
+      padding: 20px;
+      overflow-y: auto;
+      color: #323130;
+    }
+
+    .word-page-view {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .word-doc-sheet {
+      width: 280px;
+      height: 380px;
+      background-color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border: 1px solid #e1dfdd;
+      padding: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Simulated Print Backstage */
+    .backstage-print-layout {
+      display: flex;
+      height: 100%;
+      gap: 20px;
+    }
+
+    .backstage-print-settings {
+      width: 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-right: 1px solid #e1dfdd;
+      padding-right: 20px;
+      overflow-y: auto;
+    }
+
+    .backstage-print-preview {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #eaeaea;
+      border-radius: 4px;
+      padding: 10px;
+    }
+
+    .print-btn-large {
+      background-color: #ffffff;
+      border: 1.5px solid #d2d0ce;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 75px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+    .print-btn-large:hover {
+      background-color: #f3f2f1;
+      border-color: #185abd;
+    }
+
+    .print-setting-dropdown {
+      border: 1px solid #d2d0ce;
+      padding: 6px 10px;
+      background-color: #f3f2f1;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .print-setting-dropdown:hover {
+      background-color: #eaeaea;
+    }
+
+    /* 3. Settings Explorer */
+    .explorer-item {
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      border-left: 4px solid var(--accent);
+    }
+    .explorer-item:hover, .explorer-item.active {
+      transform: translateX(5px);
+      box-shadow: 0 4px 15px var(--accent-glow);
+      background: rgba(24, 90, 189, 0.08);
+      border-left-color: var(--primary-cyan);
+    }
+
+    /* 8. Orientation Simulator */
+    .orient-card {
+      width: 140px;
+      height: 190px;
+      border: 2.5px dashed var(--border-color);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      background: rgba(255,255,255,0.01);
+    }
+
+    .orient-card.active {
+      border-color: var(--accent);
+      background: rgba(24, 90, 189, 0.1);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    /* 10. Margins Visualizer */
+    .margin-box-outer {
+      width: 160px;
+      height: 220px;
+      background-color: var(--secondary-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    .margin-box-inner {
+      position: absolute;
+      border: 1px dashed var(--accent);
+      background: rgba(24, 90, 189, 0.05);
+      transition: var(--transition-smooth);
+    }
+
+    /* 11. Multi-Page per Sheet simulation */
+    .sheet-mock {
+      width: 150px;
+      height: 200px;
+      background: #ffffff;
+      border: 2px solid #323130;
+      border-radius: 4px;
+      position: relative;
+      padding: 5px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .mini-page-print {
+      background: #eaeaea;
+      border: 1px solid #c8c6c4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: bold;
+      color: #605e5c;
+    }
+
+    /* 15. Dynamic Printer Simulator */
+    .printer-box {
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      background-color: var(--secondary-bg);
+      padding: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .paper-tray {
+      width: 80px;
+      height: 10px;
+      background: #475569;
+      margin: 0 auto;
+      border-radius: 4px;
+    }
+
+    .printer-paper {
+      width: 60px;
+      height: 70px;
+      background: #ffffff;
+      border: 1px solid #94a3b8;
+      margin: 0 auto;
+      position: relative;
+      bottom: -15px;
+      z-index: 1;
+      transform: translateY(0);
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+    }
+
+    .printer-paper.printing {
+      animation: paperOut 2s ease-in-out forwards;
+    }
+
+    @keyframes paperOut {
+      0% { transform: translateY(30px); opacity: 0; }
+      20% { transform: translateY(0); opacity: 1; }
+      80% { transform: translateY(-40px); opacity: 1; }
+      100% { transform: translateY(-80px) rotate(5deg); opacity: 0; }
+    }
+
+    /* 14. Checklist */
+    .checklist-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .checklist-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-checkbox.checked {
+      background: var(--success);
+      border-color: var(--success);
+      color: #ffffff;
+    }
+
+    .checklist-text {
+      font-size: 1.05rem;
+      color: var(--text-light);
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-checkbox.checked + .checklist-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* 16. Quiz */
+    .quiz-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 40px;
+    }
+
+    .quiz-question-box {
+      display: none;
+    }
+
+    .quiz-question-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .quiz-option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      font-size: 1rem;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .quiz-option-btn:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    .quiz-option-btn.correct {
+      background: rgba(16, 185, 129, 0.1) !important;
+      border-color: var(--success) !important;
+      color: var(--success) !important;
+    }
+
+    .quiz-option-btn.incorrect {
+      background: rgba(239, 68, 68, 0.1) !important;
+      border-color: var(--error) !important;
+      color: var(--error) !important;
+    }
+
+    .quiz-nav {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 30px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  
+    /* Login Overlay Styling */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    [data-theme="light"] .login-overlay {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white;
+      font-size: 1.7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px var(--primary-cyan-glow);
+    }
+
+    .login-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .login-input-wrapper i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.4) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 50px;
+      padding: 12px 20px 12px 50px;
+      color: var(--text-main) !important;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .login-input {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 15px var(--primary-cyan-glow);
+    }
+
+    .login-error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white !important;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--primary-cyan-glow);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-cyan-glow);
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+  </style>
+  <link rel="stylesheet" href="darslik.css">
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="top-progress-container">
+    <div id="topProgressBar" class="top-progress-bar"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+        <img src="../LOGO.png" alt="Logo" class="logo-img">
+        <span class="logo-text">Axborot texnologiyalari</span>
+      </a>
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <a href="../index.html" class="btn btn-sm btn-outline-light border-0" title="Portalga qaytish">
+          <i class="fa-solid fa-house"></i> <span class="d-none d-sm-inline ms-1">Mundarija</span>
+        </a>
+        <div class="author-badge d-none d-md-flex">
+          <span class="pulse-dot"></span>
+          <span class="author-name">Muallif: {{AUTHOR}}</span>
+        </div>
+                <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- 1. Hero Section -->
+    <section class="hero-section" id="section-1">
+      <div class="row align-items-center">
+        <div class="col-lg-6 mb-5 mb-lg-0 scroll-animate animated">
+          <span class="badge bg-info-subtle text-info mb-3 px-3 py-2 rounded-pill font-weight-bold" style="letter-spacing: 0.05em; font-family:'Poppins', sans-serif;">TIBBIYOTDA AKT</span>
+          <h1 class="hero-title">Word Dasturida Chop Etish Asoslari</h1>
+          <p class="lead text-muted mb-4">
+            Microsoft Word dasturining rus tilidagi interfeysi misolida hujjatlarni printerdan bosmaga chiqarishning barcha funksiyalari, parametrlari va tibbiy amaliyotdagi keyslarini batafsil o'rganing.
+          </p>
+          <div class="text-muted small mb-4 font-weight-bold" style="font-family:'Poppins',sans-serif;">
+            <i class="fa-solid fa-user-doctor text-accent me-2"></i> Tuzuvchi: {{AUTHOR}} &nbsp;|&nbsp; <i class="fa-solid fa-calendar-days text-accent me-2"></i> 2026-yil
+          </div>
+          <a href="#section-2" class="btn btn-primary-custom btn-lg">Darsni Boshlash <i class="fa-solid fa-arrow-down ms-2"></i></a>
+        </div>
+        <div class="col-lg-6 scroll-animate animated text-center">
+          <svg viewBox="0 0 500 400" width="85%" height="auto">
+            <defs>
+              <linearGradient id="blue-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#185abd" />
+                <stop offset="100%" stop-color="#38bdf8" />
+              </linearGradient>
+              <linearGradient id="cyan-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#64ffda" />
+                <stop offset="100%" stop-color="#0ea5e9" />
+              </linearGradient>
+            </defs>
+            <!-- Background circles -->
+            <circle cx="250" cy="200" r="140" fill="none" stroke="url(#blue-grad)" stroke-width="1.5" stroke-dasharray="10 5" opacity="0.4" />
+            <circle cx="250" cy="200" r="170" fill="none" stroke="url(#cyan-grad)" stroke-width="1" stroke-dasharray="4 8" opacity="0.3" />
+            
+            <!-- Printer Body (Visual) -->
+            <path d="M 150 250 L 350 250 L 370 330 L 130 330 Z" fill="#112240" stroke="url(#blue-grad)" stroke-width="3" />
+            <rect x="180" y="180" width="140" height="70" rx="4" fill="#185abd" opacity="0.8" stroke="url(#cyan-grad)" stroke-width="2" />
+            
+            <!-- Paper coming out -->
+            <rect x="200" y="150" width="100" height="80" rx="2" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+            <line x1="215" y1="170" x2="285" y2="170" stroke="#94a3b8" stroke-width="2" />
+            <line x1="215" y1="190" x2="285" y2="190" stroke="#94a3b8" stroke-width="2" />
+            <line x1="215" y1="210" x2="260" y2="210" stroke="#94a3b8" stroke-width="2" />
+            
+            <!-- Exit Slot -->
+            <rect x="170" y="270" width="160" height="12" rx="4" fill="#0a192f" stroke="url(#cyan-grad)" stroke-width="1.5" />
+            <rect x="190" y="280" width="120" height="40" rx="2" fill="#ffffff" opacity="0.9" />
+            <line x1="205" y1="295" x2="295" y2="295" stroke="#475569" stroke-width="1.5" />
+            <line x1="205" y1="310" x2="275" y2="310" stroke="#475569" stroke-width="1.5" />
+            
+            <!-- Medical Cross symbol on Printer -->
+            <g transform="translate(240, 240) scale(0.6)">
+              <rect x="10" y="0" width="10" height="30" fill="#64ffda" />
+              <rect x="0" y="10" width="30" height="10" fill="#64ffda" />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1-BO‘LIM. KIRISH -->
+    <section id="section-1" class="scroll-animate">
+      <h2 class="section-title">1-Bo'lim. Kirish va Tibbiyotdagi O'rni</h2>
+      <p class="section-subtitle">Printer texnologiyalari va ularning shifoxonalar faoliyatidagi fundamental ahamiyati.</p>
+      
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-print me-2"></i> Printer nima?</h5>
+            <p class="small text-light mb-0">
+              Printer — bu kompyuter ekranidagi matn, jadval yoki grafik ma'lumotlarni qog'oz, plyonka kabi moddiy tashuvchilarga o'tkazib beruvchi tashqi chiqarish qurilmasidir.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-file-pdf me-2"></i> Chop etish jarayoni</h5>
+            <p class="small text-light mb-0">
+              Bosmaga chiqarish (Печать) - bu raqamli fayl tarkibini printer drayveri yordamida mashina kodlariga o'tkazish va bo'yoq/lazer yordamida qog'ozda aks ettirishdir.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-stethoscope me-2"></i> Klinik ahamiyati</h5>
+            <p class="small text-light mb-0">
+              Klinikalarda bemorning kasallik tarixi (история болезни), retseptlar, tahlil natijalari va rentgen xulosalarini qonuniy va arxiv hujjat shakliga keltirishda bosma tizimi hayotiy o'rin tutadi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2-BO‘LIM. WORD DASTURIDA PRINT OYNASIGA KIRISH -->
+    <section id="section-2" class="scroll-animate">
+      <h2 class="section-title">2-Bo'lim. Print oynasiga kirish</h2>
+      <p class="section-subtitle">Rus tilidagi Microsoft Word dasturida chop etish darchasini ochishning ikki usulini amalda ko'ring.</p>
+      
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-5">
+          <div class="glass-card">
+            <h4 class="text-accent mb-3"><i class="fa-solid fa-circle-info me-2"></i> Kirish usullari</h4>
+            <ul class="text-light mb-4">
+              <li class="mb-2"><strong>1-usul:</strong> Menyular paneli orqali:<br><span class="text-info fw-bold">Файл &rarr; Печать</span></li>
+              <li class="mb-2"><strong>2-usul:</strong> Tezkor klaviatura kombinatsiyasi orqali:<br><span class="text-info fw-bold">Ctrl + P</span></li>
+            </ul>
+            <p class="small text-muted mb-0">
+              O'ng tarafdagi interaktiv Word simulyatorida <span class="badge bg-primary">Файл</span> menyusini bosing, so'ng ochilgan ro'yxatdan <span class="badge bg-primary">Печать</span> bandini tanlab jarayonni o'rganing.
+            </p>
+          </div>
+        </div>
+        
+        <!-- Word Mockup Window -->
+        <div class="col-lg-7">
+          <div class="word-window-mockup">
+            <!-- Title Bar -->
+            <div class="word-title-bar">
+              <div><i class="fa-regular fa-file-word me-2"></i> Hujjat1.docx - Microsoft Word</div>
+              <div class="word-window-controls">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+            
+            <!-- Ribbon Tabs -->
+            <div class="word-ribbon-tabs" id="wordRibbonTabs">
+              <div class="word-tab active" onclick="clickWordTab('file')">Файл</div>
+              <div class="word-tab" onclick="clickWordTab('home')">Главная</div>
+              <div class="word-tab" onclick="clickWordTab('insert')">Вставка</div>
+              <div class="word-tab" onclick="clickWordTab('layout')">Разметка страницы</div>
+            </div>
+            
+            <!-- Ribbon Content -->
+            <div class="word-ribbon-content" id="wordRibbonContent">
+              <!-- Default Home tab content -->
+              <div class="word-ribbon-group">
+                <div class="d-flex gap-1 mb-1">
+                  <button class="btn btn-sm btn-light py-0 px-1 border" style="font-weight:bold;">Ж</button>
+                  <button class="btn btn-sm btn-light py-0 px-1 border" style="font-style:italic;">К</button>
+                  <button class="btn btn-sm btn-light py-0 px-1 border" style="text-decoration:underline;">Ч</button>
+                </div>
+                <span>Шрифт</span>
+              </div>
+              <div class="word-ribbon-group">
+                <div class="d-flex gap-1 mb-1">
+                  <span class="badge bg-light text-dark border">Segoe UI</span>
+                  <span class="badge bg-light text-dark border">14</span>
+                </div>
+                <span>Размер</span>
+              </div>
+            </div>
+            
+            <!-- Workspace Area -->
+            <div class="word-workspace" id="wordWorkspace">
+              <!-- Document Sheet -->
+              <div class="word-page-view" id="wordPageView">
+                <div class="word-doc-sheet">
+                  <h6 class="text-center fw-bold">TIBBIY YO'LLANMA</h6>
+                  <hr class="my-1">
+                  <p style="font-size: 0.75rem; margin: 0;"><strong>Bemor:</strong> Eshonov A.A.</p>
+                  <p style="font-size: 0.75rem; margin: 0;"><strong>Tashxis:</strong> Gipertoniya I daraja.</p>
+                  <p style="font-size: 0.75rem; margin: 0;"><strong>Yo'nalish:</strong> Kardiolog ko'rigiga.</p>
+                  <div style="border:1px dashed #c8c6c4; height:100px; margin-top:20px; padding:10px; font-size:0.7rem; color:#888;">
+                    Klinik tahlillar va EKG ko'rsatkichlari ilova qilinadi.
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Backstage menu (hidden initially) -->
+              <div class="word-backstage-menu d-none" id="wordBackstageMenu">
+                <div class="backstage-back-btn" onclick="closeBackstage()"><i class="fa-solid fa-arrow-left"></i></div>
+                <div class="backstage-item" onclick="selectBackstageItem('info')">Сведения</div>
+                <div class="backstage-item" onclick="selectBackstageItem('create')">Создать</div>
+                <div class="backstage-item" onclick="selectBackstageItem('save')">Сохранить</div>
+                <div class="backstage-item active" onclick="selectBackstageItem('print')">Печать</div>
+                <div class="backstage-item" onclick="closeBackstage()">Выход</div>
+              </div>
+              
+              <!-- Backstage print workspace (hidden initially) -->
+              <div class="word-backstage-workspace d-none" id="wordBackstagePrint">
+                <div class="backstage-print-layout">
+                  <!-- Print options -->
+                  <div class="backstage-print-settings">
+                    <h4 class="fw-bold mb-3" style="font-size: 1.2rem;">Печать</h4>
+                    
+                    <!-- Print Button Section -->
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+                      <div class="print-btn-large" onclick="triggerSimulatedPrint()">
+                        <i class="fa-solid fa-print text-primary fs-3 mb-1"></i>
+                        <span style="font-size:0.75rem; font-weight:bold;">Печать</span>
+                      </div>
+                      <div>
+                        <label style="font-size: 0.75rem; font-weight:bold;">Копии:</label>
+                        <input type="number" class="form-control form-control-sm" value="1" style="width: 70px;">
+                      </div>
+                    </div>
+                    
+                    <!-- Settings -->
+                    <div class="d-flex flex-column gap-2">
+                      <label class="small fw-bold">Принтер</label>
+                      <div class="print-setting-dropdown">
+                        <span><i class="fa-solid fa-print me-2 text-success"></i> HP LaserJet 400</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </div>
+                      
+                      <label class="small fw-bold">Настройка</label>
+                      <div class="print-setting-dropdown">
+                        <span>Печать всех страниц</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </div>
+                      
+                      <div class="print-setting-dropdown">
+                        <span>Односторонняя печать</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </div>
+                      
+                      <div class="print-setting-dropdown">
+                        <span>Книжная ориентация</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </div>
+                      
+                      <div class="print-setting-dropdown">
+                        <span>A4 (21 x 29.7 см)</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Print preview -->
+                  <div class="backstage-print-preview">
+                    <div class="word-doc-sheet" style="transform: scale(0.85); margin:0;">
+                      <h6 class="text-center fw-bold">TIBBIY YO'LLANMA</h6>
+                      <hr class="my-1">
+                      <p style="font-size: 0.75rem; margin: 0;"><strong>Bemor:</strong> Eshonov A.A.</p>
+                      <div style="border:1px dashed #c8c6c4; height:100px; margin-top:20px;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3-BO‘LIM. PRINT OYNASI TUZILISHI -->
+    <section id="section-3" class="scroll-animate">
+      <h2 class="section-title">3-Bo'lim. Print oynasining tarkibi</h2>
+      <p class="section-subtitle">Печать (Print) oynasidagi 10 ta asosiy boshqaruv parametrining ruscha terminlari va vazifalari.</p>
+      
+      <div class="row g-4">
+        <!-- Parameters list -->
+        <div class="col-lg-5">
+          <div class="glass-card p-3">
+            <h5 class="text-white mb-3"><i class="fa-solid fa-list-check text-accent me-2"></i> Parametrlarni bosing:</h5>
+            <div class="list-group list-group-flush">
+              <button class="list-group-item list-group-item-action bg-transparent text-light border-secondary explorer-item active" onclick="showPrintParam(0)"><i class="fa-solid fa-print me-2 text-accent"></i> 1. Принтер (Printer)</button>
+              <button class="list-group-item list-group-item-action bg-transparent text-light border-secondary explorer-item" onclick="showPrintParam(1)"><i class="fa-solid fa-copy me-2 text-accent"></i> 2. Копии (Nusxalar soni)</button>
+              <button class="list-group-item list-group-item-action bg-transparent text-light border-secondary explorer-item" onclick="showPrintParam(2)"><i class="fa-solid fa-gear me-2 text-accent"></i> 3. Параметры (Sozlamalar)</button>
+              <button class="list-group-item list-group-item-action bg-transparent text-light border-secondary explorer-item" onclick="showPrintParam(3)"><i class="fa-solid fa-file-lines me-2 text-accent"></i> 4. Печать всех страниц (Sahifalar oralig'i)</button>
+              <button class="list-group-item list-group-item-action bg-transparent text-light border-secondary explorer-item" onclick="showPrintParam(4)"><i class="fa-solid fa-arrows-left-right me-2 text-accent"></i> 5. Односторонняя печать (Chop etish tomoni)</button>
+              <button class="list-group-item list-group-item-action bg-transparent text-light border-secondary explorer-item" onclick="showPrintParam(5)"><i class="fa-solid fa-arrow-down-1-9 me-2 text-accent"></i> 6. Сортировка (Nusxalarni tartiblash)</button>
+              <button class="list-group-item list-group-item-action bg-transparent text-light border-secondary explorer-item" onclick="showPrintParam(6)"><i class="fa-solid fa-arrows-spin me-2 text-accent"></i> 7. Ориентация (Sahifa holati)</button>
+              <button class="list-group-item list-group-item-action bg-transparent text-light border-secondary explorer-item" onclick="showPrintParam(7)"><i class="fa-solid fa-maximize me-2 text-accent"></i> 8. Размер бумаги (Qog'oz o'lchami)</button>
+              <button class="list-group-item list-group-item-action bg-transparent text-light border-secondary explorer-item" onclick="showPrintParam(8)"><i class="fa-solid fa-border-none me-2 text-accent"></i> 9. Поля (Chegaralar/Maydonlar)</button>
+              <button class="list-group-item list-group-item-action bg-transparent text-light border-secondary explorer-item" onclick="showPrintParam(9)"><i class="fa-solid fa-table-cells me-2 text-accent"></i> 10. Количество страниц на листе (Masshtab)</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Info Display Panel -->
+        <div class="col-lg-7">
+          <div class="glass-card h-100 d-flex flex-column justify-content-between" id="paramDetailsPanel">
+            <div>
+              <h3 class="text-accent mb-3" id="paramTitle">1. Принтер (Chop etish qurilmasi)</h3>
+              <p class="text-light fs-5" id="paramDesc">
+                Hujjatni jismoniy yoki virtual tarzda chop etuvchi qurilmani tanlash maydoni. Bu yerda siz lokal yoki tarmoqdagi faol printerni tanlaysiz.
+              </p>
+            </div>
+            
+            <div class="mt-4 pt-3 border-top border-secondary-subtle">
+              <div class="p-3 border border-info rounded bg-info-subtle text-dark">
+                <h6 class="fw-bold mb-1"><i class="fa-solid fa-stethoscope me-2"></i> Tibbiyotda AKT ahamiyati:</h6>
+                <p class="small mb-0 fw-medium" id="paramMedical">
+                  Klinika ro'yxatxonasida yagona markaziy tarmoq printerini to'g'ri tanlash yoki bemor kartasini PDF holatida arxivlash uchun virtual printerni ishga tushirishda muhimdir.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4-BO‘LIM. PRINTERNI TANLASH -->
+    <section id="section-4" class="scroll-animate">
+      <h2 class="section-title">4-Bo'lim. Printerni tanlash</h2>
+      <p class="section-subtitle">Kompyuter tizimidagi printer turlari va ularning vazifalari.</p>
+      
+      <div class="row g-4">
+        <!-- Local Printer -->
+        <div class="col-lg-4">
+          <div class="glass-card h-100 text-center">
+            <i class="fa-solid fa-desktop text-accent fs-1 mb-3"></i>
+            <h5 class="fw-bold text-white mb-2">Lokal printer</h5>
+            <p class="small text-muted mb-0">
+              Kompyuterga bevosita USB kabel orqali jismonan ulangan individual printer.
+              <br><br>
+              <strong>Misol:</strong> HP LaserJet Pro M402. Shifokor xonasida faqat o'sha shifokor uchun ishlaydi.
+            </p>
+          </div>
+        </div>
+        <!-- Network Printer -->
+        <div class="col-lg-4">
+          <div class="glass-card h-100 text-center">
+            <i class="fa-solid fa-network-wired text-accent fs-1 mb-3"></i>
+            <h5 class="fw-bold text-white mb-2">Tarmoq printeri</h5>
+            <p class="small text-muted mb-0">
+              Wi-Fi yoki Ethernet kabel orqali lokal tarmoqqa ulangan va shifoxonaning bir nechta xodimi tomonidan bir vaqtda ishlatiladigan printer.
+              <br><br>
+              <strong>Misol:</strong> Canon MF Series. Registratura xodimlari bitta printerdan foydalanadi.
+            </p>
+          </div>
+        </div>
+        <!-- Virtual PDF Printer -->
+        <div class="col-lg-4">
+          <div class="glass-card h-100 text-center">
+            <i class="fa-solid fa-file-pdf text-accent fs-1 mb-3"></i>
+            <h5 class="fw-bold text-white mb-2">Virtual printer (PDF)</h5>
+            <p class="small text-muted mb-0">
+              Qog'oz sarflamaydigan, hujjatlarni PDF formatidagi elektron faylga aylantirib beruvchi tizimli dasturiy printer.
+              <br><br>
+              <strong>Misol:</strong> Microsoft Print to PDF. Yo'llanmani elektron arxivda saqlash uchun ishlatiladi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5-BO‘LIM. NUSXALAR SONINI BELGILASH -->
+    <section id="section-5" class="scroll-animate">
+      <h2 class="section-title">5-Bo'lim. Nusxalar soni (Копии) va hisoblagich</h2>
+      <p class="section-subtitle">Bosma nusxalarini sozlash va umumiy resurs sarfini hisoblash.</p>
+      
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-6">
+          <div class="glass-card">
+            <h4 class="text-accent mb-3"><i class="fa-solid fa-calculator me-2"></i> Nusxalar hisob-kitobi</h4>
+            <p class="text-light">
+              Qog'ozga chiqarish darchasidagi <span class="badge bg-primary">Копии</span> maydoni orqali bir xil hujjatdan necha nusxa chop etilishini ko'rsatasiz.
+            </p>
+            <p class="small text-muted">
+              Masalan, 5 sahifadan iborat bemor hisobotini 4 nusxada (kopiya) chiqarmoqchi bo'lsangiz, jami 20 sahifa chop etiladi.
+            </p>
+            <div class="alert alert-warning py-2 mb-0">
+              <i class="fa-solid fa-circle-exclamation me-2"></i> <strong>Eslatma:</strong> Keraksiz nusxalarni ko'p chiqarish tibbiyot muassasalarida qog'oz va toner isrofiga olib keladi.
+            </div>
+          </div>
+        </div>
+        
+        <!-- Interactive Calculator -->
+        <div class="col-lg-6">
+          <div class="glass-card bg-dark-subtle">
+            <h5 class="text-accent mb-4"><i class="fa-solid fa-gauge-high me-2"></i> Qog'oz va Vaqt Sarfi Kalkulyatori</h5>
+            <div class="row g-3">
+              <div class="col-6">
+                <label class="small text-muted">Hujjat sahifalari:</label>
+                <input type="number" class="form-control bg-dark text-white border-secondary" id="calcPages" value="4" oninput="calculateSarf()">
+              </div>
+              <div class="col-6">
+                <label class="small text-muted">Nusxalar (Копии) soni:</label>
+                <input type="number" class="form-control bg-dark text-white border-secondary" id="calcCopies" value="3" oninput="calculateSarf()">
+              </div>
+              <div class="col-6">
+                <label class="small text-muted">Varaq tomoni:</label>
+                <select class="form-select bg-dark text-white border-secondary" id="calcSides" onchange="calculateSarf()">
+                  <option value="1">Bir tomonlama (Односторонняя)</option>
+                  <option value="2">Ikki tomonlama (Двусторонняя)</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="small text-muted">Bitta varaqda sahifalar:</label>
+                <select class="form-select bg-dark text-white border-secondary" id="calcPagesPerSheet" onchange="calculateSarf()">
+                  <option value="1">1 sahifa</option>
+                  <option value="2">2 sahifa</option>
+                  <option value="4">4 sahifa</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="mt-4 p-3 border rounded bg-dark">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-muted">Jami chop etiladigan sahifalar:</span>
+                <span class="fw-bold text-info" id="totalPrintPages">12 ta</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-muted">Kerakli qog'oz (varaq) soni:</span>
+                <span class="fw-bold text-success" id="totalSheetsNeeded">12 ta</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="small text-muted">Taxminiy chop etish vaqti:</span>
+                <span class="fw-bold text-warning" id="totalTimeEstimate">48 soniya</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6-BO‘LIM. SAHIFALARNI BOSMAGA CHIQARISH -->
+    <section id="section-6" class="scroll-animate">
+      <h2 class="section-title">6-Bo'lim. Sahifalarni tanlab chop etish</h2>
+      <p class="section-subtitle">Keraksiz sahifalar chop etilishini oldini olish orqali resurslarni tejang.</p>
+      
+      <div class="row g-4">
+        <!-- Theoretical explanation -->
+        <div class="col-lg-6">
+          <div class="glass-card h-100">
+            <h4 class="text-accent mb-4"><i class="fa-solid fa-list-check me-2"></i> Chop etish rejimlarining ruscha turlari</h4>
+            
+            <div class="mb-3">
+              <span class="badge bg-primary px-3 py-2">Печать всех страниц</span>
+              <p class="small text-light mt-1">Hujjatdagi barcha sahifalarni boshidan oxirigacha chop etadi.</p>
+            </div>
+            
+            <div class="mb-3">
+              <span class="badge bg-success px-3 py-2">Печать текущей страницы</span>
+              <p class="small text-light mt-1">Faqatgina kursor turgan va ekranda ko'rinib turgan joriy sahifani chop etadi.</p>
+            </div>
+
+            <div class="mb-3">
+              <span class="badge bg-warning text-dark px-3 py-2">Печать выделенного фрагмента</span>
+              <p class="small text-light mt-1">Hujjatda sichqoncha bilan belgilab olingan matn yoki jadval qisminigina chop etadi.</p>
+            </div>
+
+            <div>
+              <span class="badge bg-info text-dark px-3 py-2">Пользовательская peчать (Напечатать диапазон)</span>
+              <p class="small text-light mt-1">Foydalanuvchi tomonidan kiritilgan aniq sahifalar yoki intervallarni chop etadi.</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Examples and ranges -->
+        <div class="col-lg-6">
+          <div class="glass-card h-100">
+            <h4 class="text-accent mb-4"><i class="fa-solid fa-keyboard me-2"></i> Sahifalarni yozish sintaksisi (Напечатать диапазон)</h4>
+            <p class="small text-light">Maxsus qatorga sahifalarni quyidagi formatlarda yozish orqali saralashingiz mumkin:</p>
+            
+            <div class="table-responsive">
+              <table class="table table-dark table-striped table-bordered text-center align-middle" style="font-size:0.9rem;">
+                <thead>
+                  <tr>
+                    <th>Yozilishi</th>
+                    <th>Qaysi sahifalar chiqadi?</th>
+                    <th>Amaliy misol</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>1</code></td>
+                    <td>Faqat 1-sahifa</td>
+                    <td>Bemor varaqasining muqovasi</td>
+                  </tr>
+                  <tr>
+                    <td><code>1,3,5</code></td>
+                    <td>1, 3 va 5-sahifalar</td>
+                    <td>Faqat toq tahlil natijalari</td>
+                  </tr>
+                  <tr>
+                    <td><code>1-5</code></td>
+                    <td>1-dan 5-gacha bo'lgan barcha sahifalar</td>
+                    <td>Bemor kasallik tarixining birinchi qismi</td>
+                  </tr>
+                  <tr>
+                    <td><code>1-3,7,9-12</code></td>
+                    <td>1, 2, 3, 7, 9, 10, 11, 12-sahifalar</td>
+                    <td>Keraksiz 4,5,6 va 8-sahifalar tushib qoladi</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <h5 class="text-warning mt-3"><i class="fa-solid fa-circle-exclamation me-2"></i> Juft va toq sahifalar:</h5>
+            <ul class="small text-light mb-0">
+              <li><strong>Только нечетные страницы</strong> - faqat toq sahifalarni (1, 3, 5...) chiqarish.</li>
+              <li><strong>Только четные страницы</strong> - faqat juft sahifalarni (2, 4, 6...) chiqarish.</li>
+              <li class="text-muted mt-2">Bu rejimlar printer ikki tomonlama chop etishni avtomat bajara olmaganda, varaqni orqasiga to'g'ri solib chop etish uchun qo'llaniladi.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7-BO‘LIM. BIR TOMONLAMA VA IKKI TOMONLAMA CHOP ETISH -->
+    <section id="section-7" class="scroll-animate">
+      <h2 class="section-title">7-Bo'lim. Bir va ikki tomonlama chop etish</h2>
+      <p class="section-subtitle">Bir tomonlama (Односторонняя) va ikki tomonlama (Двусторонняя) chop etish sozlamalari.</p>
+      
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-file me-2"></i> Односторонняя печать (Bir tomonlama)</h5>
+            <p class="small text-light">
+              Hujjat sahifalari faqat qog'ozning bir yuziga chop etiladi. Varaqning orqa tomoni bo'sh qoladi.
+            </p>
+            <p class="small text-muted">
+              <strong>Ishlatilishi:</strong> Rasmiy ma'lumotnomalar, retseptlar va muassasalararo yuboriladigan shoshilinch yo'llanmalar uchun standart qisqa hujjatlarda qo'llaniladi.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-copy me-2"></i> Двусторонняя печать (Ikki tomonlama)</h5>
+            <p class="small text-light">
+              Hujjat sahifalari qog'ozning ham old, ham orqa tomoniga chop etiladi. Qog'oz sarfini ikki barobar tejaydi.
+            </p>
+            <p class="small text-muted">
+              <strong>Ishlatilishi:</strong> Bemorning ko'p sahifali kasallik tarixi hujjatlarini, tibbiy qo'llanmalar va arxiv hisobotlarini tayyorlashda qog'oz saqlash maydonini qisqartirish uchun ishlatiladi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8-BO‘LIM. SAHIFA ORIYENTATSIYASI -->
+    <section id="section-8" class="scroll-animate">
+      <h2 class="section-title">8-Bo'lim. Sahifa oriyentatsiyasi (Ориентация)</h2>
+      <p class="section-subtitle">Portret (Книжная) va Albom (Альбомная) ko'rinishlarini vizual boshqaring.</p>
+      
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-5">
+          <div class="glass-card">
+            <h4 class="text-accent mb-3"><i class="fa-solid fa-arrows-spin me-2"></i> Oriyentatsiya turlari</h4>
+            <div class="d-flex gap-3 mb-4">
+              <div class="orient-card active" id="orientPortBtn" onclick="setVisualOrientation('portrait')">
+                <i class="fa-solid fa-file-lines fs-1 mb-2 text-accent"></i>
+                <span class="small font-weight-bold text-white">Книжная</span>
+              </div>
+              <div class="orient-card" id="orientLandBtn" onclick="setVisualOrientation('landscape')">
+                <i class="fa-solid fa-file-lines fs-1 mb-2 text-accent" style="transform: rotate(90deg);"></i>
+                <span class="small font-weight-bold text-white">Альбомная</span>
+              </div>
+            </div>
+            <p class="small text-muted mb-0">
+              <strong>Книжная (Kitob ko'rinishi)</strong> - standart matnli klinik hisobotlar uchun qo'llaniladi.<br>
+              <strong>Альбомная (Albom ko'rinishi)</strong> - keng jadvallar, monitoring grafikalari va laboratoriya diagrammalari uchun qulay.
+            </p>
+          </div>
+        </div>
+        
+        <!-- Live Preview Page -->
+        <div class="col-lg-7">
+          <div class="glass-card text-center bg-dark">
+            <h6 class="text-muted mb-3"><i class="fa-solid fa-eye me-2"></i> Vizual namoyish</h6>
+            <div class="d-flex justify-content-center align-items-center" style="height:250px;">
+              <div id="visualDocSheet" style="background:#ffffff; border:1px solid #334155; width:140px; height:190px; transition: var(--transition-smooth); padding:10px; color:#0f172a; text-align:left; font-size:0.6rem; overflow:hidden;">
+                <h6 class="text-center fw-bold" style="font-size:0.7rem; margin-bottom:4px;">BEMOR MONITORINGI</h6>
+                <div style="width:100%; height:2px; background:#185abd; margin-bottom:5px;"></div>
+                <p style="margin:0; font-size:0.55rem;">Puls ko'rsatkichi barqaror. Qon bosimi: 120/80 mm sim. ust.</p>
+                <div style="border: 1px solid #94a3b8; height: 50px; margin-top: 10px; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-size:0.5rem; color:#888;">
+                  [ Kardiogramma grafigi ]
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9-BO‘LIM. QOG‘OZ O‘LCHAMLARI -->
+    <section id="section-9" class="scroll-animate">
+      <h2 class="section-title">9-Bo'lim. Qog'oz o'lchamlari (Размер бумаги)</h2>
+      <p class="section-subtitle">Chop etishda eng ko'p qo'llaniladigan qog'oz formatlari va ularning standartlari.</p>
+      
+      <div class="row g-4">
+        <!-- A4 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100 text-center">
+            <h4 class="text-accent fw-bold mb-3">A4</h4>
+            <p class="small text-light"><strong>210 x 297 mm</strong></p>
+            <p class="small text-muted mb-0">
+              Tibbiyotdagi eng asosiy standart. Barcha rasmiy varaqalar, tarixlar va shifoxona buyruqlari A4 formatda tayyorlanadi.
+            </p>
+          </div>
+        </div>
+        <!-- A5 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100 text-center">
+            <h4 class="text-accent fw-bold mb-3">A5</h4>
+            <p class="small text-light"><strong>148 x 210 mm</strong></p>
+            <p class="small text-muted mb-0">
+              A4 ning yarmi. Tibbiy retseptlar (рецепты), qisqa yo'llanmalar va laboratoriya yo'llanmalari ko'pincha shu o'lchamda chop etiladi.
+            </p>
+          </div>
+        </div>
+        <!-- A3 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100 text-center">
+            <h4 class="text-accent fw-bold mb-3">A3</h4>
+            <p class="small text-light"><strong>297 x 420 mm</strong></p>
+            <p class="small text-muted mb-0">
+              A4 dan ikki barobar katta. Katta klinik tahlil jadvallari, shifoxona navbatchilik rejalari yoki anatomik chizmalarni chop etishda ishlatiladi.
+            </p>
+          </div>
+        </div>
+        <!-- Letter & Legal -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100 text-center">
+            <h4 class="text-accent fw-bold mb-3">Letter / Legal</h4>
+            <p class="small text-light"><strong>216 x 279 / 356 mm</strong></p>
+            <p class="small text-muted mb-0">
+              AQSh standarti. Tibbiyot apparatlarining import qilingan drayverlari va ko'rsatmalari ko'pincha ushbu formatda keladi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10-BO‘LIM. MAYDONLAR (ПОЛЯ) -->
+    <section id="section-10" class="scroll-animate">
+      <h2 class="section-title">10-Bo'lim. Hujjat maydonlari (Поля)</h2>
+      <p class="section-subtitle">Sahifaning chekka qismidagi bo'sh maydonlar parametrlari va ularning vizual ta'siri.</p>
+      
+      <div class="row g-4 align-items-center">
+        <!-- Interactive Controls -->
+        <div class="col-lg-5">
+          <div class="glass-card">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-border-none me-2"></i> Maydonni tanlang:</h5>
+            <div class="d-flex flex-column gap-2 mb-4">
+              <button class="btn btn-outline-light text-start active" id="marginBtn-normal" onclick="setVisualMargins('normal')">
+                <strong>Обычные (Normal)</strong><br><span class="small text-muted">Tepadan/Pastdan: 2.54 sm, Chap/O'ng: 2.54 sm</span>
+              </button>
+              <button class="btn btn-outline-light text-start" id="marginBtn-narrow" onclick="setVisualMargins('narrow')">
+                <strong>Узкие (Tor)</strong><br><span class="small text-muted">Tepadan/Pastdan: 1.27 sm, Chap/O'ng: 1.27 sm</span>
+              </button>
+              <button class="btn btn-outline-light text-start" id="marginBtn-wide" onclick="setVisualMargins('wide')">
+                <strong>Широкие (Keng)</strong><br><span class="small text-muted">Tepadan: 2.54 sm, Chap/O'ng: 5.08 sm</span>
+              </button>
+            </div>
+            <p class="small text-warning">
+              <i class="fa-solid fa-circle-exclamation me-2"></i> <strong>Tibbiy tavsiya:</strong> Agar varaqda matn juda ko'p bo'lsa va uni bir varaqqa sig'dirish kerak bo'lsa, <span class="badge bg-success">Узкие</span> maydonini tanlash tavsiya etiladi.
+            </p>
+          </div>
+        </div>
+        
+        <!-- Live Margins Preview -->
+        <div class="col-lg-7">
+          <div class="glass-card text-center bg-dark">
+            <h6 class="text-muted mb-3"><i class="fa-solid fa-eye me-2"></i> Chegaralarning matnga ta'siri</h6>
+            <div class="d-flex justify-content-center align-items-center" style="height:250px;">
+              <div class="margin-box-outer">
+                <div class="margin-box-inner" id="visualMarginsInner" style="top: 25px; bottom: 25px; left: 25px; right: 25px;">
+                  <div style="padding:5px; font-size:0.5rem; color:#cbd5e1; height:100%; overflow:hidden; line-height:1.2;">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam nec diam convallis, convallis massa eget, porttitor purus. Bemor klinik holati o'rganildi.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11-BO‘LIM. BIR VARAQDA BIR NECHTA SAHIFA CHIQARISH -->
+    <section id="section-11" class="scroll-animate">
+      <h2 class="section-title">11-Bo'lim. Bir varaqda bir nechta sahifa</h2>
+      <p class="section-subtitle">Страниц на листе (Pages per Sheet) yordamida bir nechta sahifani bitta varaqqa joylashtiring.</p>
+      
+      <div class="row g-4 align-items-center">
+        <!-- Explanations -->
+        <div class="col-lg-6">
+          <div class="glass-card">
+            <h4 class="text-accent mb-3"><i class="fa-solid fa-images me-2"></i> Tejamkor masshtablash</h4>
+            <p class="small text-light">
+              Ushbu parametr yordamida Word dasturi sahifalarni kichraytirib, bitta jismoniy qog'oz varag'iga bir nechta sahifalarni joylashtiradi:
+            </p>
+            <ul class="small text-light">
+              <li class="mb-2"><strong>1 страница</strong> - oddiy chop etish.</li>
+              <li class="mb-2"><strong>2 страницы</strong> - bitta qog'ozda yonma-yon ikkita sahifa (buklet shaklida).</li>
+              <li class="mb-2"><strong>4 страницы</strong> - 2x2 shaklida 4 ta sahifa bitta varaqda.</li>
+              <li class="mb-2"><strong>8, 16 страниц</strong> - o'ta kichik shriftli ma'lumotnomalar uchun.</li>
+            </ul>
+            <div class="alert alert-info py-2 mb-0">
+              <i class="fa-solid fa-circle-info me-2"></i> <strong>Klinik keys:</strong> Shifoxonalarda bemorning kunlik dori ichish jadvallarini kichik formatda bitta qog'ozga siqishtirib chiqarishda ishlatiladi.
+            </div>
+          </div>
+        </div>
+        
+        <!-- Live Layout Simulator -->
+        <div class="col-lg-6">
+          <div class="glass-card text-center bg-dark-subtle">
+            <h5 class="text-accent mb-3">Masshtabni tanlang:</h5>
+            <div class="d-flex justify-content-center gap-2 mb-4">
+              <button class="btn btn-sm btn-outline-light" onclick="setMultiPageSim(1)">1 sahifa</button>
+              <button class="btn btn-sm btn-outline-light" onclick="setMultiPageSim(2)">2 sahifa</button>
+              <button class="btn btn-sm btn-outline-light" onclick="setMultiPageSim(4)">4 sahifa</button>
+              <button class="btn btn-sm btn-outline-light" onclick="setMultiPageSim(6)">6 sahifa</button>
+            </div>
+            
+            <div class="d-flex justify-content-center align-items-center" style="height:220px;">
+              <div class="sheet-mock" id="sheetMockContainer">
+                <div class="mini-page-print">Page 1</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12-BO‘LIM. PDF HOLATIDA SAQLASH VA CHOP ETISH -->
+    <section id="section-12" class="scroll-animate">
+      <h2 class="section-title">12-Bo'lim. PDF holatida virtual chop etish</h2>
+      <p class="section-subtitle">Microsoft Print to PDF orqali hujjatlarni jismoniy qog'ozsiz saqlash.</p>
+      
+      <div class="row g-4">
+        <div class="col-lg-6">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Virtual PDF yaratish afzalliklari</h5>
+            <ul class="text-light small">
+              <li class="mb-2"><strong>Qog'oz tejash:</strong> Hujjatni qog'ozga chop etishdan oldin uning so'nggi ko'rinishini PDF formatida saqlab, tahlil qilish mumkin.</li>
+              <li class="mb-2"><strong>Platformalararo format:</strong> Yaratilgan PDF fayli boshqa qurilmalarda (masalan, planshet yoki smartfonlarda) aynan Word formatidagi ko'rinishini yo'qotmaydi.</li>
+              <li class="mb-2"><strong>Klinik foydalanish:</strong> Bemorning tahlil natijalarini to'g'ridan-to'g'ri uning telegramiga yoki elektron pochtasiga PDF shaklida yuborish.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-circle-check me-2"></i> Qadamlar</h5>
+            <ol class="text-light small">
+              <li class="mb-2">Word dasturida <kbd>Ctrl + P</kbd> tugmasini bosing.</li>
+              <li class="mb-2"><strong>Принтер</strong> ro'yxatidan <span class="text-info fw-bold">Microsoft Print to PDF</span> qurilmasini tanlang.</li>
+              <li class="mb-2"><kbd>Печать</kbd> tugmasini bosing.</li>
+              <li class="mb-2">Ochilgan oynada fayl nomini yozib, saqlash (Сохранить) tugmasini tanlang.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13-BO‘LIM. TIBBIYOTDA CHOP ETILADIGAN HUJJATLAR -->
+    <section id="section-13" class="scroll-animate">
+      <h2 class="section-title">13-Bo'lim. Tibbiyotda chop etiladigan hujjatlar</h2>
+      <p class="section-subtitle">Klinikalarda eng ko'p chop etiladigan asosiy hujjat turlari va ularning chop etish talablari.</p>
+      
+      <div class="row g-4">
+        <!-- Doc 1 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-hospital-user me-2"></i> Kasallik tarixi</h5>
+            <p class="small text-light mb-0">
+              <strong>Format:</strong> A4, ikki tomonlama (Двусторонняя печать), ordinary maydonlar. Bemor to'g'risidagi barcha shifoxona ma'lumotlari zaxira qilinadi.
+            </p>
+          </div>
+        </div>
+        <!-- Doc 2 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-file-medical me-2"></i> Retseptlar</h5>
+            <p class="small text-light mb-0">
+              <strong>Format:</strong> A5 (yoki bitta A4 varag'ida 2 sahifa - 2 страницы на листе), bir tomonlama. Dori-darmonlar ro'yxati.
+            </p>
+          </div>
+        </div>
+        <!-- Doc 3 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-vial-virus me-2"></i> Laboratoriya natijalari</h5>
+            <p class="small text-light mb-0">
+              <strong>Format:</strong> A4, tor maydonlar (Узкие поля), jadvallar ko'p bo'lsa Albom (Альбомная) oriyentatsiyasi qo'llaniladi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14-BO‘LIM. AMALIY MASHQLAR -->
+    <section id="section-14" class="scroll-animate">
+      <h2 class="section-title">14-Bo'lim. Amaliy topshiriqlar</h2>
+      <p class="section-subtitle">Quyidagi topshiriqlarni mustaqil bajaring va ularni cheklist orqali belgilab boring.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="checklist-container">
+            <h4 class="mb-4 text-white d-flex justify-content-between align-items-center">
+              <span><i class="fa-solid fa-list-check text-info me-2"></i> Topshiriqlar ro'yxati</span>
+              <span class="badge bg-info" id="checklistProgressText">0% Bajarildi</span>
+            </h4>
+            
+            <div class="progress mb-4" style="height: 10px;">
+              <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" id="checklistProgressBar" role="progressbar" style="width: 0%"></div>
+            </div>
+
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-1" onclick="toggleChecklistItem(this, 1)"></div>
+              <div class="checklist-text">Word oynasi simulyatorida "Файл &rarr; Печать" usulini sinab ko'rish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-2" onclick="toggleChecklistItem(this, 2)"></div>
+              <div class="checklist-text">Nusxalar va qog'oz kalkulyatoridan foydalanib sarfni hisoblash</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-3" onclick="toggleChecklistItem(this, 3)"></div>
+              <div class="checklist-text">Faqat 3-sahifani chop etish sintaksisini o'rganish (Пользовательская печать qismida 3 yozish)</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-4" onclick="toggleChecklistItem(this, 4)"></div>
+              <div class="checklist-text">1-5 sahifalarni chop etish oralig'ini to'g'ri kiritish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-5" onclick="toggleChecklistItem(this, 5)"></div>
+              <div class="checklist-text">1, 3 va 7-sahifalarni tanlab chop etish yozilishini bilish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-6" onclick="toggleChecklistItem(this, 6)"></div>
+              <div class="checklist-text">Virtual PDF printerini sozlash qadamlarini to'liq bilish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-7" onclick="toggleChecklistItem(this, 7)"></div>
+              <div class="checklist-text">Ikki tomonlama va A5 formatda chop etish sozlamalarini sinab ko'rish</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15-BO‘LIM. INTERAKTIV PRINT SIMULYATORI -->
+    <section id="section-15" class="scroll-animate">
+      <h2 class="section-title">15-Bo'lim. Interaktiv Print Simulyatori</h2>
+      <p class="section-subtitle">Haqiqiy Word print parametrlarini o'zgartiring va "Печать" tugmasini bosib chop etish natijasini sinab ko'ring.</p>
+      
+      <div class="row g-4">
+        <!-- Settings Form -->
+        <div class="col-lg-6">
+          <div class="glass-card">
+            <h5 class="text-accent mb-4"><i class="fa-solid fa-sliders me-2"></i> Sozlamalar paneli</h5>
+            
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="small text-muted">Принтер (Chop etish qurilmasi):</label>
+                <select class="form-select bg-dark text-white border-secondary" id="simPrinter">
+                  <option value="HP LaserJet (Lokal)">HP LaserJet Pro 400 (Lokal)</option>
+                  <option value="Canon MF (Tarmoq)">Canon MF Series (Tarmoq)</option>
+                  <option value="Microsoft Print to PDF (Virtual)">Microsoft Print to PDF (Virtual PDF)</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="small text-muted">Копии (Nusxa soni):</label>
+                <input type="number" class="form-control bg-dark text-white border-secondary" id="simCopies" value="1" min="1">
+              </div>
+              <div class="col-6">
+                <label class="small text-muted">Sahifalar oralig'i:</label>
+                <input type="text" class="form-control bg-dark text-white border-secondary" id="simRange" placeholder="Masalan: 1,3,5 yoki 1-5" value="1-3">
+              </div>
+              <div class="col-6">
+                <label class="small text-muted">Chop etish turi:</label>
+                <select class="form-select bg-dark text-white border-secondary" id="simSides">
+                  <option value="Односторонняя">Односторонняя печать (1 tomonlama)</option>
+                  <option value="Двусторонняя">Двусторонняя печать (2 tomonlama)</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="small text-muted">Ориентация (Sahifa holati):</label>
+                <select class="form-select bg-dark text-white border-secondary" id="simOrientation">
+                  <option value="Книжная">Книжная (Portret)</option>
+                  <option value="Альбомная">Альбомная (Albom)</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="small text-muted">Размер бумаги (Qog'oz):</label>
+                <select class="form-select bg-dark text-white border-secondary" id="simPaper">
+                  <option value="A4">A4 (Standart)</option>
+                  <option value="A5">A5 (Kichik)</option>
+                  <option value="A3">A3 (Keng)</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="small text-muted">Поля (Maydonlar):</label>
+                <select class="form-select bg-dark text-white border-secondary" id="simMargins">
+                  <option value="Обычные">Обычные (Normal)</option>
+                  <option value="Узкие">Узкие (Tor)</option>
+                </select>
+              </div>
+            </div>
+            
+            <button class="btn btn-primary-custom w-100 mt-4" onclick="runSimulatedPrint()"><i class="fa-solid fa-print me-2"></i> Печать (Chop etish)</button>
+          </div>
+        </div>
+        
+        <!-- Animated Printer Preview -->
+        <div class="col-lg-6">
+          <div class="glass-card h-100 d-flex flex-column justify-content-between text-center bg-dark">
+            <h6 class="text-muted mb-3"><i class="fa-solid fa-gears me-2"></i> Printer holati</h6>
+            
+            <div class="printer-box my-4">
+              <!-- Printer Paper feed anim -->
+              <div class="printer-paper" id="printerPaperAnim">
+                <div style="padding:10px; font-size:0.5rem; color:#0f172a; text-align:left;">
+                  <h6 style="font-size:0.55rem; font-weight:bold; margin-bottom:4px;">Chop etilmoqda...</h6>
+                  <div style="width:100%; height:2px; background:#185abd; margin-bottom:4px;"></div>
+                  <div style="width:80%; height:2px; background:#e1dfdd; margin-bottom:2px;"></div>
+                  <div style="width:90%; height:2px; background:#e1dfdd; margin-bottom:2px;"></div>
+                  <div style="width:50%; height:2px; background:#e1dfdd;"></div>
+                </div>
+              </div>
+              <div class="paper-tray"></div>
+            </div>
+            
+            <div class="p-3 border rounded bg-dark" id="simPrintOutput">
+              <span class="text-muted small">Tizim tayyor. Chop etish tugmasini bosing...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16-BO‘LIM. BILIMINGIZNI SINANG (Quiz) -->
+    <section id="section-16" class="scroll-animate">
+      <h2 class="section-title">16-Bo'lim. Bilimingizni sinang</h2>
+      <p class="section-subtitle">Word dasturida printer sozlamalari va chop etishga oid 20 ta interaktiv test savollarini topshiring.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="quiz-card">
+            <!-- Question boxes container -->
+            <div id="quizQuestionsContainer"></div>
+
+            <!-- Quiz navigation and progress bar -->
+            <div class="quiz-nav">
+              <button class="btn btn-outline-light" onclick="prevQuizQuestion()" id="quizPrevBtn"><i class="fa-solid fa-chevron-left me-2"></i> Oldingi</button>
+              <span class="text-muted align-self-center font-weight-bold" id="quizProgressLabel">Savol 1 / 20</span>
+              <button class="btn btn-info" onclick="nextQuizQuestion()" id="quizNextBtn">Keyingi <i class="fa-solid fa-chevron-right ms-2"></i></button>
+            </div>
+
+            <!-- Results box (hidden by default) -->
+            <div id="quizResultBox" class="text-center mt-5" style="display: none;">
+              <h3 class="text-white mb-3"><i class="fa-solid fa-circle-check text-success me-2"></i> Test Yakunlandi!</h3>
+              <p class="lead">Sizning test natijangiz:</p>
+              <div class="display-3 fw-bold text-info mb-3" id="quizScoreText">18 / 20</div>
+              <p class="fs-5 text-muted mb-4" id="quizPercentageText">Foiz ko'rsatkichi: 90%</p>
+              <div class="badge bg-success fs-5 p-3 px-4 rounded-pill" id="quizGradeBadge">Baho: 5 (A'lo)</div>
+              
+              <div class="mt-4">
+                <button class="btn btn-outline-info" onclick="restartQuiz()"><i class="fa-solid fa-rotate-left me-2"></i> Testni boshidan boshlash</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17-BO‘LIM. XULOSA -->
+    <section id="section-17" class="scroll-animate">
+      <h2 class="section-title">17-Bo'lim. Yakuniy Xulosa</h2>
+      <p class="section-subtitle">Chop etish parametrlarini egallashning shifokor faoliyatidagi yakuniy sarhisobi.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="glass-card text-center">
+            <h3 class="mb-4 text-accent"><i class="fa-solid fa-graduation-cap me-2"></i> Professional darajada chop etish ko'nikmalari</h3>
+            <p class="text-light fs-5" style="line-height: 1.8;">
+              Microsoft Word dasturida printer sozlamalari, sahifalar oralig'i (Напечатать диапазон), oriyentatsiya va maydonlar (Поля) bilan to'g'ri ishlash tibbiyot xodimlari uchun muhim kasbiy ko'nikmadir. Har bir buyruqning rus tilidagi interfeysda to'g'ri sozlanishi tezkor tashxis va tahlillar natijasini kechiktirmasdan chiqarish hamda shifoxona qog'oz va toner resurslarini tejamkor sarflash imkoniyatini taqdim etadi.
+            </p>
+            <p class="text-muted">
+              Ushbu darslik tibbiyot va texnika uyg'unligidagi eng muhim amaliy bilimlarni taqdim etdi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer mt-5 border-top border-secondary-subtle">
+    <div class="container text-center py-4">
+      <p class="mb-0 text-muted">&copy; 2026. Tibbiyotda Axborot Texnologiyalari O'quv Moduli. Barcha huquqlar himoyalangan.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap bundle with Popper CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Javascript Logic -->
+  <script>
+    /* Theme Toggler */
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      const currentTheme = htmlEl.getAttribute('data-theme');
+      const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      htmlEl.setAttribute('data-theme', targetTheme);
+      localStorage.setItem('darslik-theme', targetTheme);
+      
+      if (targetTheme === 'dark') {
+        themeIcon.className = "fa-solid fa-sun";
+      } else {
+        themeIcon.className = "fa-solid fa-moon";
+      }
+    }
+
+    /* Scroll Progress Bar Mechanism */
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      document.getElementById('topProgressBar').style.width = scrolled + "%";
+    });
+
+    /* Intersection Observer for Scroll Animations */
+    const scrollAnimateElements = document.querySelectorAll('.scroll-animate');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animated');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    scrollAnimateElements.forEach(el => observer.observe(el));
+
+    /* 2. Word Mockup Actions */
+    function clickWordTab(tab) {
+      // Manage tabs visual active states
+      const tabs = document.querySelectorAll('.word-tab');
+      tabs.forEach(t => t.classList.remove('active'));
+      
+      const activeTab = event.currentTarget;
+      activeTab.classList.add('active');
+
+      const ribbonContent = document.getElementById('wordRibbonContent');
+      const backstageMenu = document.getElementById('wordBackstageMenu');
+      const backstagePrint = document.getElementById('wordBackstagePrint');
+      const wordPageView = document.getElementById('wordPageView');
+
+      if (tab === 'file') {
+        backstageMenu.classList.remove('d-none');
+        backstagePrint.classList.remove('d-none');
+        wordPageView.classList.add('d-none');
+        markChecklistItem(1); // Check task 1
+      } else {
+        closeBackstage();
+        if (tab === 'home') {
+          ribbonContent.innerHTML = `
+            <div class="word-ribbon-group">
+              <div class="d-flex gap-1 mb-1">
+                <button class="btn btn-sm btn-light py-0 px-1 border" style="font-weight:bold;">Ж</button>
+                <button class="btn btn-sm btn-light py-0 px-1 border" style="font-style:italic;">К</button>
+                <button class="btn btn-sm btn-light py-0 px-1 border" style="text-decoration:underline;">Ч</button>
+              </div>
+              <span>Шрифт</span>
+            </div>
+            <div class="word-ribbon-group">
+              <div class="d-flex gap-1 mb-1">
+                <span class="badge bg-light text-dark border">Segoe UI</span>
+                <span class="badge bg-light text-dark border">14</span>
+              </div>
+              <span>Размер</span>
+            </div>
+          `;
+        } else if (tab === 'insert') {
+          ribbonContent.innerHTML = `
+            <div class="word-ribbon-group">
+              <div class="d-flex gap-1 mb-1">
+                <button class="btn btn-sm btn-light py-0 px-1 border"><i class="fa-solid fa-table"></i> Таблица</button>
+                <button class="btn btn-sm btn-light py-0 px-1 border"><i class="fa-solid fa-image"></i> Рисунок</button>
+              </div>
+              <span>Иллюстрации</span>
+            </div>
+          `;
+        } else if (tab === 'layout') {
+          ribbonContent.innerHTML = `
+            <div class="word-ribbon-group">
+              <div class="d-flex gap-1 mb-1">
+                <button class="btn btn-sm btn-light py-0 px-1 border"><i class="fa-solid fa-margins"></i> Поля</button>
+                <button class="btn btn-sm btn-light py-0 px-1 border"><i class="fa-solid fa-arrows-spin"></i> Ориентация</button>
+              </div>
+              <span>Параметры страницы</span>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function closeBackstage() {
+      document.getElementById('wordBackstageMenu').classList.add('d-none');
+      document.getElementById('wordBackstagePrint').classList.add('d-none');
+      document.getElementById('wordPageView').classList.remove('d-none');
+      
+      // Activate Home tab visually
+      const tabs = document.querySelectorAll('.word-tab');
+      tabs.forEach(t => t.classList.remove('active'));
+      tabs[1].classList.add('active'); // Home tab
+    }
+
+    function selectBackstageItem(item) {
+      const items = document.querySelectorAll('.backstage-item');
+      items.forEach(i => i.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      const backstagePrint = document.getElementById('wordBackstagePrint');
+      if (item === 'print') {
+        backstagePrint.classList.remove('d-none');
+      } else {
+        backstagePrint.classList.add('d-none');
+      }
+    }
+
+    function triggerSimulatedPrint() {
+      alert("Word simulyatori orqali chop etish jarayoni boshlandi! Haqiqiy interaktiv simulyatsiya uchun 15-bo'limga o'ting.");
+    }
+
+    /* 3. Settings Explorer data */
+    const printParams = [
+      {
+        title: "1. Принтер (Chop etish qurilmasi)",
+        desc: "Hujjatni jismoniy yoki virtual tarzda chop etuvchi qurilmani tanlash maydoni. Bu yerda siz lokal yoki tarmoqdagi faol printerni tanlaysiz.",
+        medical: "Klinika ro'yxatxonasida yagona markaziy tarmoq printerini to'g'ri tanlash yoki bemor kartasini PDF holatida arxivlash uchun virtual printerni ishga tushirishda muhimdir."
+      },
+      {
+        title: "2. Копии (Nusxalar soni)",
+        desc: "Hujjatning necha nusxada qog'ozga chiqarilishini sozlash maydoni. Masalan, 5 kiritilsa, belgilangan sahifalar 5 martadan bosiladi.",
+        medical: "Klinik retseptlar bemor, shifokor va dorixona uchun 3 nusxada (Копии: 3) chop etilishiga to'g'ri kelganda ishlatiladi."
+      },
+      {
+        title: "3. Параметры (Sozlamalar paneli)",
+        desc: "Sahifalar oralig'ini belgilovchi umumiy bo'lim. Barcha sahifalarni yoki faqat ma'lum qismlarini saralab chiqarishda ishlatiladi.",
+        medical: "Ko'p sahifali laboratoriya tahlillari hisobotlaridan faqat kerakli varaqlarini saralab olishda vaqt va mablag'ni tejaydi."
+      },
+      {
+        title: "4. Печать всех страниц (Diapazon maydoni)",
+        desc: "Bosmaga uzatiladigan aniq sahifa raqamlarini belgilaydigan kiritish maydoni. Bu yerga raqamlar vergul va chiziqlar bilan yoziladi.",
+        medical: "Faqat bemor to'g'risidagi kardiogramma natijasi joylashgan 3, 5-sahifalarini chiqarish uchun '3,5' deb kiritish kifoya."
+      },
+      {
+        title: "5. Односторонняя печать (Chop etish tomoni)",
+        desc: "Qog'oz varag'ining bir tomoniga yoki ikkala tomoniga (Двусторонняя печать) chop etishni sozlaydi. Ikki tomonlama rejim qog'ozni 50% tejaydi.",
+        medical: "Katta hajmli kasalxona yillik statistik hisobotlarini va bemorning tarix qog'ozlarini qalin qog'oz jildlariga joylash uchun ikki tomonlama chop etish afzal."
+      },
+      {
+        title: "6. Сортировка (Nusxalarni tartiblash)",
+        desc: "Ko'p nusxada chop etilayotgan hujjat varaqlarini tartibini sozlaydi. Masalan, 'Разобрать по копиям' (1,2,3; 1,2,3) yoki 'Не разбирать по копиям' (1,1,1; 2,2,2).",
+        medical: "5 nafar bemorga mo'ljallangan 3 sahifali yo'riqnomalarni chalkashmasdan, ketma-ketlikda alohida-alohida tartibli to'plam qilib chiqarib beradi."
+      },
+      {
+        title: "7. Ориентация (Sahifa holati)",
+        desc: "Hujjat varag'ining kitob (Книжная - portret) yoki albom (Альбомная - landshaft) shaklida joylashishini ta'minlaydi.",
+        medical: "EKG monitoring vaqt diagrammasi kabi keng chizmali grafik ma'lumotlarni Albom (Альбомная) ko'rinishida chiqarish zarur."
+      },
+      {
+        title: "8. Размер бумаги (Qog'oz o'lchami)",
+        desc: "Fizik qog'oz o'lchamlarini belgilash parametri. Eng ko'p tarqalgan turlari A4 va A5. Worddagi sozlama printerdagi qog'ozga mos kelishi shart.",
+        medical: "Standart yo'llanma blankalari kichik o'lchamdagi A5 formatda chop etilishi kerak bo'lganda ushbu menyudan moslashtiriladi."
+      },
+      {
+        title: "9. Поля (Chegara maydonlari)",
+        desc: "Matn atrofida qoladigan bo'sh joylarni (Поля) boshqarish. Odatda 'Обычные' (normal), 'Узкие' (tor) yoki 'Широкие' (keng) turlari mavjud.",
+        medical: "Retsept va yo'riqnomalarga ko'p matnni qisqartirmasdan sig'dirish uchun 'Узкие' maydonini tanlash qog'ozni tejash imkonini beradi."
+      },
+      {
+        title: "10. Количество страниц на листе (Masshtablash)",
+        desc: "Bitta jismoniy qog'oz betiga Word hujjatining bir nechta sahifasini (1, 2, 4, 6, 8, 16) kichraytirib joylash funksiyasi.",
+        medical: "Tibbiy standartlarga muvofiq, o'quv qo'llanmalarning qoralama nusxalarini chiqarishda 4 ta sahifani bitta varaqda tejamkor chiqarish."
+      }
+    ];
+
+    function showPrintParam(index) {
+      // Update active states
+      const items = document.querySelectorAll('.explorer-item');
+      items.forEach((item, idx) => {
+        item.classList.toggle('active', idx === index);
+      });
+
+      // Update detail panel
+      const param = printParams[index];
+      document.getElementById('paramTitle').innerText = param.title;
+      document.getElementById('paramDesc').innerText = param.desc;
+      document.getElementById('paramMedical').innerText = param.medical;
+    }
+
+    /* 5. Copies calculator logic */
+    function calculateSarf() {
+      const pages = parseInt(document.getElementById('calcPages').value) || 0;
+      const copies = parseInt(document.getElementById('calcCopies').value) || 0;
+      const sides = parseInt(document.getElementById('calcSides').value);
+      const pagesPerSheet = parseInt(document.getElementById('calcPagesPerSheet').value);
+
+      // Calculations
+      const totalPrintPages = pages * copies;
+      
+      // Calculate sheets
+      let sheetsPerCopy = Math.ceil(pages / pagesPerSheet);
+      if (sides === 2) {
+        sheetsPerCopy = Math.ceil(sheetsPerCopy / 2);
+      }
+      const totalSheets = sheetsPerCopy * copies;
+
+      // Estimate time: assume 15 pages per minute (1 page = 4 seconds)
+      const totalTimeSec = totalPrintPages * 4;
+      const minutes = Math.floor(totalTimeSec / 60);
+      const seconds = totalTimeSec % 60;
+      const timeStr = minutes > 0 ? `${minutes} daqiqa ${seconds} soniya` : `${seconds} soniya`;
+
+      // Update UI
+      document.getElementById('totalPrintPages').innerText = `${totalPrintPages} ta`;
+      document.getElementById('totalSheetsNeeded').innerText = `${totalSheets} ta`;
+      document.getElementById('totalTimeEstimate').innerText = timeStr;
+
+      markChecklistItem(2); // Check task 2
+    }
+
+    /* 8. Orientation Simulator Visual actions */
+    function setVisualOrientation(orient) {
+      const portBtn = document.getElementById('orientPortBtn');
+      const landBtn = document.getElementById('orientLandBtn');
+      const visualDoc = document.getElementById('visualDocSheet');
+
+      if (orient === 'portrait') {
+        portBtn.classList.add('active');
+        landBtn.classList.remove('active');
+        visualDoc.style.width = "140px";
+        visualDoc.style.height = "190px";
+      } else {
+        landBtn.classList.add('active');
+        portBtn.classList.remove('active');
+        visualDoc.style.width = "190px";
+        visualDoc.style.height = "140px";
+      }
+    }
+
+    /* 10. Margins Visualizer */
+    function setVisualMargins(type) {
+      const normalBtn = document.getElementById('marginBtn-normal');
+      const narrowBtn = document.getElementById('marginBtn-narrow');
+      const wideBtn = document.getElementById('marginBtn-wide');
+      const innerBox = document.getElementById('visualMarginsInner');
+
+      // Reset active state
+      normalBtn.classList.remove('active');
+      narrowBtn.classList.remove('active');
+      wideBtn.classList.remove('active');
+
+      if (type === 'normal') {
+        normalBtn.classList.add('active');
+        innerBox.style.top = "25px";
+        innerBox.style.bottom = "25px";
+        innerBox.style.left = "25px";
+        innerBox.style.right = "25px";
+      } else if (type === 'narrow') {
+        narrowBtn.classList.add('active');
+        innerBox.style.top = "10px";
+        innerBox.style.bottom = "10px";
+        innerBox.style.left = "10px";
+        innerBox.style.right = "10px";
+      } else if (type === 'wide') {
+        wideBtn.classList.add('active');
+        innerBox.style.top = "25px";
+        innerBox.style.bottom = "25px";
+        innerBox.style.left = "45px";
+        innerBox.style.right = "45px";
+      }
+    }
+
+    /* 11. Multi-Page per Sheet visual sim */
+    function setMultiPageSim(count) {
+      const container = document.getElementById('sheetMockContainer');
+      container.innerHTML = "";
+
+      // Layout columns based on page count
+      if (count === 1) {
+        container.style.gridTemplateColumns = "1fr";
+      } else if (count === 2) {
+        container.style.gridTemplateColumns = "1fr 1fr";
+      } else if (count === 4) {
+        container.style.gridTemplateColumns = "1fr 1fr";
+      } else if (count === 6) {
+        container.style.gridTemplateColumns = "1fr 1fr 1fr";
+      }
+
+      for (let i = 1; i <= count; i++) {
+        const pageDiv = document.createElement('div');
+        pageDiv.className = "mini-page-print";
+        pageDiv.innerText = `P. ${i}`;
+        container.appendChild(pageDiv);
+      }
+    }
+
+    /* 14. Checklist Logic */
+    const checkedItems = {};
+
+    function toggleChecklistItem(element, itemId) {
+      if (checkedItems[itemId]) {
+        delete checkedItems[itemId];
+        element.classList.remove('checked');
+        element.innerHTML = "";
+      } else {
+        checkedItems[itemId] = true;
+        element.classList.add('checked');
+        element.innerHTML = '<i class="fa-solid fa-check"></i>';
+      }
+
+      // Recalculate progress
+      const total = 7;
+      const checkedCount = Object.keys(checkedItems).length;
+      const percentage = Math.round((checkedCount / total) * 100);
+
+      document.getElementById('checklistProgressText').innerText = `${percentage}% Bajarildi`;
+      document.getElementById('checklistProgressBar').style.width = `${percentage}%`;
+    }
+
+    function markChecklistItem(idx) {
+      const el = document.getElementById(`check-${idx}`);
+      if (el && !el.classList.contains('checked')) {
+        toggleChecklistItem(el, idx);
+      }
+    }
+
+    /* 15. Dynamic Printer Simulator */
+    function runSimulatedPrint() {
+      const printer = document.getElementById('simPrinter').value;
+      const copies = parseInt(document.getElementById('simCopies').value) || 1;
+      const range = document.getElementById('simRange').value.trim();
+      const sides = document.getElementById('simSides').value;
+      const orientation = document.getElementById('simOrientation').value;
+      const paper = document.getElementById('simPaper').value;
+      const margins = document.getElementById('simMargins').value;
+
+      const outputDiv = document.getElementById('simPrintOutput');
+      const paperAnim = document.getElementById('printerPaperAnim');
+
+      if (copies < 1) {
+        alert("Копии soni kamida 1 bo'lishi kerak!");
+        return;
+      }
+
+      // Start animation
+      paperAnim.classList.remove('printing');
+      // Trigger reflow
+      void paperAnim.offsetWidth;
+      paperAnim.classList.add('printing');
+
+      outputDiv.innerHTML = `<span class="text-warning fw-bold"><i class="fa-solid fa-spinner fa-spin me-2"></i> ${printer} orqali chop etish tayyorlanmoqda...</span>`;
+
+      // Update checklists based on simulator actions
+      if (range.includes("3") && !range.includes("-")) markChecklistItem(3);
+      if (range === "1-5") markChecklistItem(4);
+      if (range.includes("1") && range.includes("3") && range.includes("7")) markChecklistItem(5);
+      if (printer.includes("PDF")) markChecklistItem(6);
+      if (sides === "Двусторонняя" && paper === "A5") markChecklistItem(7);
+
+      setTimeout(() => {
+        if (printer.includes("PDF")) {
+          outputDiv.innerHTML = `
+            <div class="text-success fw-bold"><i class="fa-solid fa-file-pdf me-2"></i> Virtual PDF yaratildi!</div>
+            <div class="small text-white mt-1">
+              Fayl nomi: <strong>tibbiy_hujjat_${range.replace(',','_')}.pdf</strong><br>
+              Sozlamalar: ${orientation} oriyentatsiya, ${paper} o'lcham, ${margins} maydonlar.
+            </div>
+          `;
+        } else {
+          outputDiv.innerHTML = `
+            <div class="text-success fw-bold"><i class="fa-solid fa-circle-check me-2"></i> Chop etish yakunlandi!</div>
+            <div class="small text-white mt-1">
+              Qurilma: <strong>${printer}</strong><br>
+              Natija: <strong>${copies}</strong> nusxada, <strong>${range}</strong> sahifalar, <strong>${sides}</strong>, <strong>${paper}</strong> o'lchamda chop etildi.
+            </div>
+          `;
+        }
+      }, 2000);
+    }
+
+    /* 16. 20-Question Quiz Logic */
+    const quizQuestions = [
+      {
+        q: "Word dasturida rus tilidagi chop etish oynasiga kirishning klaviatura orqali tezkor usuli qaysi?",
+        a: ["Ctrl + S", "Ctrl + P", "Ctrl + N", "Ctrl + O"],
+        c: 1
+      },
+      {
+        q: "Ruscha interfeysdagi Word dasturida 'Файл' menyusidan keyin qaysi buyruq bosilganda chop etish bo'limi ochiladi?",
+        a: ["Параметры", "Печать", "Сохранить", "Сведения"],
+        c: 1
+      },
+      {
+        q: "Hujjatdan jami necha nusxa chop etilishini qaysi maydonda belgilaymiz?",
+        a: ["Принтер", "Копии", "Параметры", "Поля"],
+        c: 1
+      },
+      {
+        q: "Hujjat tarkibini qog'ozga jismonan chiqarmasdan, elektron PDF fayl holatiga o'tkazuvchi printer turi nima deb ataladi?",
+        a: ["Tarmoq printeri", "Lokal printer", "Virtual PDF printeri", "Matritsali printer"],
+        c: 2
+      },
+      {
+        q: "HP LaserJet va Canon printerlari ko'pincha ulanish turiga ko'ra qaysi printer guruhlariga kiradi?",
+        a: ["Faqat tarmoq printeri", "Faqat virtual printer", "Lokal yoki Tarmoq printeri", "Dasturiy printer"],
+        c: 2
+      },
+      {
+        q: "Hujjatning barcha sahifalarini to'liq chiqarish uchun sozlamadan qaysi parametr tanlanadi?",
+        a: ["Печать выделенного фрагмента", "Печать всех страниц", "Печать текущей страницы", "Пользовательская печать"],
+        c: 1
+      },
+      {
+        q: "Faqat ayni vaqtda ekranda ko'rinib turgan sahifani chop etish uchun nima tanlanadi?",
+        a: ["Печать текущей страницы", "Печать выделенного фрагмента", "Печать всех страниц", "Пользовательская печать"],
+        c: 0
+      },
+      {
+        q: "Word hujjatidagi faqatgina belgilab olingan matn blokini chop etish uchun nima tanlanadi?",
+        a: ["Печать выделенного фрагмента", "Печать всех страниц", "Печать текущей страницы", "Пользовательская печать"],
+        c: 0
+      },
+      {
+        q: "Hujjatning 1, 3 va 5-sahifalarini chiqarish uchun qatorda qanday yozish to'g'ri bo'ladi?",
+        a: ["1-5", "1;3;5", "1,3,5", "1 dan 5 gacha"],
+        c: 2
+      },
+      {
+        q: "Word chop etish qatorida '1-5' yozuvi nimani anglatadi?",
+        a: ["Faqat 1 va 5-sahifani chop etadi", "1-dan 5-gacha bo'lgan barcha sahifalarni ketma-ket chop etadi", "1 va 5-sahifalarni to'rt nusxadan chiqaradi", "1-dan 5-gacha bo'lgan sahifalarni toq holda chiqaradi"],
+        c: 1
+      },
+      {
+        q: "Chop etish qatoriga '1-3,7,9-12' yozilsa, qaysi sahifa chop ETILMAYDI?",
+        a: ["2", "7", "8", "10"],
+        c: 2
+      },
+      {
+        q: "Faqat juft sahifalarni (2, 4, 6...) chop etish uchun qaysi parametr tanlanadi?",
+        a: ["Только нечетные страницы", "Только четные страницы", "Печать всех страниц", "Пользовательская печать"],
+        c: 1
+      },
+      {
+        q: "Qog'oz varag'ini tejash maqsadida uning orqa tomoniga ham chop etish sozlamasi qanday ataladi?",
+        a: ["Односторонняя печать", "Двусторонняя печать", "Сортировка", "Поля"],
+        c: 1
+      },
+      {
+        q: "Standart portret (kitob) ko'rinishidagi sahifa holati ruscha interfeysda qanday ataladi?",
+        a: ["Альбомная", "Книжная", "Обычные", "Узкие"],
+        c: 1
+      },
+      {
+        q: "Keng jadvallar va monitoring grafikalarini chop etish uchun sahifa holatining qaysi turi mos keladi?",
+        a: ["Книжная", "Альбомная", "Обычные", "Широкие"],
+        c: 1
+      },
+      {
+        q: "Tibbiyotda rasmiy kasallik varaqalari va buyruqlar uchun asosiy qog'oz formati qaysi?",
+        a: ["A3", "A5", "A4", "Letter"],
+        c: 2
+      },
+      {
+        q: "Klinik retsept blankalari ko'pincha qaysi kichik qog'oz formatida chiqariladi?",
+        a: ["A3", "A5", "A4", "Legal"],
+        c: 1
+      },
+      {
+        q: "Worddagi matnning varaq chetlaridan boshlanish masofasi (chegaralari) qanday ataladi?",
+        a: ["Ориентация", "Поля", "Колонтитулы", "Размер"],
+        c: 1
+      },
+      {
+        q: "Matn ko'p bo'lib, uni varaqqa ko'proq sig'dirish kerak bo'lganda qaysi maydon turi eng to'g'ri tanlovdir?",
+        a: ["Широкие", "Обычные", "Узкие (Tor)", "Настраиваемые"],
+        c: 2
+      },
+      {
+        q: "Bitta varaqqa hujjatning 4 ta sahifasini kichraytirib chiqaruvchi parametr qaysi?",
+        a: ["Страниц на листе (4 страницы)", "Сортировка (4 копии)", "Двусторонняя печать", "Альбомная ориентация"],
+        c: 0
+      }
+    ];
+
+    let currentQuestionIdx = 0;
+    const userQuizAnswers = {};
+
+    function initQuiz() {
+      const container = document.getElementById('quizQuestionsContainer');
+      container.innerHTML = "";
+
+      quizQuestions.forEach((item, idx) => {
+        const qBox = document.createElement('div');
+        qBox.className = `quiz-question-box ${idx === 0 ? 'active' : ''}`;
+        qBox.id = `qBox${idx}`;
+
+        // Map options
+        const mappedOptions = item.a.map((opt, optIdx) => ({ text: opt, originalIdx: optIdx }));
+        mappedOptions.sort(() => Math.random() - 0.5);
+
+        qBox.innerHTML = `
+          <h5 class="text-white mb-4">Savol ${idx + 1}: ${item.q}</h5>
+          <div class="row g-2">
+            ${mappedOptions.map((option, optIdx) => `
+              <div class="col-12">
+                <button class="quiz-option-btn" id="q${idx}opt${option.originalIdx}" onclick="selectQuizOption(${idx}, ${option.originalIdx})"><span class="badge bg-secondary rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">${String.fromCharCode(65 + optIdx)}</span><span class="opt-text">${option.text}</span></button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(qBox);
+      });
+      updateQuizNav();
+    }
+
+    function selectQuizOption(questionIdx, optionIdx) {
+      if (userQuizAnswers[questionIdx] !== undefined) return; // Prevent changing answer
+
+      userQuizAnswers[questionIdx] = optionIdx;
+      const question = quizQuestions[questionIdx];
+      const correctOpt = question.c;
+
+      // Highlight selected button
+      const optBtn = document.getElementById(`q${questionIdx}opt${optionIdx}`);
+      if (optionIdx === correctOpt) {
+        optBtn.classList.add('correct');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      } else {
+        optBtn.classList.add('incorrect');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-xmark ms-auto"></i>';
+        
+        // Highlight the correct one
+        const correctBtn = document.getElementById(`q${questionIdx}opt${correctOpt}`);
+        correctBtn.classList.add('correct');
+        correctBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      }
+    }
+
+    function prevQuizQuestion() {
+      if (currentQuestionIdx > 0) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx--;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      }
+    }
+
+    function nextQuizQuestion() {
+      if (currentQuestionIdx < quizQuestions.length - 1) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx++;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function updateQuizNav() {
+      document.getElementById('quizProgressLabel').innerText = `Savol ${currentQuestionIdx + 1} / 20`;
+      document.getElementById('quizPrevBtn').disabled = (currentQuestionIdx === 0);
+      
+      const nextBtn = document.getElementById('quizNextBtn');
+      if (currentQuestionIdx === quizQuestions.length - 1) {
+        nextBtn.innerHTML = 'Natijani ko\'rish <i class="fa-solid fa-square-poll-vertical ms-2"></i>';
+        nextBtn.className = "btn btn-success";
+      } else {
+        nextBtn.innerHTML = 'Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>';
+        nextBtn.className = "btn btn-info";
+      }
+    }
+
+    function showQuizResults() {
+      document.getElementById('quizQuestionsContainer').style.display = 'none';
+      document.getElementById('quizPrevBtn').style.display = 'none';
+      document.getElementById('quizNextBtn').style.display = 'none';
+      document.getElementById('quizProgressLabel').style.display = 'none';
+
+      // Count scores
+      let score = 0;
+      quizQuestions.forEach((q, idx) => {
+        if (userQuizAnswers[idx] === q.c) {
+          score++;
+        }
+      });
+
+      const percentage = Math.round((score / quizQuestions.length) * 100);
+      let grade = "2 (Qoniqarsiz)";
+      let gradeClass = "bg-danger";
+
+      if (percentage >= 86) {
+        grade = "5 (A'lo)";
+        gradeClass = "bg-success";
+      } else if (percentage >= 71) {
+        grade = "4 (Yaxshi)";
+        gradeClass = "bg-primary";
+      } else if (percentage >= 55) {
+        grade = "3 (Qoniqarli)";
+        gradeClass = "bg-warning text-dark";
+      }
+
+      document.getElementById('quizScoreText').innerText = `${score} / 20`;
+      document.getElementById('quizPercentageText').innerText = `Foiz ko'rsatkichi: ${percentage}%`;
+      
+      const gradeBadge = document.getElementById('quizGradeBadge');
+      gradeBadge.className = `badge ${gradeClass} fs-5 p-3 px-4 rounded-pill`;
+      gradeBadge.innerText = `Baho: ${grade}`;
+
+      document.getElementById('quizResultBox').style.display = 'block';
+    }
+
+    function restartQuiz() {
+      currentQuestionIdx = 0;
+      for (let i = 0; i < quizQuestions.length; i++) {
+        delete userQuizAnswers[i];
+      }
+
+      document.getElementById('quizQuestionsContainer').style.display = 'block';
+      document.getElementById('quizPrevBtn').style.display = 'inline-block';
+      document.getElementById('quizNextBtn').style.display = 'inline-block';
+      document.getElementById('quizProgressLabel').style.display = 'inline-block';
+      document.getElementById('quizResultBox').style.display = 'none';
+
+      initQuiz();
+    }
+
+    // Initialize Page features on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = 'dark'; localStorage.setItem('darslik-theme', 'dark');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      const themeIcon = document.getElementById('themeIcon');
+      if (themeIcon) {
+        themeIcon.className = savedTheme === 'dark' ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      }
+      initQuiz();
+      calculateSarf();
+      setMultiPageSim(1);
+      showPrintParam(0);
+    });
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.href = '../index.html';
+    }
+
+        function applyAuthorName() {
+      const loginName = localStorage.getItem('darslik_login') || 'Napasov';
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      applyAuthorName();
+    });
+  </script>
+
+</body>
+</html>

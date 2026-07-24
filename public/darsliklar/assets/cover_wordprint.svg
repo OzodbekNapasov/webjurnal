@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0c172c" />
+      <stop offset="100%" stop-color="#2563eb" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="320" height="200" rx="16" fill="url(#bgGrad)" />
+  <rect width="318" height="198" x="1" y="1" rx="15" fill="none" stroke="#10b981" stroke-width="1.5" opacity="0.3"/>
+  
+  <!-- Topic Graphic Art -->
+  
+            <rect x="80" y="55" width="80" height="105" rx="8" fill="rgba(37,99,235,0.2)" stroke="#2563eb" stroke-width="2"/>
+            <path d="M95,80 H145 M95,100 H145 M95,120 H125" stroke="#ffffff" stroke-width="3"/>
+            <path d="M170,100 H230 V140 H170 Z" fill="rgba(16,185,129,0.3)" stroke="#10b981" stroke-width="3"/>
+            <circle cx="215" cy="115" r="4" fill="#ffffff"/>
+        
+  
+  <!-- Subtle Gradient Overlay -->
+  <rect width="320" height="200" fill="none" opacity="0.1" stroke="#ffffff" stroke-width="1"/>
+</svg>

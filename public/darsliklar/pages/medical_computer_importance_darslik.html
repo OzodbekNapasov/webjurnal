@@ -1,0 +1,2357 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <script>
+    // Immediate login check before rendering
+    const savedLogin = localStorage.getItem('darslik_login');
+    if (savedLogin !== 'Napasov' && savedLogin !== 'Umirov') {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../LOGO.png">
+  <title>Elektron Darslik: Kelajak shifokori va hamshirasi uchun kompyuter nima sababdan shprits kabi muhim?</title>
+  
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Google Fonts: Poppins (headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0f172a;           /* Deep Slate Dark */
+      --secondary-bg: #1e293b;         /* Slate 800 */
+      --text-main: #f8fafc;            /* White slate */
+      --text-muted: #94a3b8;           /* Muted slate */
+      --text-light: #cbd5e1;           /* Light slate */
+      --card-bg: rgba(30, 41, 59, 0.75);/* Glassmorphism Slate */
+      --border-color: rgba(255, 255, 255, 0.08);
+      --accent: #00f2fe;               /* Cyber Teal */
+      --accent-glow: rgba(0, 242, 254, 0.35);
+      --secondary-accent: #10b981;      /* Neon Rose */
+      --secondary-accent-glow: rgba(16, 185, 129, 0.25);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --error: #f43f5e;
+      --error-glow: rgba(244, 63, 94, 0.2);
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;           /* Light Slate */
+      --secondary-bg: #ffffff;
+      --text-main: #0f172a;            /* Dark Slate */
+      --text-muted: #64748b;           /* Muted Slate */
+      --text-light: #334155;           /* Light Slate */
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --border-color: rgba(15, 23, 42, 0.08);
+      --accent: #0ea5e9;               /* Deep Sky Blue */
+      --accent-glow: rgba(14, 165, 233, 0.15);
+      --secondary-accent: #db2777;      /* Darker Rose */
+      --secondary-accent-glow: rgba(219, 39, 119, 0.1);
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    .text-light {
+      color: var(--text-light) !important;
+    }
+    .lead {
+      color: var(--text-muted) !important;
+      font-weight: 500 !important;
+    }
+    p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    li {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-light);
+    }
+
+    [data-theme="light"] .text-white {
+      color: var(--text-main) !important;
+    }
+    [data-theme="light"] .text-warning {
+      color: #b45309 !important;
+    }
+    [data-theme="light"] .text-info {
+      color: #0369a1 !important;
+    }
+    .text-accent {
+      color: var(--accent) !important;
+    }
+    .text-rose {
+      color: var(--secondary-accent) !important;
+    }
+
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      position: relative;
+    }
+
+    .logo-img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+      transition: var(--transition-smooth);
+    }
+    .logo-img:hover {
+      transform: scale(1.05);
+    }
+    
+    [data-theme="light"] .logo-img {
+      filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.15));
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background-image: 
+        radial-gradient(at 0% 0%, var(--secondary-accent-glow) 0, transparent 40%),
+        radial-gradient(at 100% 100%, var(--accent-glow) 0, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.003) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.003) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    .top-progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.1);
+      z-index: 1050;
+    }
+
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--secondary-accent), var(--success));
+      box-shadow: 0 0 10px var(--accent);
+      transition: width 0.1s ease;
+    }
+
+    .navbar {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 6px;
+      z-index: 1000;
+      margin: 0 12px;
+      border-radius: 0 0 16px 16px;
+      transition: background-color 0.4s ease;
+    }
+
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.85);
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--secondary-accent) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+    .logo-img {
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-img {
+      transform: scale(1.08);
+    }
+
+    .author-badge {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+      border: 1px solid rgba(0, 242, 254, 0.35);
+      border-radius: 9999px;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.15), inset 0 0 10px rgba(0, 242, 254, 0.05);
+      backdrop-filter: blur(8px);
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .author-badge {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(219, 39, 119, 0.03) 100%);
+      border: 1px solid rgba(14, 165, 233, 0.25);
+      box-shadow: 0 0 10px rgba(14, 165, 233, 0.02);
+    }
+
+    .author-badge:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulseDot 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(0.8); opacity: 0.5; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+
+    .author-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    .content-wrapper {
+      margin-top: 40px;
+    }
+
+    .sidebar-sticky {
+      position: sticky;
+      top: 90px;
+      height: calc(100vh - 120px);
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+
+    .sidebar-sticky::-webkit-scrollbar {
+      width: 4px;
+    }
+    .sidebar-sticky::-webkit-scrollbar-thumb {
+      background-color: var(--border-color);
+      border-radius: 4px;
+    }
+
+    .nav-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .nav-sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+      border: 1px solid transparent;
+    }
+
+    .nav-sidebar-link:hover {
+      color: var(--accent);
+      background: rgba(0, 242, 254, 0.05);
+      border-color: rgba(0, 242, 254, 0.15);
+      transform: translateX(5px);
+    }
+
+    .nav-sidebar-link.active {
+      color: var(--primary-bg);
+      background: linear-gradient(135deg, var(--accent), #4facfe);
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+    }
+
+    [data-theme="light"] .nav-sidebar-link.active {
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+    }
+
+    .main-content {
+      padding-bottom: 80px;
+    }
+
+    /* Section styling */
+    .darslik-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 40px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .darslik-section:hover {
+      border-color: rgba(0, 242, 254, 0.2);
+      box-shadow: 0 15px 35px rgba(0, 242, 254, 0.05);
+    }
+
+    .section-title {
+      font-weight: 700;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 15px;
+      background: linear-gradient(90deg, var(--accent), var(--secondary-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    [data-theme="light"] .section-title {
+      background: linear-gradient(90deg, var(--accent), var(--secondary-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .section-icon {
+      background: linear-gradient(135deg, var(--accent), var(--secondary-accent));
+      -webkit-background-clip: initial;
+      -webkit-text-fill-color: initial;
+      color: #0f172a;
+      width: 45px;
+      height: 45px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 4px 10px rgba(0, 242, 254, 0.3);
+    }
+
+    .quote-box {
+      border-left: 5px solid var(--secondary-accent);
+      background: rgba(16, 185, 129, 0.05);
+      border-radius: 0 16px 16px 0;
+      padding: 24px;
+      margin: 25px 0;
+    }
+
+    .highlight-box {
+      border-left: 5px solid var(--accent);
+      background: rgba(0, 242, 254, 0.05);
+      border-radius: 0 16px 16px 0;
+      padding: 24px;
+      margin: 25px 0;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin: 30px 0;
+    }
+
+    @media (max-width: 768px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .comp-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 25px;
+      transition: var(--transition-smooth);
+    }
+
+    .comp-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .simulator-container {
+      background: #020617;
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 30px 0;
+      box-shadow: 0 0 25px rgba(0, 242, 254, 0.2);
+    }
+
+    [data-theme="light"] .simulator-container {
+      background: #f1f5f9;
+      border-color: #0ea5e9;
+      box-shadow: 0 10px 25px rgba(14, 165, 233, 0.1);
+    }
+
+    .simulator-header {
+      background: #0f172a;
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    [data-theme="light"] .simulator-header {
+      background: #e2e8f0;
+      border-bottom-color: rgba(0, 0, 0, 0.08);
+      color: #0f172a;
+    }
+
+    .sim-dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .sim-red { background-color: #ef4444; }
+    .sim-yellow { background-color: #eab308; }
+    .sim-green { background-color: #22c55e; }
+
+    .simulator-body {
+      padding: 25px;
+      color: #f8fafc;
+    }
+
+    [data-theme="light"] .simulator-body {
+      color: #0f172a;
+    }
+
+    .dmed-sidebar {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 15px;
+      height: 100%;
+    }
+
+    [data-theme="light"] .dmed-sidebar {
+      background: #cbd5e1;
+    }
+
+    .dmed-content {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    [data-theme="light"] .dmed-content {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .dmed-nav-item {
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #94a3b8;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .dmed-nav-item {
+      color: #475569;
+    }
+
+    .dmed-nav-item:hover, .dmed-nav-item.active {
+      background: var(--accent);
+      color: #020617;
+      font-weight: 600;
+    }
+
+    .game-queue {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 15px;
+      min-height: 100px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      border: 1px dashed var(--border-color);
+    }
+
+    .queue-patient {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      animation: bounceIn 0.5s ease-out;
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .patient-icon {
+      font-size: 2rem;
+      color: var(--secondary-accent);
+      filter: drop-shadow(0 0 5px var(--secondary-accent-glow));
+    }
+
+    .word-display {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-align: center;
+      margin: 20px 0;
+      color: var(--accent);
+      text-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .word-ribbon {
+      background: #f1f5f9;
+      border-bottom: 1px solid #cbd5e1;
+      padding: 5px 15px;
+      display: flex;
+      gap: 15px;
+      color: #334155;
+      font-size: 0.85rem;
+    }
+
+    .word-ribbon-tab {
+      padding: 5px 10px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+
+    .word-ribbon-tab.active {
+      border-bottom-color: #185abd;
+      color: #185abd;
+      font-weight: 600;
+    }
+
+    .word-doc {
+      background: #ffffff;
+      color: #000000;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      border-radius: 4px;
+      min-height: 400px;
+      padding: 40px;
+      margin-top: 15px;
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+    .excel-grid {
+      width: 100%;
+      background: #ffffff;
+      color: #334155;
+      font-family: Arial, sans-serif;
+      border-collapse: collapse;
+    }
+
+    .excel-grid th {
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+      padding: 8px;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    .excel-grid td {
+      border: 1px solid #e2e8f0;
+      padding: 8px;
+      font-size: 0.85rem;
+    }
+
+    .excel-cell-edit {
+      background: #fef08a;
+      border: 2px solid #eab308 !important;
+      outline: none;
+    }
+
+    .excel-formula-bar {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: monospace;
+      color: #334155;
+    }
+
+    .slider-track-container {
+      position: relative;
+      margin: 40px 0;
+    }
+
+    .custom-range {
+      width: 100%;
+      height: 10px;
+      background: #1e293b;
+      outline: none;
+      border-radius: 5px;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .custom-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--secondary-accent));
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent-glow);
+      transition: transform 0.1s;
+    }
+
+    .custom-range::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .career-result-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      margin-top: 20px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      margin-bottom: 10px;
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .task-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .task-item.checked {
+      background: rgba(16, 185, 129, 0.05);
+      border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .task-checkbox {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: transparent;
+      transition: var(--transition-smooth);
+    }
+
+    .task-item.checked .task-checkbox {
+      background-color: var(--success);
+      border-color: var(--success);
+      color: #ffffff;
+    }
+
+    .task-item.checked .task-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 30px 0;
+      margin-top: 80px;
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    [data-theme="light"] footer {
+      background: #f1f5f9;
+      border-top-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .footer-text {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .footer-author {
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .back-btn {
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      background: transparent;
+      padding: 8px 16px;
+      border-radius: 10px;
+      transition: var(--transition-smooth);
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .theme-toggle-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+    }
+
+    .theme-toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .printer-box {
+      text-align: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    .printer-icon {
+      font-size: 4rem;
+      color: var(--accent);
+      animation: float 2s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .printed-paper {
+      width: 120px;
+      height: 150px;
+      background: white;
+      border: 1px solid #cbd5e1;
+      margin: 10px auto 0;
+      position: relative;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transform: translateY(-50px);
+      opacity: 0;
+      transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .printed-paper.printing {
+      transform: translateY(0px);
+      opacity: 1;
+    }
+
+    .paper-lines {
+      width: 80%;
+      height: 8px;
+      background: #e2e8f0;
+      margin: 10px auto;
+      border-radius: 4px;
+    }
+
+    .receipt-barcode {
+      width: 100%;
+      height: 35px;
+      background: repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 6px);
+      margin-top: 15px;
+    }
+  
+    /* Login Overlay Styling */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    [data-theme="light"] .login-overlay {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white;
+      font-size: 1.7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px var(--primary-cyan-glow);
+    }
+
+    .login-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .login-input-wrapper i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.4) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 50px;
+      padding: 12px 20px 12px 50px;
+      color: var(--text-main) !important;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .login-input {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 15px var(--primary-cyan-glow);
+    }
+
+    .login-error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white !important;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--primary-cyan-glow);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-cyan-glow);
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+  </style>
+  <link rel="stylesheet" href="darslik.css">
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="top-progress-container">
+    <div class="top-progress-bar" id="readingProgress"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid px-3">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+        <img src="../LOGO.png" alt="Logo" class="logo-img">
+        <span class="logo-text">Axborot texnologiyalari</span>
+      </a>
+      
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <div class="author-badge">
+          <div class="pulse-dot"></div>
+          <span class="author-name">{{AUTHOR}}</span>
+        </div>
+        
+                <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        
+        
+        <a href="../index.html" class="back-btn text-decoration-none">
+          <i class="fa-solid fa-house me-2"></i> Mundarija
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Content Structure -->
+  <div class="container-fluid content-wrapper px-4">
+    <div class="row">
+      
+      <!-- Sidebar Navigation -->
+      <div class="col-lg-3 d-none d-lg-block">
+        <div class="sidebar-sticky">
+          <ul class="nav-sidebar">
+            <li><a href="#kirish" class="nav-sidebar-link active"><i class="fa-solid fa-heart-pulse"></i> 1. Kirish: Nega?</a></li>
+            <li><a href="#qogozsiz" class="nav-sidebar-link"><i class="fa-solid fa-file-excel"></i> 2. Qog'ozsiz tibbiyot</a></li>
+            <li><a href="#dmed" class="nav-sidebar-link"><i class="fa-solid fa-hospital"></i> 3. DMED tizimi</a></li>
+            <li><a href="#dmed-sim" class="nav-sidebar-link"><i class="fa-solid fa-laptop-medical"></i> 4. DMED Simulyatori</a></li>
+            <li><a href="#retseptlar" class="nav-sidebar-link"><i class="fa-solid fa-prescription-bottle-medical"></i> 5. Retsept va yo'llanmalar</a></li>
+            <li><a href="#varaqalar" class="nav-sidebar-link"><i class="fa-solid fa-notes-medical"></i> 6. Kasallik varaqalari</a></li>
+            <li><a href="#klaviatura" class="nav-sidebar-link"><i class="fa-solid fa-keyboard"></i> 7. Klaviatura tezligi</a></li>
+            <li><a href="#typing-game" class="nav-sidebar-link"><i class="fa-solid fa-gamepad"></i> 8. Yozish Mashqi (O'yin)</a></li>
+            <li><a href="#word" class="nav-sidebar-link"><i class="fa-solid fa-file-word"></i> 9. Word tibbiyotda</a></li>
+            <li><a href="#excel" class="nav-sidebar-link"><i class="fa-solid fa-file-spreadsheet"></i> 10. Excel tibbiyotda</a></li>
+            <li><a href="#karyera" class="nav-sidebar-link"><i class="fa-solid fa-user-doctor"></i> 11. Karyera va martaba</a></li>
+            <li><a href="#talabalik" class="nav-sidebar-link"><i class="fa-solid fa-graduation-cap"></i> 12. Talabalik va referatlar</a></li>
+            <li><a href="#xavfsizlik" class="nav-sidebar-link"><i class="fa-solid fa-shield-halved"></i> 13. Maxfiylik va xavfsizlik</a></li>
+            <li><a href="#cheklist" class="nav-sidebar-link"><i class="fa-solid fa-list-check"></i> 14. Amaliy vazifalar</a></li>
+            <li><a href="#xulosa" class="nav-sidebar-link"><i class="fa-solid fa-award"></i> 15. Xulosa</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="col-lg-9 col-12 main-content">
+        
+        <!-- Section 1: Intro -->
+        <section id="kirish" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-heart-pulse"></i></span>
+            <h2>I. Kirish: Nega?</h2>
+          </div>
+          
+          <div class="quote-box">
+            <h4 class="text-rose mb-3">Assalomu alaykum, muhtaram bo‘lajak hamkasblar, tibbiyot texnikumining 1-kurs talabalari!</h4>
+            <p class="mb-0">
+              Siz bugun bu dargohga kelgansiz, chunki maqsadingiz — insonlar salomatligini asrash, ukol qilishni, dori yozishni, bint bog‘lashni va tashxis qo‘yishni o‘rganish. Orangizda ko‘pchilik: <strong>"Men tibbiyot xodimi bo‘lishni xohlayman, nega endi menga informatika, kompyuter va hujjatlar bilan ishlash darsi o‘tilishi kerak? Menga buni nima keragi bor?"</strong> deb o‘ylayotgan bo‘lishi tabiiy.
+            </p>
+          </div>
+
+          <p class="lead mt-4 text-white">
+            Bugun men sizga bitta haqiqatni aytmoqchiman: <strong>Zamonaviy tibbiyot xodimi faqatgina shprits tutishni emas, kompyuter klaviaturasida ham tezkor ishlashni bilishi shart.</strong> Bugungi shifokor va hamshira — bu shunchaki oq xalatli xodim emas, u yuqori texnologiyalar operatoridir.
+          </p>
+
+          <!-- Interactive Graphic Comparison -->
+          <div class="comparison-grid">
+            <div class="comp-card text-center" style="border-top: 3px solid var(--secondary-accent);">
+              <i class="fa-solid fa-syringe text-rose" style="font-size: 3rem; margin-bottom: 15px; filter: drop-shadow(0 0 8px var(--secondary-accent-glow));"></i>
+              <h5 class="text-white">An'anaviy Shprits va Asboblar</h5>
+              <p class="text-muted mt-2 mb-0" style="font-size: 0.95rem;">
+                Bemor tanasiga to'g'ridan-to'g'ri dori va muolajalar yuborish. Bu sizning jismoniy amaliy yordam berish qurolingizdir.
+              </p>
+            </div>
+            
+            <div class="comp-card text-center" style="border-top: 3px solid var(--accent);">
+              <i class="fa-solid fa-laptop-medical text-accent" style="font-size: 3rem; margin-bottom: 15px; filter: drop-shadow(0 0 8px var(--accent-glow));"></i>
+              <h5 class="text-white">Raqamli Axborot Tizimi (Kompyuter)</h5>
+              <p class="text-muted mt-2 mb-0" style="font-size: 0.95rem;">
+                Hujjatlar tayyorlash, dori yozish, imtiyozli retseptlar rasmiylashtirish. Bu sizning ma'lumotlar bilan ishlash va bemorni boshqarish qurolingizdir.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2: Qog'ozsiz tibbiyot -->
+        <section id="qogozsiz" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-file-excel"></i></span>
+            <h2>II. Asosiy qism: Kompyuter savodxonligi nega hayotiy zaruriyat?</h2>
+          </div>
+          <h3 class="h4 text-accent mb-3">1. Zamonaviy shifoxonalar qog‘ozdan butunlay voz kechmoqda</h3>
+          <p>
+            Biz o‘tgan asrda yashamayapmiz. Hozirgi kunda viloyat markazlaridan tortib, eng chekka hududdagi oilaviy poliklinikalargacha, zamonaviy xususiy klinikalarning barchasi raqamli tizimga o‘tgan. Qog‘oz jurnallar, qo‘lda yoziladigan va yozuvini o‘qib bo‘lmaydigan tibbiy kartalar tarixda qoldi.
+          </p>
+          
+          <div class="highlight-box">
+            <h5 class="text-accent mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i> Muhim haqiqat</h5>
+            <p class="mb-0 text-white">
+              Agar siz kompyuterni bilmasangiz, shifoxona ostonasidan ichkariga qadam qo‘ya olmaysiz. Bugungi shifoxonalarda ish faoliyatining 90% qismi monitor orqali boshqariladi.
+            </p>
+          </div>
+        </section>
+
+        <!-- Section 3: DMED Tizimi -->
+        <section id="dmed" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-hospital"></i></span>
+            <h2>2. O‘zbekiston tibbiyotining yuragi: DMED tizimi</h2>
+          </div>
+          <p>
+            Yurtimiz sog‘liqni saqlash tizimida hozirda majburiy joriy etilgan va har kuni ishlatiladigan <strong>DMED (Digital Medicine)</strong> elektron tizimi mavjud. Ertaga o‘qishni bitirib ishga borganingizda, sizga qog‘oz daftar emas, monitor qarshisidagi ish o‘rni beriladi.
+          </p>
+          
+          <div class="row g-4 mt-2">
+            <div class="col-md-4">
+              <div class="comp-card h-100">
+                <h5 class="text-accent"><i class="fa-solid fa-file-prescription me-2"></i> Elektron retseptlar</h5>
+                <p class="text-muted" style="font-size: 0.95rem;">Bemorga dori yozish yoki imtiyozli dori vositalarini rasmiylashtirish faqat DMED orqali amalga oshiriladi.</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="comp-card h-100">
+                <h5 class="text-accent"><i class="fa-solid fa-route me-2"></i> Yo‘llanmalar (Napravlenie)</h5>
+                <p class="text-muted" style="font-size: 0.95rem;">Bemorlarni tor doiradagi shifokorlarga yoki laboratoriya tahlillariga yuborish tizim ichida bir necha tugmani bosish orqali bajariladi.</p>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="comp-card h-100">
+                <h5 class="text-accent"><i class="fa-solid fa-file-medical me-2"></i> Kasallik varaqalari</h5>
+                <p class="text-muted" style="font-size: 0.95rem;">Hatto bemorning mehnatga layoqatsizlik varaqalari ham qog'oz shaklida emas, balki raqamli formatda yuritiladi.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4: DMED Simulator -->
+        <section id="dmed-sim" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-laptop-medical"></i></span>
+            <h2>DMED (Raqamli Tibbiyot) Elektron Tizimi Simulyatori</h2>
+          </div>
+          <p class="text-muted">
+            Quyidagi simulated DMED oynasida bemorga dori yozib bering yoki yo'llanma (Направление) yarating. Elektron raqamli imzo (EDS) orqali yuborib ko'ring:
+          </p>
+
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <div>
+                <span class="sim-dot sim-red"></span>
+                <span class="sim-dot sim-yellow"></span>
+                <span class="sim-dot sim-green"></span>
+                <strong class="ms-2">DMED: Электронная медицинская карта v3.4</strong>
+              </div>
+              <span class="badge bg-success">Режим: Онлайн</span>
+            </div>
+            <div class="simulator-body">
+              <div class="row">
+                <!-- DMED Sidebar -->
+                <div class="col-md-4 col-12 mb-3 mb-md-0">
+                  <div class="dmed-sidebar">
+                    <h6 class="text-muted text-uppercase mb-3 px-2">МЕНЮ РАБОЧЕГО МЕСТА</h6>
+                    <div class="dmed-nav-item active" onclick="switchDmedTab('recept')">
+                      <i class="fa-solid fa-pills"></i> Рецепт (Рецепты)
+                    </div>
+                    <div class="dmed-nav-item" onclick="switchDmedTab('napravlenie')">
+                      <i class="fa-solid fa-arrow-right-to-bracket"></i> Направление (Yo'llanma)
+                    </div>
+                    <div class="dmed-nav-item" onclick="switchDmedTab('bolnoy')">
+                      <i class="fa-solid fa-id-card"></i> Листок нетрудоспособности
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- DMED Content Area -->
+                <div class="col-md-8 col-12">
+                  <div class="dmed-content" id="dmedContent">
+                    
+                    <!-- 1. Recept Tab -->
+                    <div class="dmed-tab-pane" id="pane-recept">
+                      <h5 class="text-white border-bottom pb-2 mb-3">Оформление электронного рецепта</h5>
+                      <form id="receptForm" onsubmit="submitRecept(event)">
+                        <div class="mb-3">
+                          <label class="form-label text-light">Ф.И.О. Пациента (Bemor F.I.SH.)</label>
+                          <input type="text" class="form-control bg-dark text-white border-secondary" id="recPatient" placeholder="Махмудов Сардор Алишер угли" required>
+                        </div>
+                        <div class="row mb-3">
+                          <div class="col-6">
+                            <label class="form-label text-light">Дата рождения</label>
+                            <input type="date" class="form-control bg-dark text-white border-secondary" id="recDob" value="1988-05-12" required>
+                          </div>
+                          <div class="col-6">
+                            <label class="form-label text-light">Диагноз (МКБ-10)</label>
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="recDiag" placeholder="I10 - Эссенциальная гипертензия" required>
+                          </div>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label text-light">Препарат (Имя лекарства)</label>
+                          <select class="form-select bg-dark text-white border-secondary" id="recMedicine">
+                            <option value="Эналаприл 10 мг">Эналаприл 10 мг (Препарат от давления)</option>
+                            <option value="Парацетамол 500 мг">Парацетамол 500 мг (Жаропонижающее)</option>
+                            <option value="Амоксициллин 500 мг">Амоксициллин 500 мг (Антибиотик)</option>
+                            <option value="Аспирин Кардио 100 мг">Аспирин Кардио 100 мг (Разжижение крови)</option>
+                          </select>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label text-light">Дозировка и схема приема (справочник)</label>
+                          <input type="text" class="form-control bg-dark text-white border-secondary" id="recInstruction" value="По 1 таблетке 2 раза в день после еды, 10 дней" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 bg-rose border-0 text-white">
+                          <i class="fa-solid fa-signature me-2"></i> Подписать ЭЦП и Отправить (EDS bilan tasdiqlash)
+                        </button>
+                      </form>
+                    </div>
+
+                    <!-- 2. Napravlenie Tab -->
+                    <div class="dmed-tab-pane d-none" id="pane-napravlenie">
+                      <h5 class="text-white border-bottom pb-2 mb-3">Направление на обследование (Yo'llanma)</h5>
+                      <form id="napravlenieForm" onsubmit="submitNapravlenie(event)">
+                        <div class="mb-3">
+                          <label class="form-label text-light">Ф.И.О. Пациента</label>
+                          <input type="text" class="form-control bg-dark text-white border-secondary" id="napPatient" placeholder="Кодирова Мунира Бахтияrovna" required>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label text-light">Куда направляется (Bo'lim / Shifokor)</label>
+                          <select class="form-select bg-dark text-white border-secondary" id="napTarget">
+                            <option value="Кардиологическое отделение (УЗИ сердца)">Отделение Кардиологии - УЗИ сердца (ЭхоКГ)</option>
+                            <option value="Клиническая лаборатория (Общий анализ крови)">Клиническая лаборатория - Общий анализ крови (ОАК)</option>
+                            <option value="Рентген-кабинет (Флюорография)">Рентген-кабинет - Флюорография грудной клетки</option>
+                            <option value="Невропатолог (Консультация)">Невропатолог - Специализированная консультация</option>
+                          </select>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label text-light">Обоснование направления (Tashxis sababi)</label>
+                          <textarea class="form-control bg-dark text-white border-secondary" id="napReason" rows="2" placeholder="Подозрение на ишемическую болезнь сердца, частые боли за грудиной."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 bg-accent border-0 text-dark font-weight-bold">
+                          <i class="fa-solid fa-paper-plane me-2"></i> Создать Направление (Yo'llanma Yaratish)
+                        </button>
+                      </form>
+                    </div>
+
+                    <!-- 3. Bolnoy Tab -->
+                    <div class="dmed-tab-pane d-none" id="pane-bolnoy">
+                      <h5 class="text-white border-bottom pb-2 mb-3">Листок временной нетрудоспособности (Kasallik varaqasi)</h5>
+                      <form id="bolnoyForm" onsubmit="submitBolnoy(event)">
+                        <div class="mb-3">
+                          <label class="form-label text-light">Ф.И.О. Пациента</label>
+                          <input type="text" class="form-control bg-dark text-white border-secondary" id="bolPatient" placeholder="Ибрагимов Умид Шухратович" required>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label text-light">Место работы (Иш joyi)</label>
+                          <input type="text" class="form-control bg-dark text-white border-secondary" id="bolWork" placeholder="ООО 'Tech-Innovations' инженери" required>
+                        </div>
+                        <div class="row mb-3">
+                          <div class="col-6">
+                            <label class="form-label text-light">Освободить с (Sana boshlanishi)</label>
+                            <input type="date" class="form-control bg-dark text-white border-secondary" id="bolStart" value="2026-06-24" required>
+                          </div>
+                          <div class="col-6">
+                            <label class="form-label text-light">По (Sana tugashi)</label>
+                            <input type="date" class="form-control bg-dark text-white border-secondary" id="bolEnd" value="2026-06-30" required>
+                          </div>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100 text-dark font-weight-bold">
+                          <i class="fa-solid fa-id-card-clip me-2"></i> Зарегистрировать больничный (Kasallik varaqasini ochish)
+                        </button>
+                      </form>
+                    </div>
+
+                    <!-- Document Result View -->
+                    <div id="dmedResult" class="mt-4 p-3 bg-white text-dark rounded d-none" style="border-left: 5px solid var(--success);">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 fw-bold text-success"><i class="fa-solid fa-circle-check me-2"></i> ДОКУМЕНТ УСПЕШНО ЗАРЕГИСТРИРОВАН</h6>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="resetDmedForm()">Qaytish</button>
+                      </div>
+                      <div class="small" id="resultDocDetails"></div>
+                      <div class="receipt-barcode"></div>
+                      <div class="text-center mt-2 text-muted" style="font-size:0.75rem;">ЭЦП ПОДТВЕРЖДЕНА: МИНЗДРАВ РЕСПУБЛИКИ УЗБЕКИСТАН - ID: 2950186</div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 5: Elektron retseptlar -->
+        <section id="retseptlar" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-prescription-bottle-medical"></i></span>
+            <h2>3. Elektron retseptlar va yo‘llanmalar</h2>
+          </div>
+          <p>
+            Elektron retsept tizimi dori-darmonlarni yozish jarayonini soddalashtiradi va dorixonalar bilan to‘g‘ridan-to‘g‘ri bog‘laydi. Bemor shifokor qabulidan chiqqach, unga qog‘oz varaq berish shart emas. Tizim orqali yuborilgan retsept uning telefoniga SMS-kod yoki QR-kod shaklida boradi. Dorixonachi ushbu kodni o‘z kompyuterida tekshirib, tegishli dori-darmonni topshiradi.
+          </p>
+          <div class="highlight-box">
+            <h5 class="text-accent mb-2"><i class="fa-solid fa-circle-info me-2"></i> Yo'llanma berish (Направление) tizimi</h5>
+            <p class="mb-0 text-white">
+              Bemor bir bo'limdan ikkinchi bo'limga, masalan, UZI tekshiruviga yuborilganda yo'llanma qog'ozda yozilmaydi. Shifokor kompyuterda yo'llanmani rasmiylashtiradi. Bemor UZI xonasiga borganda, u yerdagi shifokor o'z kompyuterida ushbu bemorning ismini va unga berilgan yo'llanmani ko'radi hamda tekshiruv natijasini darhol elektron tizimga kiritadi.
+            </p>
+          </div>
+        </section>
+
+        <!-- Section 6: Elektron kasallik varaqalari -->
+        <section id="varaqalar" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-notes-medical"></i></span>
+            <h2>4. Elektron kasallik varaqalari</h2>
+          </div>
+          <p>
+            Vaqtincha mehnatga layoqatsizlik varaqalarini (Больничный лист) yuritish va yopish ham butunlay avtomatlashtirilgan. Tizim bemorning rasmiy ish joyi bazasi (MY.GOV.UZ yoki Yagona milliy mehnat tizimi) bilan bog'lanib, tashkilotga mehnatga layoqatsizlik to'g'risidagi xabarni avtomatik tarzda jo'natadi.
+          </p>
+          <p>
+            Bu tizim o'z navbatida qog'oz jurnallarda imzo yig'ish, muhr bosish va o'g'rilik yoki soxtakorliklarning oldini olishga xizmat qiladi. Kompyuter savodxonligi yo'q xodim bu jarayonlarning hech birini bajara olmaydi.
+          </p>
+        </section>
+
+        <!-- Section 7: Klaviatura tezligi -->
+        <section id="klaviatura" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-keyboard"></i></span>
+            <h2>5. Tibbiyot xodimining klaviatura tezligi va savodxonligi</h2>
+          </div>
+          <p>
+            Tasavvur qiling, siz tibbiy bilimlarni a’lo darajada bilasiz, lekin klaviaturada harflarni qidirib o‘tirsangiz yoki DMED tizimiga ma’lumot kiritishni bilmasangiz, eshigingiz tagida turnaqator navbat paydo bo‘ladi.
+          </p>
+          
+          <div class="quote-box" style="border-left-color: var(--accent); background: rgba(0, 242, 254, 0.03);">
+            <p class="mb-0 text-white">
+              Tizimni bilmagan xodim, qanchalik bilimli bo‘lmasin, zamonaviy tibbiyot uchun <strong>"samarasiz"</strong> hisoblanadi. Shifoxona rahbariyati va bemorlar sizning kompyuterga termulib, harf izlashingizni kutib o'tira olmaydi. Har bir daqiqa — bu kimningdir hayoti yoki sog'lig'i demakdir.
+            </p>
+          </div>
+        </section>
+
+        <!-- Section 8: Typing Game Simulator -->
+        <section id="typing-game" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-gamepad"></i></span>
+            <h2>Tezkor Yozish Mashqi: Navbatdagi Bemorlarni Qabul Qiling</h2>
+          </div>
+          <p class="text-muted">
+            Kompyuterda tez terish malakangizni oshiring! Quyidagi simulated shifoxonada bemorlar navbatda kutib turishibdi. Ekranda ko'ringan tibbiy ruscha terminni tezkor kiritib, navbatni kamaytiring. Agar navbat ko'payib ketsa, darsda yutqazasiz!
+          </p>
+
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <div>
+                <i class="fa-solid fa-hospital-user text-rose me-2"></i>
+                <strong>Регистратура: Очередь пациентов (Qabulxona navbati)</strong>
+              </div>
+              <div class="d-flex gap-3 align-items-center">
+                <span>Vaqt: <strong id="gameTimer" class="text-warning">30</strong>s</span>
+                <span>Bemorlar: <strong id="gameScore" class="text-success">0</strong></span>
+              </div>
+            </div>
+            <div class="simulator-body text-center">
+              
+              <!-- Patient line visual -->
+              <div class="game-queue" id="gameQueue"></div>
+              
+              <div id="gameIntro">
+                <i class="fa-solid fa-keyboard text-accent" style="font-size: 4rem; margin-bottom: 15px; display:block;"></i>
+                <h5>Tibbiy terminlarni tez yozish trenajyori</h5>
+                <p class="text-light">
+                  Kompyuterdagi tezlik shifoxonada bemor navbatini qanday kamaytirishini amalda his qiling.
+                </p>
+                <button class="btn btn-success" onclick="startGame()">Mashqni Boshlash</button>
+              </div>
+
+              <div id="gamePlay" class="d-none">
+                <p class="text-muted mb-0">Ushbu so'zni klaviaturada yozing va ENTER bosing:</p>
+                <div class="word-display" id="wordDisplay">АНАМНЕЗ</div>
+                <div class="row justify-content-center">
+                  <div class="col-md-6 col-10">
+                    <input type="text" class="form-control form-control-lg bg-dark text-white border-accent text-center" id="gameInput" autocomplete="off" onkeyup="checkWord(event)">
+                  </div>
+                </div>
+                <div class="mt-2 text-rose" id="gameStatusFeedback"></div>
+              </div>
+
+              <div id="gameOver" class="d-none">
+                <h4 class="text-rose">Mashq tugadi!</h4>
+                <p id="gameOverSummary"></p>
+                <button class="btn btn-primary" onclick="startGame()">Qaytadan urinib ko'rish</button>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 9: MS Word -->
+        <section id="word" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-file-word"></i></span>
+            <h2>6. Tibbiyotning yarmi — hujjatlar bilan ishlash (Microsoft Word)</h2>
+          </div>
+          <p>
+            Tibbiyot xodimining kunlik ish rejasida hisobotlar, blankalar va ma’lumotnomalar tayyorlash juda katta o‘rin egallaydi.
+          </p>
+          <p>
+            <strong>Microsoft Word:</strong> Sizga bemorlarning kasallik tarixlari, ko‘rik bayonnomalari va rasmiy xatlarni yozish uchun kerak bo‘ladi. Uni mukammal bilgan hamshira yoki shifokor 2 daqiqa ichida tayyor shablon yordamida bemor bayonnomasini tayyorlaydi.
+          </p>
+
+          <!-- Interactive Word Template Editor -->
+          <h5 class="mt-4 text-accent"><i class="fa-solid fa-pen-to-square me-2"></i> Interaktiv Word Klinik Bayonnoma Simulyatori</h5>
+          <p class="text-muted">Kasallik varaqasi maydonlarini to'ldiring va hujjat ko'rinishi qanday o'zgarishini kuzating hamda chop etish darchasini sinang:</p>
+
+          <div class="simulator-container">
+            <div class="simulator-header" style="background:#185abd; color:white;">
+              <div>
+                <i class="fa-regular fa-file-word me-2"></i>
+                <strong>Microsoft Word - Протокол Осмотра.docx</strong>
+              </div>
+              <button class="btn btn-sm btn-light py-0 px-2 text-dark" onclick="printWordDoc()">
+                <i class="fa-solid fa-print me-1"></i> Chop etish (Печать)
+              </button>
+            </div>
+            <div class="word-ribbon">
+              <div class="word-ribbon-tab active">Файл</div>
+              <div class="word-ribbon-tab">Главная</div>
+              <div class="word-ribbon-tab">Вставка</div>
+              <div class="word-ribbon-tab">Разметка страницы</div>
+            </div>
+            
+            <div class="simulator-body bg-dark">
+              <div class="row text-white mb-3">
+                <div class="col-md-6 col-12 mb-2">
+                  <label class="form-label small text-muted">Имя Пациента (Bemor ismi)</label>
+                  <input type="text" class="form-control form-control-sm bg-secondary text-white border-0" id="wordPatName" value="Эргашев Жасур" onkeyup="updateWordPreview()">
+                </div>
+                <div class="col-md-6 col-12 mb-2">
+                  <label class="form-label small text-muted">Диагноз (Tashxis)</label>
+                  <input type="text" class="form-control form-control-sm bg-secondary text-white border-0" id="wordDiag" value="Острый бронхит" onkeyup="updateWordPreview()">
+                </div>
+                <div class="col-12 mb-2">
+                  <label class="form-label small text-muted">Рекомендации (Tavsiyalar)</label>
+                  <input type="text" class="form-control form-control-sm bg-secondary text-white border-0" id="wordRecs" value="Обильное теплое питье, Амброксол 30мг 3 раза в день." onkeyup="updateWordPreview()">
+                </div>
+              </div>
+
+              <!-- Live Word Document Sheet -->
+              <div class="word-doc" id="wordDocPreview">
+                <div class="text-center" style="font-size:1.2rem; font-weight:bold; margin-bottom:20px; text-decoration: underline;">
+                  КЛИНИЧЕСКИЙ ПРОТОКОЛ ОСМОТРА
+                </div>
+                <div style="margin-bottom:15px;">
+                  <strong>Дата осмотра:</strong> 24 июня 2026 г.<br>
+                  <strong>Ф.И.О. Пациента:</strong> <span id="wPreviewName" class="border-bottom border-dark px-1">Эргашев Жасур</span>
+                </div>
+                <div style="margin-bottom:15px;">
+                  <strong>Жалобы:</strong> Пациент жалуется на сухой кашель, слабость в теле, небольшое повышение температуры до 37.5°C.
+                </div>
+                <div style="margin-bottom:15px;">
+                  <strong>Диагноз врача:</strong> <span id="wPreviewDiag" class="border-bottom border-dark px-1">Острый бронхит</span>
+                </div>
+                <div style="margin-bottom:20px;">
+                  <strong>Назначенное лечение:</strong><br>
+                  <span id="wPreviewRecs" style="white-space: pre-line;">Обильное теплое питье, Амброксол 30мг 3 раза в день.</span>
+                </div>
+                <div class="text-end" style="margin-top:40px; font-style:italic;">
+                  Врач отделения: Напасов О.
+                </div>
+              </div>
+
+              <!-- Printer Modal (inline simulated) -->
+              <div id="printerAnimArea" class="d-none mt-3 p-3 bg-secondary text-white rounded">
+                <div class="printer-box">
+                  <i class="fa-solid fa-print printer-icon"></i>
+                  <h6 class="mt-2">Printer ishlamoqda... (Chop etilmoqda)</h6>
+                  <div class="printed-paper" id="printedPaper">
+                    <div class="paper-lines"></div>
+                    <div class="paper-lines"></div>
+                    <div class="paper-lines" style="width: 50%;"></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 10: MS Excel -->
+        <section id="excel" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-file-spreadsheet"></i></span>
+            <h2>7. Microsoft Excel dori va resurslar hisobida</h2>
+          </div>
+          <p>
+            <strong>Microsoft Excel:</strong> Dori-darmonlar qoldig‘ini hisoblash, bemorlar ro‘yxatini filtrlar orqali saralash va bo‘limdagi navbatchilik grafiklarini xatosiz tuzish uchun eng yaqin yordamchingizdir.
+          </p>
+          <p>
+            Kompyuterni yaxshi bilgan hamshira hisobotni 5 daqiqada Excel formulalar yordamida topshirib, qolgan vaqtini bemorga g‘amxo‘rlik qilishga ajratadi. Bilmagani esa tunu kun qog‘oz titib o‘tiradi va hisobda adashib ketadi.
+          </p>
+
+          <!-- Interactive Excel stock simulator -->
+          <h5 class="mt-4 text-accent"><i class="fa-solid fa-table me-2"></i> Interaktiv Excel: Bo'lim dorilar ombori (Аптечный склад)</h5>
+          <p class="text-muted">
+            Quyida simulated Excel jadvali ko'rsatilgan. Dori miqdorini o'zgartiring (Sariq katak ustiga bosib yangi son yozing va Enter bosing). Tizim avtomatik tarzda jami summana formula orqali qayta hisoblaydi va filtrlashni sinang:
+          </p>
+
+          <div class="simulator-container">
+            <div class="simulator-header" style="background:#107c41; color:white;">
+              <div>
+                <i class="fa-regular fa-file-excel me-2"></i>
+                <strong>Excel - Склад_Отделения.xlsx</strong>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-light py-0 px-2 text-dark" onclick="excelFilterAll()">Hammasi</button>
+                <button class="btn btn-sm btn-warning py-0 px-2 text-dark" onclick="excelFilterDeficit()"><i class="fa-solid fa-filter me-1"></i> Deficit (Kam)</button>
+              </div>
+            </div>
+            <div class="excel-formula-bar">
+              <span class="text-success fw-bold">fx</span>
+              <input type="text" class="form-control form-control-sm bg-white text-dark py-0" id="excelFormula" value="=СУММ(B2:B6)" readonly>
+            </div>
+            <div class="simulator-body bg-white p-0 overflow-auto">
+              <table class="excel-grid">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>A: Наименование изделия (Nomi)</th>
+                    <th>B: Количество (Soni)</th>
+                    <th>C: Критический уровень (Tanqislik chegarasi)</th>
+                    <th>D: Статус (Holat)</th>
+                  </tr>
+                </thead>
+                <tbody id="excelTableBody">
+                  <tr id="row-1">
+                    <td class="bg-light fw-bold text-center" style="width:30px;">2</td>
+                    <td>Шприцы стерильные 2.0мл</td>
+                    <td class="excel-qty" onclick="editExcelCell(this, 0)" id="qty-0">1200</td>
+                    <td>500</td>
+                    <td class="fw-bold text-success" id="status-0">Норма</td>
+                  </tr>
+                  <tr id="row-2">
+                    <td class="bg-light fw-bold text-center">3</td>
+                    <td>Ампициллин в ампулах 1.0г</td>
+                    <td class="excel-qty" onclick="editExcelCell(this, 1)" id="qty-1">80</td>
+                    <td>200</td>
+                    <td class="fw-bold text-danger" id="status-1">Дефицит</td>
+                  </tr>
+                  <tr id="row-3">
+                    <td class="bg-light fw-bold text-center">4</td>
+                    <td>Бинты марлевые 7х14см</td>
+                    <td class="excel-qty" onclick="editExcelCell(this, 2)" id="qty-2">450</td>
+                    <td>100</td>
+                    <td class="fw-bold text-success" id="status-2">Норма</td>
+                  </tr>
+                  <tr id="row-4">
+                    <td class="bg-light fw-bold text-center">5</td>
+                    <td>Системы для капельниц</td>
+                    <td class="excel-qty" onclick="editExcelCell(this, 3)" id="qty-3">30</td>
+                    <td>100</td>
+                    <td class="fw-bold text-danger" id="status-3">Дефицит</td>
+                  </tr>
+                  <tr id="row-5">
+                    <td class="bg-light fw-bold text-center">6</td>
+                    <td>Перчатки хирургические (пар)</td>
+                    <td class="excel-qty" onclick="editExcelCell(this, 4)" id="qty-4">2500</td>
+                    <td>800</td>
+                    <td class="fw-bold text-success" id="status-4">Норма</td>
+                  </tr>
+                  <tr class="bg-light border-top border-2 border-dark" id="excelRowTotal">
+                    <td class="fw-bold text-center">7</td>
+                    <td class="fw-bold">ИТОГО ИЗДЕЛИЙ (Jami dori-darmonlar):</td>
+                    <td class="fw-bold text-primary" id="excelTotalSum">4260</td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 11: Karyera va martaba -->
+        <section id="karyera" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-user-doctor"></i></span>
+            <h2>8. Karyera, martaba va yuqori maosh</h2>
+          </div>
+          <p>
+            Kelajakda oddiy, oylikdan-oylikka zo‘rg‘a yashaydigan xodim bo‘lishni xohlaysizmi yoki eng nufuzli xususiy klinikalarda yuqori maosh olib, bosh hamshira, klinika menejeri yoki raqamli laboratoriya operatori bo‘lishnimi?
+          </p>
+          <p>
+            Nufuzli klinikalarga ishga kirishda kompyuter savodxonligi — <strong>diplom bilan bir xil darajadagi majburiy talabdir</strong>. U yozma va og'zaki tibbiy ko'nikmalar bilan barobar tekshiriladi.
+          </p>
+
+          <!-- Career Slider Simulator -->
+          <h5 class="mt-4 text-accent"><i class="fa-solid fa-sliders me-2"></i> Kompyuter Savodxonligi va Karyera Rivoji Dinamikasi</h5>
+          <p class="text-muted">Sliderni surib kompyuterni bilish darajangiz oshishi bilan maoshingiz va shifoxonadagi martabangiz qanday o'zgarishini ko'ring:</p>
+          
+          <div class="simulator-container">
+            <div class="simulator-header">
+              <div>
+                <i class="fa-solid fa-chart-line text-accent me-2"></i>
+                <strong>Karyera simulyatori (Ish va maosh tahlili)</strong>
+              </div>
+            </div>
+            <div class="simulator-body">
+              <div class="slider-track-container text-center">
+                <label class="form-label text-light fw-bold" style="font-size:1.1rem;">Kompyuter savodxonligi darajangiz: <span class="text-accent" id="sliderValDisplay">50</span>%</label>
+                <input type="range" class="custom-range" id="careerSlider" min="0" max="100" value="50" oninput="updateCareerSlider(this.value)">
+                <div class="d-flex justify-content-between text-muted small mt-2">
+                  <span>0% (Qog'ozbozlik)</span>
+                  <span>50% (O'rtacha)</span>
+                  <span>100% (Raqamli rahbar)</span>
+                </div>
+              </div>
+
+              <div class="career-result-box" id="careerResultBox"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 12: Talabalik devri -->
+        <section id="talabalik" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+            <h2>9. Hozirgi talabalik davringizdagi qulaylik</h2>
+          </div>
+          <p>
+            Uzoq kelajakni qo‘ya turaylik. Hozir texnikumda o‘qishingiz davomida sizga mustaqil ishlar, referatlar beriladi. Tibbiyot doimiy o‘zgarishda: bugun chiqqan yangi dori yoki yangi kasallik turi haqida xalqaro maqolalarni o‘qish, ularni internetdan qidirib topish va <strong>PowerPoint dasturida chiroyli taqdimotlar qilib himoya qilish uchun ham sizga kompyuter kerak</strong>.
+          </p>
+          <p>
+            Yaxshi tayyorlangan prezentatsiya sizning fanlarni o'zlashtirish bahongizga, o'qituvchilarning sizga bo'lgan hurmatiga va kelajakdagi shaxsiy brendingizga poydevor yaratadi.
+          </p>
+        </section>
+
+        <!-- Section 13: Xavfsizlik va tibbiy sirlar -->
+        <section id="xavfsizlik" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-shield-halved"></i></span>
+            <h2>10. Axborot xavfsizligi va tibbiy sirlar</h2>
+          </div>
+          <p>
+            Tibbiyot xodimi sifatida siz har kuni bemorlarning shaxsiga doir maxfiy ma'lumotlar bilan ishlaysiz. Kasallik tashxisi, shaxsiy pasport ma'lumotlari, telefon raqamlari va laboratoriya natijalari <strong>tibbiy sir</strong> (Врачебная тайна) hisoblanadi.
+          </p>
+          
+          <div class="highlight-box" style="border-left-color: var(--secondary-accent); background: rgba(236,72,153,0.03);">
+            <h5 class="text-rose mb-2"><i class="fa-solid fa-user-shield me-2"></i> Axborot xavfsizligi qoidalari</h5>
+            <ul>
+              <li>Hech qachon o'zingizning DMED parolingizni boshqa hamkasblaringizga yoki begonalarga bermang.</li>
+              <li>Ish o'rnini (kompyuterni) tark etishdan oldin har doim tizimdan chiqing (Выйти) yoki ekran qulfini faollashtiring (Win+L).</li>
+              <li>Bemor ma'lumotlarini ruxsatsiz ijtimoiy tarmoqlarga yoki shaxsiy pochta xizmatlariga yubormang.</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- Section 14: Checkoff checklist -->
+        <section id="cheklist" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-list-check"></i></span>
+            <h2>11. Amaliy vazifalar cheklisti</h2>
+          </div>
+          <p class="text-muted">
+            Kompyuter savodxonligini o'rganish jarayonida quyidagi amallarni bajarganingizga ishonch hosil qiling. Bajarilganlarini belgilang:
+          </p>
+          
+          <div class="mb-3">
+            <div class="progress" style="height: 25px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">
+              <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="checklistProgress" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+            </div>
+          </div>
+
+          <div id="checklistItems">
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">DMED simulated tizimida yangi bemorni to'liq ro'yxatdan o'tkazish</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Elektron retsept (Рецепт) yozish va edi imzolash</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Tezkor yozish (Medical Typing) o'yinida kamida 20 WPM tezlikni ko'rsatish</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Microsoft Word dasturida mock kasallik tarixi blankasini to'ldirib chop etish</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Microsoft Excel dorilar jadvalida kam qolgan (Deficit) dori-darmonlarni filtrlash</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Excelda sonlarni o'zgartirib jami summani qayta hisoblash formulasini tekshirish</div>
+            </div>
+            <div class="task-item" onclick="toggleTask(this)">
+              <div class="task-checkbox"><i class="fa-solid fa-check"></i></div>
+              <div class="task-text">Axborot xavfsizligi va tibbiy maxfiylik qoidalari bilan to'liq tanishish</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 15: Conclusion -->
+        <section id="xulosa" class="darslik-section">
+          <div class="section-title">
+            <span class="section-icon"><i class="fa-solid fa-award"></i></span>
+            <h2>III. Xulosa va chaqiriq (Motivatsiya)</h2>
+          </div>
+          
+          <div class="quote-box" style="border-left-color: var(--accent); background: rgba(0,242,254,0.05);">
+            <h4 class="text-accent mb-3">Aziz talabalar!</h4>
+            <p>
+              Informatika va kompyuter savodxonligi darslarini sizga yuklangan ortiqcha yuk yoki "zerikarli majburiyat" deb qabul qilmang. Buni <strong>"tibbiyotda muvaffaqiyat qozonish quroli"</strong> deb biling.
+            </p>
+            <p>
+              Biz bu darslarda siz bilan shunchaki o‘yin o‘ynamaymiz yoki vaqt o‘tkazmaymiz. Biz sizni ertaga shifoxonaga borganda boshi garang bo‘lib qolmaydigan, har qanday zamonaviy texnologiyani "tilini topadigan" professional mutaxassis qilib tayyorlaymiz.
+            </p>
+            <p class="fw-bold text-rose mb-0">
+              Shunday ekan, bugundan boshlab Word, Excel va kompyuter tizimlarini xuddi inson qon bosimini o‘lchashni yoki birinchi yordam ko‘rsatishni o‘rgangandek jiddiy va mukammal o‘rganishga kirishamiz. Kelajagingiz o‘z qo‘lingizda!
+            </p>
+          </div>
+          
+          <div class="text-center mt-5">
+            <i class="fa-solid fa-graduation-cap text-accent" style="font-size: 3rem; animation: float 2s infinite ease-in-out;"></i>
+            <h5 class="mt-3">Tabriklaymiz! Siz 1-darsni to'liq o'zlashtirdingiz.</h5>
+            <p class="text-muted small">Kelajakda yuqori texnologiyali professional shifokor yoki hamshira bo'lishingizga ishonamiz!</p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container text-center">
+      <p class="footer-text mb-1">&copy; 2026 Axborot Texnologiyalari Elektron Darsliklar Portali. Barcha huquqlar himoyalangan.</p>
+      <p class="footer-text mb-0">
+        Muallif: <a href="https://t.me/Ozodbek_Napasov" target="_blank" class="footer-author text-decoration-none">{{AUTHOR}}</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Theme and interactive Logic scripts -->
+  <script>
+    // Theme switching logic
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const targetTheme = currentTheme === 'light' ? 'dark' : 'light';
+      
+      document.documentElement.setAttribute('data-theme', targetTheme);
+      localStorage.setItem('darslik-theme', targetTheme);
+      updateThemeIcon(targetTheme);
+    }
+
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('themeIcon');
+      if (icon) {
+        if (theme === 'light') {
+          icon.className = 'fa-solid fa-moon';
+        } else {
+          icon.className = 'fa-solid fa-sun';
+        }
+      }
+    }
+
+    // Initialize theme from storage (matches global theme)
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = 'dark'; localStorage.setItem('darslik-theme', 'dark');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+      
+      // Init progress checklist
+      updateChecklistProgress();
+      
+      // Init career slider
+      updateCareerSlider(50);
+
+      // Initialize collapsible sidebar
+      initCollapsibleSidebar();
+    });
+
+    // Reading Progress Bar
+    window.addEventListener('scroll', () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        const progress = (window.pageYOffset / totalHeight) * 100;
+        document.getElementById('readingProgress').style.width = progress + '%';
+      }
+      
+      // Sidebar active highlight scroll spy
+      const sections = document.querySelectorAll('section');
+      const navLinks = document.querySelectorAll('.nav-sidebar-link');
+      let currentSectionId = '';
+      
+      sections.forEach(sec => {
+        const top = window.pageYOffset;
+        const offset = sec.offsetTop - 120;
+        const height = sec.offsetHeight;
+        const id = sec.getAttribute('id');
+        
+        if (top >= offset && top < offset + height) {
+          currentSectionId = id;
+        }
+      });
+      
+      if (currentSectionId) {
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + currentSectionId) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+
+    // 1. DMED Portal Simulator Functions
+    function switchDmedTab(tabName) {
+      document.querySelectorAll('.dmed-tab-pane').forEach(pane => pane.classList.add('d-none'));
+      document.querySelectorAll('.dmed-nav-item').forEach(item => item.classList.remove('active'));
+      
+      document.getElementById('pane-' + tabName).classList.remove('d-none');
+      event.currentTarget.classList.add('active');
+      
+      document.getElementById('dmedResult').classList.add('d-none');
+    }
+
+    function submitRecept(e) {
+      e.preventDefault();
+      const patient = document.getElementById('recPatient').value;
+      const dob = document.getElementById('recDob').value;
+      const diag = document.getElementById('recDiag').value;
+      const med = document.getElementById('recMedicine').value;
+      const inst = document.getElementById('recInstruction').value;
+      
+      document.getElementById('resultDocDetails').innerHTML = `
+        <strong>Тип документа:</strong> Электронный Рецепт (Электрон retsept)<br>
+        <strong>Пациент (Ф.И.О.):</strong> ${patient} (д.р. ${dob})<br>
+        <strong>Диагноз:</strong> ${diag}<br>
+        <strong>Назначение:</strong> <span class="badge bg-primary text-white">${med}</span><br>
+        <strong>Инструкция:</strong> ${inst}<br>
+        <strong>Подпись:</strong> ЭЦП Врача Напасова О. подтверждена.
+      `;
+      
+      document.getElementById('dmedResult').classList.remove('d-none');
+      document.getElementById('pane-recept').classList.add('d-none');
+    }
+
+    function submitNapravlenie(e) {
+      e.preventDefault();
+      const patient = document.getElementById('napPatient').value;
+      const target = document.getElementById('napTarget').value;
+      const reason = document.getElementById('napReason').value;
+      
+      document.getElementById('resultDocDetails').innerHTML = `
+        <strong>Тип документа:</strong> Электронное Направление (Yo'llanma)<br>
+        <strong>Пациент (Ф.И.О.):</strong> ${patient}<br>
+        <strong>Куда направлен:</strong> ${target}<br>
+        <strong>Обоснование:</strong> ${reason}<br>
+        <strong>Статус направления:</strong> Активно в Едином реестре Минздрава.
+      `;
+      
+      document.getElementById('dmedResult').classList.remove('d-none');
+      document.getElementById('pane-napravlenie').classList.add('d-none');
+    }
+
+    function submitBolnoy(e) {
+      e.preventDefault();
+      const patient = document.getElementById('bolPatient').value;
+      const work = document.getElementById('bolWork').value;
+      const start = document.getElementById('bolStart').value;
+      const end = document.getElementById('bolEnd').value;
+      
+      document.getElementById('resultDocDetails').innerHTML = `
+        <strong>Тип документа:</strong> Электронный Листок нетрудоспособности (Kasallik varaqasi)<br>
+        <strong>Пациент (Ф.И.О.):</strong> ${patient}<br>
+        <strong>Место работы:</strong> ${work}<br>
+        <strong>Освобождение от работы:</strong> с ${start} по ${end}<br>
+        <strong>Статус:</strong> Отправлен в базу Минтруда РУз.
+      `;
+      
+      document.getElementById('dmedResult').classList.remove('d-none');
+      document.getElementById('pane-bolnoy').classList.add('d-none');
+    }
+
+    function resetDmedForm() {
+      document.getElementById('dmedResult').classList.add('d-none');
+      const activeTabItem = document.querySelector('.dmed-nav-item.active');
+      if (activeTabItem.textContent.includes('Рецепт')) {
+        document.getElementById('pane-recept').classList.remove('d-none');
+      } else if (activeTabItem.textContent.includes('Направление')) {
+        document.getElementById('pane-napravlenie').classList.remove('d-none');
+      } else {
+        document.getElementById('pane-bolnoy').classList.remove('d-none');
+      }
+    }
+
+    // 2. Medical Typing Game Functions
+    let gameActive = false;
+    let gameScore = 0;
+    let gameTimer = 30;
+    let timerInterval = null;
+    let queueInterval = null;
+    let currentWord = '';
+    const medicalWords = ["АНАМНЕЗ", "РЕЦЕПТ", "ДИАГНОЗ", "НАПРАВЛЕНИЕ", "ШПРИЦ", "КАПЕЛЬНИЦА", "МЕДСЕСТРА", "ТОНОМЕТР", "ПАЛАТА", "РЕАНИМАЦИЯ", "СТЕРИЛИЗАЦИЯ", "ТЕРАПЕВТ"];
+    let patientQueueCount = 3;
+
+    function startGame() {
+      gameActive = true;
+      gameScore = 0;
+      gameTimer = 30;
+      patientQueueCount = 3;
+      document.getElementById('gameScore').innerText = gameScore;
+      document.getElementById('gameTimer').innerText = gameTimer;
+      
+      document.getElementById('gameIntro').classList.add('d-none');
+      document.getElementById('gameOver').classList.add('d-none');
+      document.getElementById('gamePlay').classList.remove('d-none');
+      
+      drawQueue();
+      nextWord();
+      
+      document.getElementById('gameInput').value = '';
+      document.getElementById('gameInput').focus();
+      
+      clearInterval(timerInterval);
+      clearInterval(queueInterval);
+      
+      timerInterval = setInterval(() => {
+        gameTimer--;
+        document.getElementById('gameTimer').innerText = gameTimer;
+        if (gameTimer <= 0) {
+          endGame(true);
+        }
+      }, 1000);
+      
+      queueInterval = setInterval(() => {
+        if (patientQueueCount < 8) {
+          patientQueueCount++;
+          drawQueue();
+          if (patientQueueCount >= 8) {
+            endGame(false);
+          }
+        }
+      }, 4000);
+    }
+
+    function drawQueue() {
+      const queueContainer = document.getElementById('gameQueue');
+      queueContainer.innerHTML = '';
+      for (let i = 0; i < patientQueueCount; i++) {
+        queueContainer.innerHTML += `
+          <div class="queue-patient">
+            <i class="fa-solid fa-user-injured patient-icon"></i>
+            <span class="badge bg-secondary">Bemor ${i+1}</span>
+          </div>
+        `;
+      }
+    }
+
+    function nextWord() {
+      const idx = Math.floor(Math.random() * medicalWords.length);
+      currentWord = medicalWords[idx];
+      document.getElementById('wordDisplay').innerText = currentWord;
+    }
+
+    function checkWord(e) {
+      if (!gameActive) return;
+      
+      const input = document.getElementById('gameInput').value.toUpperCase().trim();
+      const feedback = document.getElementById('gameStatusFeedback');
+      
+      if (input === currentWord) {
+        gameScore++;
+        document.getElementById('gameScore').innerText = gameScore;
+        document.getElementById('gameInput').value = '';
+        
+        feedback.innerText = "To'g'ri! Bemor qabul qilindi.";
+        feedback.className = "mt-2 text-success fw-bold";
+        setTimeout(() => feedback.innerText = '', 1000);
+        
+        if (patientQueueCount > 1) {
+          patientQueueCount--;
+          drawQueue();
+        }
+        
+        nextWord();
+      }
+      
+      if (e.key === 'Enter') {
+        if (input !== currentWord) {
+          feedback.innerText = "Xato yozildi, tekshirib qaytadan urinib ko'ring!";
+          feedback.className = "mt-2 text-danger fw-bold";
+        }
+      }
+    }
+
+    function endGame(completed) {
+      gameActive = false;
+      clearInterval(timerInterval);
+      clearInterval(queueInterval);
+      
+      document.getElementById('gamePlay').classList.add('d-none');
+      document.getElementById('gameOver').classList.remove('d-none');
+      
+      const summary = document.getElementById('gameOverSummary');
+      if (completed) {
+        const cpm = Math.round((gameScore * 8) * 2);
+        summary.innerHTML = `
+          <h5>Barakalla! Belgilangan vaqt tugadi.</h5>
+          <p class="text-white">Qabul qilingan bemorlar soni: <strong>${gameScore} ta</strong></p>
+          <p class="text-light">Sizning simulated yozish tezligingiz: <strong>${cpm} CPM (belgi/daqiqa)</strong></p>
+          <p class="text-accent">Natija: <strong>Zamonaviy, tezkor va samarli shifokor / hamshira!</strong> Bemor navbatlari nazorat ostida.</p>
+        `;
+      } else {
+        summary.innerHTML = `
+          <h5 class="text-danger">Kasalxonada navbat turnaqator bo'lib ketdi!</h5>
+          <p class="text-light">Klaviaturada juda sekin ishlayapsiz. Bemorlar qabulini tezlashtirishingiz kerak!</p>
+          <p class="text-warning">Natija: Samarasiz xodim. Kompyuter savodxonligingizni zudlik bilan oshirishingiz zarur.</p>
+        `;
+      }
+    }
+
+    // 3. Word Sandbox Functions
+    function updateWordPreview() {
+      const name = document.getElementById('wordPatName').value;
+      const diag = document.getElementById('wordDiag').value;
+      const recs = document.getElementById('wordRecs').value;
+      
+      document.getElementById('wPreviewName').innerText = name || "...";
+      document.getElementById('wPreviewDiag').innerText = diag || "...";
+      document.getElementById('wPreviewRecs').innerText = recs || "...";
+    }
+
+    function printWordDoc() {
+      const animArea = document.getElementById('printerAnimArea');
+      animArea.classList.remove('d-none');
+      
+      const paper = document.getElementById('printedPaper');
+      paper.classList.remove('printing');
+      
+      setTimeout(() => {
+        paper.classList.add('printing');
+      }, 100);
+      
+      setTimeout(() => {
+        alert("Hujjat virtual printer orqali chop etildi!");
+        animArea.classList.add('d-none');
+        paper.classList.remove('printing');
+      }, 3500);
+    }
+
+    // 4. Excel Stock Manager Functions
+    const excelData = [
+      { name: "Шприцы стерильные 2.0мл", qty: 1200, crit: 500 },
+      { name: "Ампициллин в ампулах 1.0г", qty: 80, crit: 200 },
+      { name: "Бинты марлевые 7х14см", qty: 450, crit: 100 },
+      { name: "Системы для капельниц", qty: 30, crit: 100 },
+      { name: "Перчатки хирургические (пар)", qty: 2500, crit: 800 }
+    ];
+
+    function editExcelCell(cell, index) {
+      if (cell.querySelector('input')) return;
+      
+      const currentVal = cell.innerText;
+      cell.innerHTML = `<input type="number" class="excel-cell-edit" value="${currentVal}" style="width: 80px;">`;
+      const input = cell.querySelector('input');
+      input.focus();
+      
+      input.addEventListener('blur', () => {
+        saveExcelCell(cell, index, input.value);
+      });
+      
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          saveExcelCell(cell, index, input.value);
+        }
+      });
+    }
+
+    function saveExcelCell(cell, index, newValue) {
+      const val = parseInt(newValue) || 0;
+      excelData[index].qty = val;
+      cell.innerText = val;
+      
+      const statusCell = document.getElementById('status-' + index);
+      if (val < excelData[index].crit) {
+        statusCell.innerText = "Дефицит";
+        statusCell.className = "fw-bold text-danger";
+      } else {
+        statusCell.innerText = "Норма";
+        statusCell.className = "fw-bold text-success";
+      }
+      
+      recalculateExcelTotal();
+    }
+
+    function recalculateExcelTotal() {
+      let sum = 0;
+      excelData.forEach(item => {
+        sum += item.qty;
+      });
+      document.getElementById('excelTotalSum').innerText = sum;
+    }
+
+    function excelFilterDeficit() {
+      excelData.forEach((item, index) => {
+        const row = document.getElementById('row-' + (index + 1));
+        if (item.qty < item.crit) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    function excelFilterAll() {
+      excelData.forEach((item, index) => {
+        const row = document.getElementById('row-' + (index + 1));
+        row.style.display = '';
+      });
+    }
+
+    // 5. Career Progression Slider Functions
+    function updateCareerSlider(val) {
+      document.getElementById('sliderValDisplay').innerText = val;
+      const resultBox = document.getElementById('careerResultBox');
+      
+      let badgeClass = '';
+      let title = '';
+      let salary = '';
+      let workday = '';
+      let statusText = '';
+      let description = '';
+      
+      if (val < 25) {
+        badgeClass = 'bg-danger text-white';
+        title = "Qog'ozbozlikka ko'milgan xodim (Paper-bound Employee)";
+        salary = "2 000 000 - 3 000 000 so'm";
+        workday = "12 soatlik ish kuni (Tunu kun qog'oz daftarlar to'ldirish)";
+        statusText = "Bemorlar norozi, eshik tagida cheksiz navbatlar";
+        description = "Siz kompyuterni va tizimlarni bilmaganingiz sababli barcha ko'riklarni qog'oz kartalarda yozasiz, hisobot topshirishda qiynalasiz. Hech qaysi xususiy va zamonaviy klinika sizni ishga olmaydi.";
+      } else if (val >= 25 && val < 60) {
+        badgeClass = 'bg-warning text-dark';
+        title = "Oddiy hamshira / shifokor (Basic Digital Medical)";
+        salary = "3 500 000 - 5 000 000 so'm";
+        workday = "9 soatlik ish kuni";
+        statusText = "Klaviaturada bitta barmoq bilan yozadi, navbat o'rtacha";
+        description = "Siz DMED tizimini ozroq bilasiz, lekin klaviaturada sekin yozasiz. Hujjatlar yozganda Word va Excel dasturlaridan zo'rg'a foydalanasiz. Karyera o'sishingiz o'ta sekin.";
+      } else if (val >= 60 && val < 85) {
+        badgeClass = 'bg-primary text-white';
+        title = "Katta hamshira / Tajribali shifokor (Advanced Medical Operator)";
+        salary = "6 000 000 - 9 000 000 so'm";
+        workday = "8 soatlik standart ish kuni";
+        statusText = "Ish tezkor, navbat kam, Word, Excel, DMED erkin foydalanish";
+        description = "Tibbiy protokollarni Word shablonida bir zumda yozasiz. Excelda navbatchilik grafiklari va resurslar hisobini avtomatik hisoblaysiz. Rahbariyat sizni faol xodim sifatida qadrlaydi.";
+      } else {
+        badgeClass = 'bg-success text-white';
+        title = "Klinika Menejeri / Bosh hamshira / Raqamli laboratoriya operatori";
+        salary = "12 000 000 - 20 000 000+ so'm";
+        workday = "7 soatlik eng qulay ish vaqti";
+        statusText = "Eng yuqori martaba, nufuzli xususiy shifoxonalar rahbari";
+        description = "Raqamli tibbiyot boshqaruvining yuqori nuqtasidasiz. DMED, Excel formulalari, bulutli HIS dasturlari va ma'lumotlar tahlilini mukammal bilasiz. Xalqaro nufuzli klinikalarda faoliyat yuritasiz.";
+      }
+      
+      resultBox.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h5 class="text-white mb-0">${title}</h5>
+          <span class="badge ${badgeClass} py-2 px-3 fs-6">Holat</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <p class="mb-1 text-muted small"><i class="fa-solid fa-money-bill-wave text-success me-2"></i> KUTILAYOTGAN OYLIK MAOSH:</p>
+            <p class="h5 text-white fw-bold">${salary}</p>
+          </div>
+          <div class="col-md-6">
+            <p class="mb-1 text-muted small"><i class="fa-solid fa-clock text-warning me-2"></i> ISH SAMARADORLIGI (ISH KUNI):</p>
+            <p class="h5 text-white fw-bold">${workday}</p>
+          </div>
+          <div class="col-12">
+            <p class="mb-1 text-muted small"><i class="fa-solid fa-users-viewfinder text-rose me-2"></i> BEMORLAR NAVBATI VA BAHO:</p>
+            <p class="text-light fw-bold">${statusText}</p>
+          </div>
+          <div class="col-12">
+            <p class="mb-1 text-muted small"><i class="fa-solid fa-circle-info text-accent me-2"></i> KARYERAVIY TA'RIF:</p>
+            <p class="text-muted mb-0" style="font-size:0.95rem;">${description}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // 6. Checklist and tasks logic
+    function toggleTask(element) {
+      element.classList.toggle('checked');
+      updateChecklistProgress();
+    }
+
+    function updateChecklistProgress() {
+      const items = document.querySelectorAll('#checklistItems .task-item');
+      const checkedItems = document.querySelectorAll('#checklistItems .task-item.checked');
+      
+      const total = items.length;
+      const checked = checkedItems.length;
+      
+      const percent = total > 0 ? Math.round((checked / total) * 100) : 0;
+      const bar = document.getElementById('checklistProgress');
+      
+      bar.style.width = percent + '%';
+      bar.innerText = percent + '%';
+      bar.setAttribute('aria-valuenow', percent);
+    }
+
+    // Collapsible Sidebar Navigation
+    function initCollapsibleSidebar() {
+      const sidebarCol = document.querySelector('.col-lg-3.d-none.d-lg-block');
+      const contentCol = document.querySelector('.col-lg-9.col-12');
+      if (!sidebarCol || !contentCol) return;
+
+      sidebarCol.id = 'sidebarCol';
+      contentCol.id = 'contentCol';
+
+      // Create Hide Button
+      const hideBtn = document.createElement('button');
+      hideBtn.className = 'btn btn-sm w-100 mb-4 d-flex align-items-center justify-content-center gap-2';
+      hideBtn.id = 'hideSidebarBtn';
+      hideBtn.style.border = '1px solid var(--accent)';
+      hideBtn.style.color = 'var(--accent)';
+      hideBtn.style.background = 'transparent';
+      hideBtn.style.borderRadius = '10px';
+      hideBtn.style.padding = '8px 12px';
+      hideBtn.style.fontWeight = '600';
+      hideBtn.style.transition = 'all 0.3s ease';
+      hideBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i> <span>Mundarijani yashirish</span>';
+
+      // Add hover effect
+      hideBtn.addEventListener('mouseenter', () => {
+        hideBtn.style.background = 'var(--accent)';
+        hideBtn.style.color = '#000000';
+      });
+      hideBtn.addEventListener('mouseleave', () => {
+        hideBtn.style.background = 'transparent';
+        hideBtn.style.color = 'var(--accent)';
+      });
+      
+      const sidebarSticky = sidebarCol.querySelector('.sidebar-sticky');
+      if (sidebarSticky) {
+        sidebarSticky.insertBefore(hideBtn, sidebarSticky.firstChild);
+      }
+
+      // Create Floating Show Button
+      const showBtn = document.createElement('button');
+      showBtn.className = 'btn d-none';
+      showBtn.id = 'showSidebarBtn';
+      showBtn.style.position = 'fixed';
+      showBtn.style.left = '20px';
+      showBtn.style.bottom = '80px';
+      showBtn.style.zIndex = '999';
+      showBtn.style.width = '45px';
+      showBtn.style.height = '45px';
+      showBtn.style.borderRadius = '50%';
+      showBtn.style.display = 'flex';
+      showBtn.style.alignItems = 'center';
+      showBtn.style.justifyContent = 'center';
+      showBtn.style.border = 'none';
+      showBtn.style.background = 'linear-gradient(135deg, var(--accent), var(--primary-cyan, #4facfe))';
+      showBtn.style.boxShadow = '0 4px 15px var(--accent-glow)';
+      showBtn.innerHTML = '<i class="fa-solid fa-list-ul" style="color: #000; font-size: 1.1rem;"></i>';
+      document.body.appendChild(showBtn);
+
+      const toggleSidebar = (collapse) => {
+        if (collapse) {
+          sidebarCol.classList.remove('d-lg-block');
+          sidebarCol.classList.add('d-none');
+          contentCol.classList.remove('col-lg-9');
+          contentCol.classList.add('col-lg-12');
+          showBtn.classList.remove('d-none');
+          localStorage.setItem('sidebar-collapsed', 'true');
+        } else {
+          sidebarCol.classList.add('d-lg-block');
+          sidebarCol.classList.remove('d-none');
+          contentCol.classList.add('col-lg-9');
+          contentCol.classList.remove('col-lg-12');
+          showBtn.classList.add('d-none');
+          localStorage.setItem('sidebar-collapsed', 'false');
+        }
+        window.dispatchEvent(new Event('resize'));
+      };
+
+      hideBtn.addEventListener('click', () => toggleSidebar(true));
+      showBtn.addEventListener('click', () => toggleSidebar(false));
+
+      // Restore State
+      const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+      if (isCollapsed) {
+        toggleSidebar(true);
+      }
+    }
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.href = '../index.html';
+    }
+
+        function applyAuthorName() {
+      const loginName = localStorage.getItem('darslik_login') || 'Napasov';
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      applyAuthorName();
+    });
+  </script>
+
+</body>
+</html>

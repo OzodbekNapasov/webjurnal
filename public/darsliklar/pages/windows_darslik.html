@@ -1,0 +1,3397 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <script>
+    // Immediate login check before rendering
+    const savedLogin = localStorage.getItem('darslik_login');
+    if (savedLogin !== 'Napasov' && savedLogin !== 'Umirov') {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../LOGO.png">
+  <title>Elektron Darslik: Windows Operatsion Tizimi va Texnik Xizmat Ko'rsatish</title>
+  
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Google Fonts: Poppins (headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0f172a;           /* Slate 900 */
+      --secondary-bg: #1e293b;         /* Slate 800 */
+      --text-main: #ffffff;            /* Pure white for maximum contrast */
+      --text-muted: #cbd5e1;           /* Slate 300 */
+      --text-light: #f8fafc;           /* Slate 50 */
+      --card-bg: rgba(15, 23, 42, 0.95);/* Opaque slate card background */
+      --border-color: rgba(255, 255, 255, 0.15);
+      --accent: #38bdf8;               /* Sky Blue */
+      --accent-glow: rgba(56, 189, 248, 0.35);
+      --primary-cyan: #06b6d4;         /* Cyan */
+      --primary-cyan-glow: rgba(6, 182, 212, 0.4);
+      --accent-violet: #a855f7;        /* Purple */
+      --success: #10b981;              /* Cyber Green */
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --error: #ef4444;                /* Cyber Red */
+      --error-glow: rgba(239, 68, 68, 0.25);
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;           /* Light Slate */
+      --secondary-bg: #ffffff;
+      --text-main: #0f172a;            /* Very dark slate */
+      --text-muted: #334155;           /* Slate 700 - dark for contrast */
+      --text-light: #1e293b;           /* Slate 800 */
+      --card-bg: rgba(255, 255, 255, 0.98);
+      --border-color: rgba(15, 23, 42, 0.12);
+      --accent: #0284c7;
+      --accent-glow: rgba(2, 132, 199, 0.2);
+      --primary-cyan: #0891b2;
+      --primary-cyan-glow: rgba(8, 145, 178, 0.2);
+      --accent-violet: #7c3aed;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Bootstrap Overrides for Readability and Contrast */
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    .text-light {
+      color: var(--text-light) !important;
+    }
+    .lead {
+      color: var(--text-muted) !important;
+      font-weight: 500 !important;
+    }
+    p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    li {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-light);
+    }
+
+    /* Light Theme Specific Readability Overrides */
+    [data-theme="light"] .text-white {
+      color: var(--text-main) !important;
+    }
+    [data-theme="light"] .text-warning {
+      color: #b45309 !important; /* Amber 700 - dark, readable orange */
+    }
+    [data-theme="light"] .text-info {
+      color: #0369a1 !important; /* Sky 700 - readable dark cyan */
+    }
+
+    /* Theme-specific custom styles for background subtle helper classes to fix contrast */
+    .bg-dark-subtle {
+      background-color: var(--secondary-bg) !important;
+      border: 1px solid var(--border-color) !important;
+    }
+    
+    .bg-info-subtle {
+      background-color: rgba(6, 182, 212, 0.08) !important;
+      border: 1px solid rgba(6, 182, 212, 0.25) !important;
+      color: var(--text-main) !important;
+    }
+    .bg-info-subtle h1, .bg-info-subtle h2, .bg-info-subtle h3, 
+    .bg-info-subtle h4, .bg-info-subtle h5, .bg-info-subtle h6, 
+    .bg-info-subtle p, .bg-info-subtle span, .bg-info-subtle div {
+      color: var(--text-main) !important;
+    }
+
+    /* Installer window contrast isolation */
+    .installer-window {
+      background-color: #f8fafc !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    .installer-window h1, .installer-window h2, .installer-window h3, 
+    .installer-window h4, .installer-window h5, .installer-window h6, 
+    .installer-window p, .installer-window label, .installer-window div {
+      color: #0f172a !important;
+    }
+    .installer-window .text-muted {
+      color: #475569 !important;
+    }
+    .installer-window .form-check-label {
+      color: #0f172a !important;
+    }
+    .installer-window .form-control {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+
+    /* Simulator mini window contrast isolation */
+    .sim-window {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    .sim-window h1, .sim-window h2, .sim-window h3, .sim-window h4, 
+    .sim-window h5, .sim-window h6, .sim-window p, .sim-window div, 
+    .sim-window span {
+      color: #0f172a !important;
+    }
+    .sim-window .text-muted {
+      color: #475569 !important;
+    }
+
+    /* Explorer simulator contrast isolation */
+    .explorer-mock {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    .explorer-mock h1, .explorer-mock h2, .explorer-mock h3, 
+    .explorer-mock h4, .explorer-mock h5, .explorer-mock h6, 
+    .explorer-mock p, .explorer-mock span, .explorer-mock div, 
+    .explorer-mock button {
+      color: #334155 !important;
+    }
+    .explorer-mock .explorer-file-name {
+      color: #0f172a !important;
+    }
+    .explorer-mock .text-muted {
+      color: #64748b !important;
+    }
+    .explorer-mock .explorer-toolbar-btn {
+      color: #475569 !important;
+    }
+    .explorer-mock .explorer-toolbar-btn:hover {
+      background-color: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    .explorer-mock .context-menu-item {
+      color: #334155 !important;
+    }
+    .explorer-mock .context-menu-item:hover {
+      color: #ffffff !important;
+      background-color: #06b6d4 !important;
+    }
+
+    /* Desktop taskbar contrast isolation */
+    .desktop-taskbar {
+      background-color: rgba(15, 23, 42, 0.9) !important;
+      color: #ffffff !important;
+    }
+    .desktop-taskbar span, .desktop-taskbar i {
+      color: #ffffff !important;
+    }
+
+    /* Core Styles */
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      position: relative;
+    }
+
+    .logo-img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+      transition: var(--transition-smooth);
+    }
+    .logo-img:hover {
+      transform: scale(1.05);
+    }
+    
+    [data-theme="light"] .logo-img {
+      filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.15));
+    }
+
+    /* Background Gradients */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background-image: 
+        radial-gradient(at 0% 0%, var(--primary-cyan-glow) 0, transparent 40%),
+        radial-gradient(at 100% 100%, var(--accent-glow) 0, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.005) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.005) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    /* Fixed Progress Bar */
+    .top-progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.1);
+      z-index: 1050;
+    }
+
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary-cyan), var(--accent), var(--accent-violet));
+      box-shadow: 0 0 10px var(--primary-cyan);
+      transition: width 0.1s ease;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 6px;
+      z-index: 1000;
+      margin: 0 12px;
+      border-radius: 0 0 16px 16px;
+      transition: background-color 0.4s ease;
+    }
+
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.8);
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--secondary-accent) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+    .logo-img {
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-img {
+      transform: scale(1.08);
+    }
+
+    /* Premium Author Badge */
+    .author-badge {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(56, 189, 248, 0.05) 100%);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      border-radius: 9999px;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.15), inset 0 0 10px rgba(6, 182, 212, 0.05);
+      backdrop-filter: blur(8px);
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .author-badge {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.08) 0%, rgba(3, 105, 161, 0.03) 100%);
+      border: 1px solid rgba(2, 132, 199, 0.25);
+      box-shadow: 0 0 10px rgba(2, 132, 199, 0.05);
+    }
+
+    .author-badge:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 22px rgba(6, 182, 212, 0.35);
+      transform: translateY(-2px);
+    }
+    
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulseDot 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(0.85); opacity: 0.6; box-shadow: 0 0 6px var(--accent); }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px var(--accent); }
+    }
+
+    .author-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent) !important;
+      letter-spacing: 0.05em;
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+      transition: var(--transition-smooth);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(56, 189, 248, 0.25);
+      box-shadow: 0 12px 30px var(--accent-glow);
+    }
+
+    /* Scroll animations */
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .scroll-animate.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Section Styles */
+    section {
+      padding: 80px 0;
+    }
+
+    .section-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-cyan), var(--accent));
+      border-radius: 2px;
+      margin: 12px auto 0 auto;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 50px auto;
+      font-size: 1.1rem;
+    }
+
+    /* 1. Hero Section */
+    .hero-section {
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding-top: 120px;
+    }
+
+    .hero-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1.25;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent) 80%, var(--primary-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 24px;
+    }
+
+    [data-theme="light"] .hero-title {
+      background: linear-gradient(135deg, #0f172a 40%, var(--accent) 80%, var(--primary-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-primary-custom {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      border: none;
+      color: #ffffff;
+      padding: 12px 30px;
+      border-radius: 30px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px var(--accent-glow);
+      transition: var(--transition-smooth);
+    }
+
+    .btn-primary-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--accent-glow);
+      color: #ffffff;
+    }
+
+    /* 2. Interactive Vertical Timeline */
+    .timeline-container {
+      position: relative;
+      padding-left: 30px;
+      margin: 20px 0;
+    }
+
+    .timeline-container::before {
+      content: '';
+      position: absolute;
+      left: 9px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--primary-cyan) 0%, var(--accent) 50%, var(--accent-violet) 100%);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 24px;
+      cursor: pointer;
+    }
+
+    .timeline-node {
+      position: absolute;
+      left: -29px;
+      top: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--secondary-bg);
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+      transition: var(--transition-smooth);
+      z-index: 5;
+    }
+
+    .timeline-item:hover .timeline-node,
+    .timeline-item.active .timeline-node {
+      background: var(--accent);
+      transform: scale(1.2);
+      box-shadow: 0 0 12px var(--accent);
+    }
+
+    .timeline-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      transition: var(--transition-smooth);
+    }
+
+    .timeline-card:hover {
+      border-color: var(--accent);
+      transform: translateX(5px);
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .timeline-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 0;
+      color: #ffffff;
+    }
+
+    [data-theme="light"] .timeline-title {
+      color: var(--text-main);
+    }
+
+    .timeline-year {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primary-cyan);
+      background: rgba(6, 182, 212, 0.1);
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    .timeline-details {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+    }
+
+    .timeline-item.active .timeline-details {
+      max-height: 1000px;
+      transition: max-height 0.8s cubic-bezier(1, 0, 1, 0);
+      margin-top: 15px;
+      border-top: 1px dashed var(--border-color);
+      padding-top: 15px;
+    }
+
+    /* 3. Windows Desktop Simulator */
+    .desktop-simulator {
+      background: radial-gradient(circle at center, #2563eb 0%, #1e3a8a 70%, #0f172a 100%);
+      border: 6px solid #475569;
+      border-radius: 16px;
+      height: 480px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    /* Simulator Desktop Grid */
+    .desktop-area {
+      height: calc(100% - 45px);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 20px;
+    }
+
+    .desktop-shortcut {
+      width: 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      transition: var(--transition-smooth);
+    }
+
+    .desktop-shortcut:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .desktop-shortcut.active {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .desktop-shortcut i {
+      font-size: 2rem;
+      margin-bottom: 6px;
+      color: #38bdf8;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    
+    .desktop-shortcut-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #ffffff;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+      line-height: 1.2;
+    }
+
+    /* Simulator Taskbar */
+    .desktop-taskbar {
+      height: 45px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 12px;
+      z-index: 10;
+    }
+
+    .taskbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .start-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38bdf8;
+      font-size: 1.25rem;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: var(--transition-smooth);
+    }
+
+    .start-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+    }
+
+    .start-btn.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: #06b6d4;
+    }
+
+    .taskbar-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .taskbar-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: #e2e8f0;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: var(--transition-smooth);
+    }
+
+    .taskbar-icon:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .taskbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Start Menu Popup */
+    .start-menu-popup {
+      position: absolute;
+      bottom: 50px;
+      left: 10px;
+      width: 260px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      padding: 15px;
+      display: none;
+      z-index: 100;
+      animation: startMenuOpen 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes startMenuOpen {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .start-menu-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+
+    .start-menu-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .start-menu-item {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #f8fafc;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: var(--transition-smooth);
+    }
+
+    .start-menu-item:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+    }
+
+    .start-menu-item i {
+      width: 16px;
+      text-align: center;
+    }
+
+    /* Explorer Mini Window inside Simulator */
+    .sim-window {
+      position: absolute;
+      top: 40px;
+      left: 50px;
+      width: 320px;
+      height: 240px;
+      background: #f8fafc;
+      color: #0f172a;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      display: none;
+      flex-direction: column;
+      z-index: 90;
+    }
+
+    .sim-window-header {
+      background: #e2e8f0;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      border-bottom: 1px solid #cbd5e1;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .sim-window-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .sim-window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .sim-close-btn {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ef4444;
+      border: none;
+      cursor: pointer;
+    }
+
+    .sim-window-body {
+      padding: 12px;
+      font-size: 0.8rem;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    /* 4. Explorer Operations Simulator */
+    .explorer-mock {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      color: #0f172a !important;
+    }
+
+    .explorer-mock-header {
+      background: #e2e8f0;
+      padding: 10px 16px;
+      border-bottom: 1px solid #cbd5e1;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .explorer-mock-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .explorer-mock-toolbar {
+      background: #f1f5f9;
+      padding: 8px 16px;
+      border-bottom: 1px solid #cbd5e1;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .explorer-toolbar-btn {
+      border: 1px solid transparent;
+      background: transparent;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #475569;
+      transition: var(--transition-smooth);
+    }
+
+    .explorer-toolbar-btn:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+
+    .explorer-mock-body {
+      min-height: 250px;
+      padding: 16px;
+      background: #ffffff;
+      position: relative;
+    }
+
+    .explorer-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .explorer-file-item {
+      width: 70px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      position: relative;
+    }
+
+    .explorer-file-item:hover {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .explorer-file-item.selected {
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
+
+    .explorer-file-item i {
+      font-size: 2.2rem;
+      margin-bottom: 4px;
+    }
+
+    .explorer-file-name {
+      font-size: 0.72rem;
+      font-weight: 600;
+      word-break: break-word;
+      line-height: 1.2;
+    }
+
+    /* Context Menu Mock */
+    .explorer-context-menu {
+      position: absolute;
+      width: 170px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 100;
+      display: none;
+      padding: 4px 0;
+    }
+
+    .context-menu-item {
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #334155;
+      transition: var(--transition-smooth);
+    }
+
+    .context-menu-item:hover {
+      background: #06b6d4;
+      color: #ffffff;
+    }
+
+    .context-menu-divider {
+      height: 1px;
+      background: #cbd5e1;
+      margin: 4px 0;
+    }
+
+    /* Search input inside toolbar */
+    .explorer-search-box {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    .explorer-search-box input {
+      border: none;
+      outline: none;
+      font-size: 0.8rem;
+      width: 120px;
+      color: #000;
+    }
+
+    /* 5. Utility Cards */
+    .prog-card {
+      border-left: 4px solid var(--accent);
+      transition: var(--transition-smooth);
+      height: 100%;
+    }
+
+    .prog-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px var(--accent-glow);
+    }
+
+    .prog-icon {
+      font-size: 2.25rem;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    /* 6. Software Installer Simulator */
+    .installer-window {
+      background: #f1f5f9;
+      border: 2px solid #94a3b8;
+      border-radius: 8px;
+      color: #0f172a;
+      max-width: 460px;
+      margin: 0 auto;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .installer-header {
+      background: #1e3a8a;
+      color: #ffffff;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .installer-body {
+      padding: 20px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .installer-footer {
+      background: #e2e8f0;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      border-top: 1px solid #cbd5e1;
+    }
+
+    /* 7. Maintenance Section Info panels */
+    .maintenance-item {
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .maintenance-item:hover {
+      background: var(--secondary-bg);
+      transform: translateX(4px);
+    }
+
+    .maintenance-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(56, 189, 248, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 1.25rem;
+    }
+
+    /* 8. Care Cards */
+    .care-card {
+      perspective: 1000px;
+      height: 200px;
+      cursor: pointer;
+    }
+
+    .care-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+
+    .care-card:hover .care-card-inner,
+    .care-card.flipped .care-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .care-card-front, .care-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border: 1px solid var(--border-color);
+    }
+
+    .care-card-front {
+      background: var(--card-bg);
+      color: #ffffff;
+    }
+
+    [data-theme="light"] .care-card-front {
+      color: var(--text-main);
+    }
+
+    .care-card-back {
+      background: var(--secondary-bg);
+      color: var(--text-light);
+      transform: rotateY(180deg);
+    }
+
+    /* 9. Checklist */
+    .checklist-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .checklist-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-checkbox.checked {
+      background: var(--success);
+      border-color: var(--success);
+      color: #ffffff;
+    }
+
+    .checklist-text {
+      font-size: 1.05rem;
+      color: var(--text-light);
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-checkbox.checked + .checklist-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* 10. Quiz */
+    .quiz-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: var(--shadow);
+    }
+
+    .quiz-question-box {
+      display: none;
+    }
+
+    .quiz-question-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .quiz-option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      font-size: 1rem;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .quiz-option-btn:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    .quiz-option-btn.correct {
+      background: rgba(16, 185, 129, 0.1) !important;
+      border-color: var(--success) !important;
+      color: var(--success) !important;
+    }
+
+    .quiz-option-btn.incorrect {
+      background: rgba(239, 68, 68, 0.1) !important;
+      border-color: var(--error) !important;
+      color: var(--error) !important;
+    }
+
+    .quiz-nav {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 30px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Details Modal styling */
+    .modal-content {
+      background-color: var(--secondary-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+    }
+
+    .modal-header {
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--border-color);
+    }
+  
+    /* Login Overlay Styling */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    [data-theme="light"] .login-overlay {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white;
+      font-size: 1.7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px var(--primary-cyan-glow);
+    }
+
+    .login-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .login-input-wrapper i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.4) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 50px;
+      padding: 12px 20px 12px 50px;
+      color: var(--text-main) !important;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .login-input {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 15px var(--primary-cyan-glow);
+    }
+
+    .login-error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white !important;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--primary-cyan-glow);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-cyan-glow);
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+  </style>
+  <link rel="stylesheet" href="darslik.css">
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="top-progress-container">
+    <div id="topProgressBar" class="top-progress-bar"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+        <img src="../LOGO.png" alt="Logo" class="logo-img">
+        <span class="logo-text">Axborot texnologiyalari</span>
+      </a>
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <a href="../index.html" class="btn btn-sm btn-outline-light border-0" title="Portalga qaytish">
+          <i class="fa-solid fa-house"></i> <span class="d-none d-sm-inline ms-1">Mundarija</span>
+        </a>
+        <div class="author-badge d-none d-md-flex">
+          <span class="pulse-dot"></span>
+          <span class="author-name">Muallif: {{AUTHOR}}</span>
+        </div>
+                <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- 1. Hero Section -->
+    <section class="hero-section" id="section-1">
+      <div class="row align-items-center">
+        <div class="col-lg-6 mb-5 mb-lg-0 scroll-animate animated">
+          <span class="badge bg-info-subtle text-info mb-3 px-3 py-2 rounded-pill font-weight-bold" style="letter-spacing: 0.05em;">TIBBIYOTDA AKT</span>
+          <h1 class="hero-title">Windows Operatsion Tizimi va Texnik Xizmat Ko'rsatish</h1>
+          <p class="lead text-muted mb-4">
+            "Tibbiyotda axborot texnologiyalari" fani talabalari uchun maxsus tayyorlangan elektron darslik. Windows OT tarixi, ish stoli va fayllar bilan ishlash asoslari, tizimga qo'shimcha xizmatchi dasturlar o'rnatish hamda kompyuterga texnik xizmat ko'rsatishni interaktiv darslar, simulyatorlar va testlar orqali mukammal o'rganing.
+          </p>
+          <a href="#section-2" class="btn btn-primary-custom btn-lg">Darsni Boshlash <i class="fa-solid fa-arrow-down ms-2"></i></a>
+        </div>
+        <div class="col-lg-6 scroll-animate animated">
+          <!-- Premium Windows themed SVG -->
+          <svg viewBox="0 0 500 400" width="100%" height="auto">
+            <defs>
+              <linearGradient id="primary-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#06b6d4" />
+                <stop offset="100%" stop-color="#38bdf8" />
+              </linearGradient>
+              <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#a855f7" />
+                <stop offset="100%" stop-color="#38bdf8" />
+              </linearGradient>
+            </defs>
+            <!-- Background glow grids -->
+            <circle cx="250" cy="200" r="150" fill="none" stroke="url(#primary-grad)" stroke-width="1.5" stroke-dasharray="8 6" opacity="0.4" />
+            <circle cx="250" cy="200" r="180" fill="none" stroke="url(#accent-grad)" stroke-width="1" stroke-dasharray="4 8" opacity="0.3" />
+            
+            <!-- Laptop body -->
+            <rect x="120" y="110" width="260" height="160" rx="10" fill="rgba(30,41,59,0.7)" stroke="url(#primary-grad)" stroke-width="3" />
+            <!-- Laptop screen area -->
+            <rect x="130" y="120" width="240" height="140" rx="4" fill="#0f172a" />
+            <!-- Windows Blue Wallpaper glow inside monitor -->
+            <path d="M150 140 L 230 160 L 230 220 L 150 200 Z" fill="#0284c7" opacity="0.25" />
+            <path d="M240 162 L 320 145 L 320 202 L 240 221 Z" fill="#0284c7" opacity="0.25" />
+            
+            <!-- Windows Logo Center Grid -->
+            <path d="M 235 178 L 248 176 L 248 188 L 235 188 Z" fill="#38bdf8" />
+            <path d="M 252 176 L 265 174 L 265 188 L 252 188 Z" fill="#38bdf8" />
+            <path d="M 235 192 L 248 192 L 248 204 L 235 202 Z" fill="#38bdf8" />
+            <path d="M 252 192 L 265 192 L 265 206 L 252 204 Z" fill="#38bdf8" />
+            
+            <!-- Laptop base -->
+            <path d="M 90 270 L 410 270 L 390 285 L 110 285 Z" fill="#475569" stroke="#64748b" stroke-width="2" />
+            <!-- Trackpad -->
+            <rect x="220" y="274" width="60" height="8" rx="2" fill="#334155" />
+            
+            <!-- Floating Tech & Medical Badges -->
+            <!-- Shield icon (Maintenance/Antivirus) -->
+            <g transform="translate(70, 120)">
+              <circle cx="20" cy="20" r="20" fill="rgba(16,185,129,0.15)" stroke="#10b981" stroke-width="2" />
+              <path d="M 15 15 L 20 12 L 25 15 L 25 21 C 25 25 20 28 20 28 C 20 28 15 25 15 21 Z" fill="none" stroke="#10b981" stroke-width="2" />
+            </g>
+            <!-- Medical Cross (Informatics) -->
+            <g transform="translate(390, 120)">
+              <circle cx="20" cy="20" r="20" fill="rgba(239,68,68,0.15)" stroke="#ef4444" stroke-width="2" />
+              <path d="M 20 12 L 20 28 M 12 20 L 28 20" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round" />
+            </g>
+            <!-- Settings gear -->
+            <g transform="translate(60, 220)">
+              <circle cx="20" cy="20" r="20" fill="rgba(245,158,11,0.15)" stroke="#f59e0b" stroke-width="2" />
+              <path d="M 20 14 A 6 6 0 1 1 19.99 14" fill="none" stroke="#f59e0b" stroke-width="3" />
+              <path d="M 20 11 L 20 14 M 20 26 L 20 29 M 11 20 L 14 20 M 26 20 L 29 20" stroke="#f59e0b" stroke-width="2" />
+            </g>
+            <!-- Folder Icon -->
+            <g transform="translate(390, 220)">
+              <circle cx="20" cy="20" r="20" fill="rgba(56,189,248,0.15)" stroke="#38bdf8" stroke-width="2" />
+              <path d="M 13 15 L 18 15 L 20 18 L 27 18 L 27 25 L 13 25 Z" fill="none" stroke="#38bdf8" stroke-width="2" />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1-BO'LIM. KIRISH -->
+    <section id="section-2" class="scroll-animate">
+      <h2 class="section-title">1-Bo'lim. Kirish: Operatsion Tizimlar</h2>
+      <p class="section-subtitle">Operatsion tizim nima, uning kompyuterdagi vazifasi va Windows tizimining tutgan o'rni.</p>
+      
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="glass-card h-100">
+            <h4 class="text-info mb-3"><i class="fa-solid fa-circle-question me-2"></i> Operatsion tizim nima?</h4>
+            <p class="text-light">
+              Operatsion tizim (OT) — kompyuterning barcha apparat qismlarini (protsessor, xotira, qattiq disk) boshqaruvchi hamda foydalanuvchining dasturlar bilan aloqasini (interfeys) ta'minlovchi eng asosiy tizimli dasturiy ta'minotdir. Tizim yordamida apparatlar "jonlanadi".
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="glass-card h-100">
+            <h4 class="text-warning mb-3"><i class="fa-solid fa-gears me-2"></i> OTning asosiy vazifalari</h4>
+            <p class="text-light">
+              Fayllar tizimini boshqarish, xotirani taqsimlash, jarayonlarni parallel boshqarish (ko'p vazifalilik), kompyuter xavfsizligini ta'minlash, ulangan tashqi qurilmalarni (printer, skaner, tibbiy UZI apparatlari) drayverlar orqali OT bilan bog'lash.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-12">
+          <div class="glass-card h-100">
+            <h4 class="text-success mb-3"><i class="fa-brands fa-windows me-2"></i> Windows tizimining o'rni</h4>
+            <p class="text-light">
+              Microsoft Windows — jahondagi shaxsiy kompyuterlarning 70% dan ortig'iga o'rnatilgan eng mashhur operatsion tizimdir. O'zining grafik interfeysi (GUI), foydalanish uchun qulayligi va tibbiy axborot tizimlari uchun mosligi bilan tibbiyot sohasida ham mutlaq yetakchidir.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2-BO‘LIM. WINDOWS OPERATSION TIZIMI TARIXI -->
+    <section id="section-3" class="scroll-animate">
+      <h2 class="section-title">2-Bo'lim. Windows Operatsion Tizimi Tarixi</h2>
+      <p class="section-subtitle">MS-DOS dan to Windows 11 gacha bo'lgan tarixiy rivojlanish bosqichlari bilan interaktiv tarzda tanishing.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-9">
+          <div class="timeline-container">
+            
+            <!-- MS-DOS -->
+            <div class="timeline-item active" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-terminal text-info fs-4"></i>
+                    <h3 class="timeline-title">MS-DOS (1981)</h3>
+                  </div>
+                  <span class="timeline-year">1981</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> Matnli konsol (CLI) orqali buyruqlar kiritish, bitta vazifali (single-tasking) disk operatsion tizimi.</p>
+                  <p><strong>Yangiliklari:</strong> IBM PC shaxsiy kompyuterlarining dastlabki standart tizimi hisoblanadi. Unda grafik interfeys mavjud bo'lmagan, barcha amallar yozma buyruqlar orqali amalga oshirilgan.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows 1.0 -->
+            <div class="timeline-item" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-brands fa-windows text-primary fs-4"></i>
+                    <h3 class="timeline-title">Windows 1.0 (1985)</h3>
+                  </div>
+                  <span class="timeline-year">1985</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> Sichqoncha orqali boshqariladigan grafik interfeysning (GUI) ilk bor taqdim etilishi.</p>
+                  <p><strong>Yangiliklari:</strong> MS-DOS ustiga o'rnatiladigan grafik dastur qobig'i bo'lgan. Clipboard (nusxa olish xotirasi), bloknot, taqvim, kalkulyator va soat kabi dasturlar yaratildi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows 3.1 -->
+            <div class="timeline-item" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-brands fa-windows text-success fs-4"></i>
+                    <h3 class="timeline-title">Windows 3.1 (1992)</h3>
+                  </div>
+                  <span class="timeline-year">1992</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> TrueType vektor shriftlarini qo'llab-quvvatlash, 16-bitli multimedia va audio kengaytmalari.</p>
+                  <p><strong>Yangiliklari:</strong> Virtual xotirani boshqarish tizimi joriy qilindi. Mashhur "Mina qidiruvchisi" (Сапер) o'yini va Program Manager oynasi paydo bo'ldi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows 95 -->
+            <div class="timeline-item" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-desktop text-warning fs-4"></i>
+                    <h3 class="timeline-title">Windows 95 (1995)</h3>
+                  </div>
+                  <span class="timeline-year">1995</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> To'liq 32-bitli arxitektura, Plug and Play drayverlar tizimi, uzun fayl nomlarini yozish imkoniyati.</p>
+                  <p><strong>Yangiliklari:</strong> Birinchi marta zamonaviy Windowsning "yuragi" bo'lmish <strong>Рабочий стол</strong>, <strong>Кнопка Пуск</strong> va <strong>Панель задач</strong> joriy qilindi. Internet Explorer brauzeri qo'shildi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows 98 -->
+            <div class="timeline-item" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-network-wired text-info fs-4"></i>
+                    <h3 class="timeline-title">Windows 98 (1998)</h3>
+                  </div>
+                  <span class="timeline-year">1998</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> USB portlari va flesh-xotiralarni to'liq qo'llab-quvvatlash, FAT32 fayl tizimi.</p>
+                  <p><strong>Yangiliklari:</strong> Tizimning internet bilan integratsiyasi kuchaytirildi, barqarorlik oshirildi, "Проводник" boshqaruvi takomillashtirildi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows XP -->
+            <div class="timeline-item" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-heart-pulse text-danger fs-4"></i>
+                    <h3 class="timeline-title">Windows XP (2001)</h3>
+                  </div>
+                  <span class="timeline-year">2001</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> Professional darajada barqaror ishlaydigan Windows NT yadrosi, ko'p foydalanuvchili tizim.</p>
+                  <p><strong>Yangiliklari:</strong> Yangi "Luna" dizayni, CD yozish imkoniyati. Tizim favqulodda barqarorligi sababli tibbiyot uskunalarida (rentgen, kardiograf, UZI) uzoq yillar yetakchi bo'lib keldi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows Vista -->
+            <div class="timeline-item" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-shield-halved text-warning fs-4"></i>
+                    <h3 class="timeline-title">Windows Vista (2007)</h3>
+                  </div>
+                  <span class="timeline-year">2007</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> Windows Aero vizual shaffof interfeysi, tezkor qidiruv, kuchaytirilgan xavfsizlik (UAC).</p>
+                  <p><strong>Yangiliklari:</strong> "Защитник Windows" (Windows Defender) antivirusi va diskni BitLocker shifrlash tizimlari ilk marta taqdim qilindi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows 7 -->
+            <div class="timeline-item" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-gem text-primary fs-4"></i>
+                    <h3 class="timeline-title">Windows 7 (2009)</h3>
+                  </div>
+                  <span class="timeline-year">2009</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> Resurslarni juda tejamkor boshqarish, tezkor yuklanish, sensorli ekranlarni qo'llab-quvvatlash.</p>
+                  <p><strong>Yangiliklari:</strong> Oynalarni tartibga soluvchi Aero Snap, tozalangan panel va tibbiyot muassasalarida eng uzoq foydalanilgan xavfsiz tizimlardan biri.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows 8 -->
+            <div class="timeline-item" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-table-cells-large text-info fs-4"></i>
+                    <h3 class="timeline-title">Windows 8 / 8.1 (2012)</h3>
+                  </div>
+                  <span class="timeline-year">2012</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> Planshetlar va sensorli monitorlarga moslashtirilgan "Metro UI" plitkali interfeysi.</p>
+                  <p><strong>Yangiliklari:</strong> "Кнопка Пуск" butunlay olib tashlandi (bu foydalanuvchilar e'tiroziga sabab bo'lib, 8.1 da qaytarildi), Windows App Store do'koni yaratildi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows 10 -->
+            <div class="timeline-item" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-laptop-medical text-success fs-4"></i>
+                    <h3 class="timeline-title">Windows 10 (2015)</h3>
+                  </div>
+                  <span class="timeline-year">2015</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> Gibrid boshqaruv (planshet va kompyuter), virtual ish stollari, Microsoft Edge brauzeri.</p>
+                  <p><strong>Yangiliklari:</strong> Microsoft Windowsni doimiy ravishda internet orqali yangilanib boruvchi xizmat (Windows as a Service) deb e'lon qildi. Shifoxonalardagi barcha zamonaviy kompyuterlarning standart operatsion tizimi.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Windows 11 -->
+            <div class="timeline-item" onclick="toggleTimelineItem(this)">
+              <div class="timeline-node"></div>
+              <div class="timeline-card">
+                <div class="timeline-header">
+                  <div class="d-flex align-items-center gap-3">
+                    <i class="fa-solid fa-server text-primary fs-4"></i>
+                    <h3 class="timeline-title">Windows 11 (2021)</h3>
+                  </div>
+                  <span class="timeline-year">2021</span>
+                </div>
+                <div class="timeline-details">
+                  <p><strong>Asosiy imkoniyatlari:</strong> Markazlashgan "Кнопка Пуск", yumaloq oynalar, o'rnatilgan Microsoft Teams tizimi.</p>
+                  <p><strong>Yangiliklari:</strong> Ishlash samaradorligi va kiberxavfsizlik (TPM 2.0 talabi) sezilarli darajada oshirildi. Tibbiy tashxis dasturlari va ma'lumotlar xavfsizligini ta'minlash uchun mo'ljallangan.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3-BO‘LIM. WINDOWS ISHLASH ASOSLARI -->
+    <section id="section-4" class="scroll-animate">
+      <h2 class="section-title">3-Bo'lim. Windowsda Ishlash Asoslari</h2>
+      <p class="section-subtitle">Haqiqiy Windows 10/11 muhiti simulyatori. Elementlar ustiga bosib ularning vazifalari bilan tanishing.</p>
+      
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <!-- Desktop Mockup Container -->
+          <div class="desktop-simulator" id="simulatorFrame">
+            <!-- Simulated desktop workspace -->
+            <div class="desktop-area" onclick="closeStartMenu(event)">
+              
+              <!-- Shortcut: This PC -->
+              <div class="desktop-shortcut" id="shortcutThisPC" onclick="selectShortcut(this, 'thispc', event)">
+                <i class="fa-solid fa-display"></i>
+                <span class="desktop-shortcut-text desktop-shortcut-label">Этот компьютер</span>
+              </div>
+
+              <!-- Shortcut: File Explorer -->
+              <div class="desktop-shortcut" id="shortcutExplorer" onclick="selectShortcut(this, 'explorer', event)">
+                <i class="fa-solid fa-folder-open"></i>
+                <span class="desktop-shortcut-text desktop-shortcut-label">Проводник</span>
+              </div>
+
+              <!-- Shortcut: Recycle Bin -->
+              <div class="desktop-shortcut" id="shortcutRecycle" onclick="selectShortcut(this, 'recycle', event)">
+                <i class="fa-solid fa-trash-can"></i>
+                <span class="desktop-shortcut-text desktop-shortcut-label">Корзина</span>
+              </div>
+
+              <!-- Shortcut: Settings -->
+              <div class="desktop-shortcut" id="shortcutSettings" onclick="selectShortcut(this, 'settings', event)">
+                <i class="fa-solid fa-sliders"></i>
+                <span class="desktop-shortcut-text desktop-shortcut-label">Параметры</span>
+              </div>
+
+              <!-- Shortcut: Task Manager -->
+              <div class="desktop-shortcut" id="shortcutTaskManager" onclick="selectShortcut(this, 'taskmgr', event)">
+                <i class="fa-solid fa-gauge-high"></i>
+                <span class="desktop-shortcut-text desktop-shortcut-label font-weight-bold">Диспетчер задач</span>
+              </div>
+
+            </div>
+
+            <!-- Start Menu Popup -->
+            <div class="start-menu-popup" id="startMenu">
+              <div class="start-menu-title"><i class="fa-brands fa-windows me-2"></i> МЕНЮ ПУСК</div>
+              <ul class="start-menu-list">
+                <li class="start-menu-item" onclick="triggerStartAction('settings')"><i class="fa-solid fa-sliders"></i> Параметры</li>
+                <li class="start-menu-item" onclick="triggerStartAction('control')"><i class="fa-solid fa-toolbox"></i> Панель управления</li>
+                <li class="start-menu-item" onclick="triggerStartAction('taskmgr')"><i class="fa-solid fa-gauge-high"></i> Диспетчер задач</li>
+                <li class="start-menu-item" onclick="triggerStartAction('explorer')"><i class="fa-solid fa-folder-open"></i> Проводник</li>
+                <li class="context-menu-divider" style="background: rgba(255,255,255,0.1);"></li>
+                <li class="start-menu-item text-danger" onclick="triggerStartAction('shutdown')"><i class="fa-solid fa-power-off"></i> Завершение работы</li>
+              </ul>
+            </div>
+
+            <!-- Simulated App Windows -->
+            <!-- This PC Window -->
+            <div class="sim-window" id="win-thispc">
+              <div class="sim-window-header">
+                <span class="sim-window-title"><i class="fa-solid fa-display me-1"></i> Этот компьютер</span>
+                <div class="sim-window-controls">
+                  <button class="sim-close-btn" onclick="closeSimWindow('thispc')"></button>
+                </div>
+              </div>
+              <div class="sim-window-body">
+                <h6 class="fw-bold mb-3 border-bottom pb-1">Устройства и диски (2)</h6>
+                <div class="d-flex align-items-center gap-3 mb-2">
+                  <i class="fa-solid fa-hard-drive text-primary fs-3"></i>
+                  <div>
+                    <strong>Локальный диск (C:)</strong><br>
+                    <small class="text-muted">120 ГБ свободно из 250 ГБ</small>
+                  </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                  <i class="fa-solid fa-hard-drive text-success fs-3"></i>
+                  <div>
+                    <strong>Локальный диск (D:)</strong><br>
+                    <small class="text-muted">380 ГБ свободно из 500 ГБ</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Taskbar at bottom -->
+            <div class="desktop-taskbar">
+              <div class="taskbar-left">
+                <!-- Windows Start Button -->
+                <div class="start-btn" id="startBtn" onclick="toggleStartMenu(event)">
+                  <i class="fa-brands fa-windows"></i>
+                </div>
+                <!-- Taskbar Quick Icons -->
+                <div class="taskbar-icons">
+                  <div class="taskbar-icon text-warning" onclick="openSimWindow('thispc')"><i class="fa-solid fa-folder"></i></div>
+                  <div class="taskbar-icon text-info" onclick="triggerStartAction('chrome')"><i class="fa-brands fa-chrome"></i></div>
+                  <div class="taskbar-icon text-danger" onclick="triggerStartAction('vlc')"><i class="fa-solid fa-circle-play"></i></div>
+                </div>
+              </div>
+              
+              <!-- System Tray / Clock -->
+              <div class="taskbar-right">
+                <i class="fa-solid fa-wifi me-2"></i>
+                <i class="fa-solid fa-volume-high me-2"></i>
+                <span>РУС</span>
+                <span id="taskbarClock" class="ms-2">12:00</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <!-- Information Display Panel -->
+          <div class="glass-card h-100 d-flex flex-column justify-content-between" id="simulatorDetails">
+            <div>
+              <h3 class="text-info mb-3" id="simTitle"><i class="fa-solid fa-circle-info me-2"></i> Obyektni tanlang</h3>
+              <p class="text-light" id="simDesc" style="font-size: 0.95rem;">
+                Tushuntirish olish uchun chap tomondagi simulyator ish stolidan istalgan element ustiga bosing yoki <strong>Кнопка Пуск</strong> (Windows) menyusini ochib ko'ring.
+              </p>
+              <div id="simContextBox" class="p-3 border rounded bg-dark-subtle mt-3 d-none">
+                <h6 class="text-warning fw-bold mb-2" id="simContextTitle"><i class="fa-solid fa-stethoscope me-2"></i> Tibbiyotdagi o'rni</h6>
+                <p class="small text-light mb-0" id="simContextText">
+                  Obyektning shifoxonadagi faoliyat va axborot texnologiyalari bilan bog'liq amaliy qo'llanishi.
+                </p>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-top border-secondary-subtle">
+              <button class="btn btn-primary-custom w-100 d-none" id="simActionBtn" onclick="openActiveSimWindow()">Tizim oynasini ochish</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4-BO‘LIM. FAYL VA PAPKALAR BILAN ISHLASH -->
+    <section id="section-5" class="scroll-animate">
+      <h2 class="section-title">4-Bo'lim. Fayl va Papkalar bilan Ishlash</h2>
+      <p class="section-subtitle">Bosqichma-bosqich amaliy qo'llanma. Menyu ustida sichqonchaning o'ng tugmasini bosib amallarni bajaring.</p>
+      
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-7">
+          <!-- Mock File Explorer Workspace -->
+          <div class="explorer-mock" id="explorerWorkspace" oncontextmenu="showExplorerContextMenu(event); return false;" onclick="hideExplorerContextMenu()">
+            <!-- Header bar -->
+            <div class="explorer-mock-header">
+              <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-folder text-warning"></i>
+                <span class="explorer-mock-title">Проводник > Документы > Bemorlar</span>
+              </div>
+              <div class="d-flex gap-1">
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: #94a3b8; display: inline-block;"></span>
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; display: inline-block;"></span>
+                <span style="width: 10px; height: 10px; border-radius: 50%; background: #475569; display: inline-block;"></span>
+              </div>
+            </div>
+            
+            <!-- Toolbar -->
+            <div class="explorer-mock-toolbar">
+              <button class="explorer-toolbar-btn" onclick="executeFileOperation('create-folder')"><i class="fa-solid fa-folder-plus text-warning"></i> Создать папку</button>
+              <button class="explorer-toolbar-btn" onclick="executeFileOperation('rename')"><i class="fa-solid fa-pen-to-square text-info"></i> Переименовать</button>
+              <button class="explorer-toolbar-btn text-danger" onclick="executeFileOperation('delete')"><i class="fa-solid fa-trash"></i> Удалить</button>
+              
+              <!-- Search box -->
+              <div class="explorer-search-box">
+                <i class="fa-solid fa-magnifying-glass text-muted me-1"></i>
+                <input type="text" id="explorerSearchInput" oninput="searchExplorerFiles()" placeholder="Поиск в папке...">
+              </div>
+            </div>
+            
+            <!-- Explorer Area -->
+            <div class="explorer-mock-body">
+              <div class="explorer-grid" id="explorerGrid">
+                <!-- Initial Mock Files -->
+                <div class="explorer-file-item" data-name="tahlillar" onclick="selectExplorerFile(this, event)">
+                  <i class="fa-solid fa-folder text-warning"></i>
+                  <span class="explorer-file-name text-dark">Tahlillar</span>
+                </div>
+                <div class="explorer-file-item" data-name="Epicrisis.docx" onclick="selectExplorerFile(this, event)">
+                  <i class="fa-solid fa-file-word text-primary"></i>
+                  <span class="explorer-file-name text-dark">Epicrisis.docx</span>
+                </div>
+                <div class="explorer-file-item" data-name="uzi_xulosa.pdf" onclick="selectExplorerFile(this, event)">
+                  <i class="fa-solid fa-file-pdf text-danger"></i>
+                  <span class="explorer-file-name text-dark">uzi_xulosa.pdf</span>
+                </div>
+              </div>
+              
+              <!-- Context Menu Mock -->
+              <div class="explorer-context-menu" id="explorerContextMenu">
+                <div class="context-menu-item" onclick="executeFileOperation('create-folder')"><i class="fa-solid fa-folder-plus text-warning"></i> Создать папку</div>
+                <div class="context-menu-item" onclick="executeFileOperation('create-file')"><i class="fa-solid fa-file-signature text-primary"></i> Создать файл</div>
+                <div class="context-menu-divider"></div>
+                <div class="context-menu-item" onclick="executeFileOperation('copy')"><i class="fa-solid fa-copy text-secondary"></i> Копировать</div>
+                <div class="context-menu-item" onclick="executeFileOperation('cut')"><i class="fa-solid fa-scissors text-secondary"></i> Вырезать</div>
+                <div class="context-menu-item" onclick="executeFileOperation('paste')"><i class="fa-solid fa-paste text-success"></i> Вставить</div>
+                <div class="context-menu-divider"></div>
+                <div class="context-menu-item" onclick="executeFileOperation('rename')"><i class="fa-solid fa-pen-to-square text-info"></i> Переименовать</div>
+                <div class="context-menu-item text-danger" onclick="executeFileOperation('delete')"><i class="fa-solid fa-trash"></i> Удалить</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="glass-card">
+            <h4 class="mb-3 text-info"><i class="fa-solid fa-route me-2"></i> Bosqichli Amaliy Ko'rsatma</h4>
+            <div class="d-flex flex-column gap-3">
+              <div class="p-2 border rounded bg-dark-subtle">
+                <h6 class="fw-bold mb-1"><i class="fa-solid fa-circle text-primary me-2" style="font-size:0.6rem;"></i> 1. Papka va fayl yaratish:</h6>
+                <p class="small text-muted mb-0">Bo'sh joyda sichqoncha o'ng tugmasini bosib, <strong>Создать -> Папку</strong> yoki <strong>Создать файл</strong>ni tanlang.</p>
+              </div>
+              <div class="p-2 border rounded bg-dark-subtle">
+                <h6 class="fw-bold mb-1"><i class="fa-solid fa-circle text-success me-2" style="font-size:0.6rem;"></i> 2. Nusxalash va ko'chirish:</h6>
+                <p class="small text-muted mb-0">Faylni tanlab o'ng tugmani bosing va <strong>Копировать</strong> (nusxalash) yoki <strong>Вырезать</strong> (qirqib olish) ni bosing, so'ngra bo'sh joyga o'ng bosib <strong>Вставить</strong>ni bosing.</p>
+              </div>
+              <div class="p-2 border rounded bg-dark-subtle">
+                <h6 class="fw-bold mb-1"><i class="fa-solid fa-circle text-warning me-2" style="font-size:0.6rem;"></i> 3. Qayta nomlash va o'chirish:</h6>
+                <p class="small text-muted mb-0">Tegishli element ustida o'ng tugma -> <strong>Переименовать</strong> (nomini o'zgartirish) yoki <strong>Удалить</strong> (savatchaga tashlash) ni bosing.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5-BO‘LIM. WINDOWSGA QO‘SHIMCHA XIZMATCHI DASTURLAR O‘RNATISH -->
+    <section id="section-6" class="scroll-animate">
+      <h2 class="section-title">5-Bo'lim. Qo'shimcha Xizmatchi Dasturlar</h2>
+      <p class="section-subtitle">Operatsion tizimni foydali xizmatlar bilan boyituvchi asosiy yordamchi dasturlar.</p>
+      
+      <div class="row g-4">
+        
+        <!-- WinRAR -->
+        <div class="col-lg-4 col-md-6">
+          <div class="glass-card prog-card">
+            <i class="fa-solid fa-file-zipper prog-icon"></i>
+            <h4>WinRAR</h4>
+            <p><strong>Vazifasi:</strong> Katta o'lchamdagi fayl va papkalarni siqish, arxivlash hamda himoya qilish.</p>
+            <p><strong>Afzalliklari:</strong> Ko'plab fayllarni yagona arxiv faylga jamlab arxiv hajmini kichraytiradi.</p>
+            <p class="text-info small mb-0"><strong>Tibbiyotda:</strong> Rentgen rasmlari va kasallik tarixi arxivlarini siqib shifoxona pochtasida yuborish.</p>
+          </div>
+        </div>
+
+        <!-- 7-Zip -->
+        <div class="col-lg-4 col-md-6">
+          <div class="glass-card prog-card" style="border-left-color: var(--accent-violet);">
+            <i class="fa-solid fa-box-open prog-icon" style="color: var(--accent-violet);"></i>
+            <h4>7-Zip</h4>
+            <p><strong>Vazifasi:</strong> Yuqori darajadagi siqish tezligiga ega bo'lgan ochiq kodli va butunlay bepul arxivator.</p>
+            <p><strong>Afzalliklari:</strong> O'zining 7z yuqori siquvchi formatiga ega va tizim resurslarini juda kam egallaydi.</p>
+            <p class="text-info small mb-0"><strong>Tibbiyotda:</strong> Davlat shifoxonalarida litsenziya xarajatlarisiz bepul ofis arxivatori sifatida foydalanish.</p>
+          </div>
+        </div>
+
+        <!-- Adobe Acrobat Reader -->
+        <div class="col-lg-4 col-md-6">
+          <div class="glass-card prog-card" style="border-left-color: var(--error);">
+            <i class="fa-solid fa-file-pdf prog-icon" style="color: var(--error);"></i>
+            <h4>Adobe Reader</h4>
+            <p><strong>Vazifasi:</strong> Standard PDF formatidagi hujjatlarni ko'rish, sharhlash va chop etish.</p>
+            <p><strong>Afzalliklari:</strong> Hujjatni butun dunyoda bir xil ko'rinishda saqlaydi, matnlarga sharh va imzo kiritish imkoni bor.</p>
+            <p class="text-info small mb-0"><strong>Tibbiyotda:</strong> MRT, UZI xulosalarini va xalqaro klinik protokollarni ochish.</p>
+          </div>
+        </div>
+
+        <!-- Google Chrome -->
+        <div class="col-lg-4 col-md-6">
+          <div class="glass-card prog-card" style="border-left-color: #22c55e;">
+            <i class="fa-brands fa-chrome prog-icon" style="color: #22c55e;"></i>
+            <h4>Google Chrome</h4>
+            <p><strong>Vazifasi:</strong> Jahondagi eng tezkor va xavfsiz internet brauzeri.</p>
+            <p><strong>Afzalliklari:</strong> Bulutli ma'lumotlarni sinxronlash va kengaytmalarni qo'llab-quvvatlash tizimi.</p>
+            <p class="text-info small mb-0"><strong>Tibbiyotda:</strong> Bulutli shifoxona axborot tizimlariga (HIS) va Medline ilmiy bazalariga kirish.</p>
+          </div>
+        </div>
+
+        <!-- VLC Media Player -->
+        <div class="col-lg-4 col-md-6">
+          <div class="glass-card prog-card" style="border-left-color: #f97316;">
+            <i class="fa-solid fa-circle-play prog-icon" style="color: #f97316;"></i>
+            <h4>VLC Media Player</h4>
+            <p><strong>Vazifasi:</strong> Har qanday formatdagi multimedia fayllarini ochuvchi bepul pleyer.</p>
+            <p><strong>Afzalliklari:</strong> Balla kodeklar o'rnatilgan, videoni kuchaytirib va sifatli ijro etib beradi.</p>
+            <p class="text-info small mb-0"><strong>Tibbiyotda:</strong> Tibbiy endoskopiya yoki jarrohlik amaliyotlarining video tasvirlarini tahlil qilish.</p>
+          </div>
+        </div>
+
+        <!-- Kaspersky Antivirus -->
+        <div class="col-lg-4 col-md-6">
+          <div class="glass-card prog-card" style="border-left-color: #10b981;">
+            <i class="fa-solid fa-user-shield prog-icon" style="color: #10b981;"></i>
+            <h4>Kaspersky</h4>
+            <p><strong>Vazifasi:</strong> Kompyuterni viruslar, troyanlar va xakerlik hujumlaridan himoya qilish.</p>
+            <p><strong>Afzalliklari:</strong> Real vaqt rejimida himoya devori (firewall) va bulutli kiber-monitoring.</p>
+            <p class="text-info small mb-0"><strong>Tibbiyotda:</strong> Bemorlar bazasi va shaxsiy ma'lumotlarni maxfiy saqlash hamda himoyalash.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 6-BO‘LIM. DASTUR O‘RNATISH SIMULYATORI -->
+    <section id="section-7" class="scroll-animate">
+      <h2 class="section-title">6-Bo'lim. Dastur O'rnatish Simulyatori</h2>
+      <p class="section-subtitle">Setup.exe dasturini ishga tushirib, uni kompyuterga o'rnatish bosqichlarini amalda bajaring.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="installer-window" id="installerWindow">
+            <!-- Header bar -->
+            <div class="installer-header">
+              <span><i class="fa-solid fa-gear me-1"></i> Мастер установки WinRAR v6.20</span>
+              <span style="cursor:pointer;" onclick="resetInstaller()">&times;</span>
+            </div>
+            
+            <!-- Body dialog -->
+            <div class="installer-body" id="installerBody">
+              <!-- Step 1 Content -->
+              <div class="installer-step-content active" id="installerStep1">
+                <h5 class="fw-bold mb-3">Добро пожаловать в установщик!</h5>
+                <p class="small text-muted">
+                  Этот мастер поможет вам установить архиватор WinRAR на ваш компьютер. Рекомендуется закрыть все остальные приложения перед началом установки.
+                </p>
+                <p class="small text-muted">Нажмите кнопку <strong>Далее</strong> для перехода к лицензионному соглашению.</p>
+              </div>
+            </div>
+            
+            <!-- Footer controls -->
+            <div class="installer-footer">
+              <button class="btn btn-secondary btn-sm" id="installerBtnBack" disabled onclick="prevInstallerStep()">Назад</button>
+              <button class="btn btn-primary btn-sm" id="installerBtnNext" onclick="nextInstallerStep()">Далее</button>
+              <button class="btn btn-outline-danger btn-sm" onclick="resetInstaller()">Отмена</button>
+            </div>
+          </div>
+          
+          <div class="alert alert-success mt-4 text-center d-none" id="installerSuccessAlert">
+            <i class="fa-solid fa-circle-check me-2"></i> <strong>Ajoyib!</strong> WinRAR dasturi muvaffaqiyatli o'rnatildi va amaliy topshiriqlardagi cheklist elementi faollashtirildi.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7-BO‘LIM. WINDOWSGA TEXNIK XIZMAT KO‘RSATISH -->
+    <section id="section-8" class="scroll-animate">
+      <h2 class="section-title">7-Bo'lim. Windowsga Texnik Xizmat Ko'rsatish</h2>
+      <p class="section-subtitle">Tizimni tezkor va xavfsiz holda saqlash uchun bajariladigan asosiy texnik xizmatlar.</p>
+      
+      <div class="row g-4">
+        <!-- Sidebar Navigation lists -->
+        <div class="col-md-5">
+          <div class="glass-card p-3">
+            <div class="d-flex flex-column gap-2">
+              <div class="p-3 border rounded maintenance-item d-flex align-items-center gap-3 active" id="m-item-0" onclick="showMaintenanceDetails(0)">
+                <div class="maintenance-icon"><i class="fa-solid fa-broom"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-0 text-white">Очистка диска</h6>
+                  <small class="text-muted">Bo'sh joy ochish</small>
+                </div>
+              </div>
+              <div class="p-3 border rounded maintenance-item d-flex align-items-center gap-3" id="m-item-1" onclick="showMaintenanceDetails(1)">
+                <div class="maintenance-icon"><i class="fa-solid fa-folder-tree"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-0 text-white">Дефрагментация</h6>
+                  <small class="text-muted">Diskni optimallashtirish</small>
+                </div>
+              </div>
+              <div class="p-3 border rounded maintenance-item d-flex align-items-center gap-3" id="m-item-2" onclick="showMaintenanceDetails(2)">
+                <div class="maintenance-icon"><i class="fa-solid fa-arrows-spin"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-0 text-white">Центр обновления</h6>
+                  <small class="text-muted">Tizimni yangilash</small>
+                </div>
+              </div>
+              <div class="p-3 border rounded maintenance-item d-flex align-items-center gap-3" id="m-item-3" onclick="showMaintenanceDetails(3)">
+                <div class="maintenance-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-0 text-white">Защитник Windows</h6>
+                  <small class="text-muted">Tizim antivirusi</small>
+                </div>
+              </div>
+              <div class="p-3 border rounded maintenance-item d-flex align-items-center gap-3" id="m-item-4" onclick="showMaintenanceDetails(4)">
+                <div class="maintenance-icon"><i class="fa-solid fa-database"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-0 text-white">Архивация данных</h6>
+                  <small class="text-muted">Zahira nusxa olish</small>
+                </div>
+              </div>
+              <div class="p-3 border rounded maintenance-item d-flex align-items-center gap-3" id="m-item-5" onclick="showMaintenanceDetails(5)">
+                <div class="maintenance-icon"><i class="fa-solid fa-rotate-left"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-0 text-white">Восстановление</h6>
+                  <small class="text-muted">Orqaga qaytarish</small>
+                </div>
+              </div>
+              <div class="p-3 border rounded maintenance-item d-flex align-items-center gap-3" id="m-item-6" onclick="showMaintenanceDetails(6)">
+                <div class="maintenance-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                <div>
+                  <h6 class="fw-bold mb-0 text-white">Диспетчер устройств</h6>
+                  <small class="text-muted">Uskunalarni boshqarish</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail content box -->
+        <div class="col-md-7">
+          <div class="glass-card h-100 d-flex flex-column justify-content-between" id="maintenanceDetailsBox">
+            <div>
+              <h3 class="text-info mb-4 border-bottom pb-2" id="maintenanceTitle">Очистка диска (Disk Cleanup)</h3>
+              <p class="fs-5 mb-3"><strong><i class="fa-solid fa-bullseye text-primary me-2"></i> Vazifasi:</strong></p>
+              <p class="text-light mb-4" id="maintenancePurpose">
+                Qattiq diskda to'plangan vaqtinchalik keraksiz fayllar (Temporary files), keshlar va savatcha ichidagi fayllarni tozalab, tizimda bo'sh joy ochish hamda tezlikni oshirish.
+              </p>
+              
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="p-3 border border-secondary rounded h-100 bg-dark-subtle">
+                    <h6 class="text-info fw-bold mb-2"><i class="fa-solid fa-square-caret-right me-2"></i> Foydalanish tartibi</h6>
+                    <p class="small text-light mb-0" id="maintenanceGuide">
+                      Пуск -> "Очистка диска" yoziladi -> Disk tanlanib keraksiz fayl turlari belgilanadi -> OK tugmasi bosiladi.
+                    </p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="p-3 border border-secondary rounded h-100 bg-dark-subtle">
+                    <h6 class="text-warning fw-bold mb-2"><i class="fa-solid fa-star me-2"></i> Afzalliklari</h6>
+                    <p class="small text-light mb-0" id="maintenanceBenefits">
+                      Diskdagi ortiqcha yuzlab megabayt keraksiz axlat fayllarni xavfsiz tozalaydi, tizim barqarorligini oshiradi.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-top border-secondary-subtle">
+              <div class="p-3 border border-info rounded bg-info-subtle text-dark">
+                <h6 class="fw-bold mb-1"><i class="fa-solid fa-stethoscope me-2"></i> Tibbiyot axborot texnologiyalarida qo'llanilishi:</h6>
+                <p class="small mb-0 fw-medium" id="maintenanceMedical">
+                  Shifoxona kompyuterlarida katta hajmdagi bemor rentgen va MRT tasvirlari saqlanishi tufayli yuzaga keladigan disk to'lish muammosini xavfsiz tozalash orqali bartaraf etish.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8-BO‘LIM. KOMPYUTERNI PARVARISH QILISH -->
+    <section id="section-9" class="scroll-animate">
+      <h2 class="section-title">8-Bo'lim. Kompyuterni Parvarish Qilish</h2>
+      <p class="section-subtitle">Kompyuterning fizikaviy va dasturiy barqarorligini asrash bo'yicha interaktiv tavsiyalar (Kartochkalarni bosing).</p>
+      
+      <div class="row g-4">
+        
+        <!-- Changdan tozalash -->
+        <div class="col-md-4 col-sm-6">
+          <div class="care-card" onclick="this.classList.toggle('flipped')">
+            <div class="care-card-inner">
+              <div class="care-card-front">
+                <i class="fa-solid fa-wind text-info fs-1 mb-3"></i>
+                <h5>Changdan tozalash</h5>
+                <span class="badge bg-secondary mt-2">Batafsil</span>
+              </div>
+              <div class="care-card-back">
+                <p class="small">
+                  Kompyuter ichidagi chang ventilyatorlarni (kulerlarni) qotiradi va qizishga olib keladi. Kompyuterni yilda kamida 1-2 marta profilaktik changdan tozalash kerak.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Elektr xavfsizligi -->
+        <div class="col-md-4 col-sm-6">
+          <div class="care-card" onclick="this.classList.toggle('flipped')">
+            <div class="care-card-inner">
+              <div class="care-card-front">
+                <i class="fa-solid fa-bolt text-warning fs-1 mb-3"></i>
+                <h5>Elektr xavfsizligi</h5>
+                <span class="badge bg-secondary mt-2">Batafsil</span>
+              </div>
+              <div class="care-card-back">
+                <p class="small">
+                  Tok urishi yoki kuchlanish o'zgarishidan asrash uchun shifoxonalarda <strong>UPS</strong> (Uzluksiz quvvat manbai) bilan ishlash shart. Bu tibbiy apparatlarni saqlaydi.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Antivirus ishlatish -->
+        <div class="col-md-4 col-sm-6">
+          <div class="care-card" onclick="this.classList.toggle('flipped')">
+            <div class="care-card-inner">
+              <div class="care-card-front">
+                <i class="fa-solid fa-shield text-success fs-1 mb-3"></i>
+                <h5>Antivirus ishlatish</h5>
+                <span class="badge bg-secondary mt-2">Batafsil</span>
+              </div>
+              <div class="care-card-back">
+                <p class="small">
+                  Begona USB fleshkalarni ochishdan oldin virusga tekshirish kerak. Litsenziyali antivirus yoki Windows Defender doimiy real vaqtda ishlab turishi lozim.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kuchli parol yaratish -->
+        <div class="col-md-4 col-sm-6">
+          <div class="care-card" onclick="this.classList.toggle('flipped')">
+            <div class="care-card-inner">
+              <div class="care-card-front">
+                <i class="fa-solid fa-key text-danger fs-1 mb-3"></i>
+                <h5>Kuchli parol yaratish</h5>
+                <span class="badge bg-secondary mt-2">Batafsil</span>
+              </div>
+              <div class="care-card-back">
+                <p class="small">
+                  Bemorlar ma'lumotlarini himoyalash uchun parolda kamida 8 ta belgi, bosh va kichik harflar, raqamlar va belgilar (@, #, $) bo'lishini ta'minlang.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ma'lumotlarni himoyalash -->
+        <div class="col-md-4 col-sm-6">
+          <div class="care-card" onclick="this.classList.toggle('flipped')">
+            <div class="care-card-inner">
+              <div class="care-card-front">
+                <i class="fa-solid fa-lock text-info fs-1 mb-3"></i>
+                <h5>Ma'lumotlarni himoyalash</h5>
+                <span class="badge bg-secondary mt-2">Batafsil</span>
+              </div>
+              <div class="care-card-back">
+                <p class="small">
+                  Muhim shaxsiy va tibbiy fayllarni shifrlash uchun Windows BitLocker texnologiyasidan foydalanish hamda maxfiy hujjatlarni doimiy yashirin saqlash.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kompyuterni to'g'ri o'chirish -->
+        <div class="col-md-4 col-sm-6">
+          <div class="care-card" onclick="this.classList.toggle('flipped')">
+            <div class="care-card-inner">
+              <div class="care-card-front">
+                <i class="fa-solid fa-power-off text-danger fs-1 mb-3"></i>
+                <h5>To'g'ri o'chirish</h5>
+                <span class="badge bg-secondary mt-2">Batafsil</span>
+              </div>
+              <div class="care-card-back">
+                <p class="small">
+                  Kompyuterni bevosita tokdan sug'urmasdan, har doim <strong>Пуск -> Завершение работы</strong> orqali o'chirish lozim. Bu qattiq disk fayl tizimini asraydi.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 9-BO‘LIM. AMALIY TOPSHIRIQLAR -->
+    <section id="section-10" class="scroll-animate">
+      <h2 class="section-title">9-Bo'lim. Amaliy Topsiriqlar</h2>
+      <p class="section-subtitle">Mavzuni amalda o'zlashtirish uchun quyidagi topshiriqlarni bajaring va ularni belgilab boring.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="checklist-container">
+            <h4 class="mb-4 text-white d-flex justify-content-between align-items-center">
+              <span><i class="fa-solid fa-list-check text-info me-2"></i> Mustaqil amaliy topshiriqlar</span>
+              <span class="badge bg-info" id="checklistProgressText">0% Bajarildi</span>
+            </h4>
+            
+            <div class="progress mb-4" style="height: 10px;">
+              <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" id="checklistProgressBar" role="progressbar" style="width: 0%"></div>
+            </div>
+
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-1" onclick="toggleChecklistItem(this, 1)"></div>
+              <div class="checklist-text">Windows 10/11 ish stolida yangi papka yaratish (Создать -> Папку)</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-2" onclick="toggleChecklistItem(this, 2)"></div>
+              <div class="checklist-text">Papka ichida yangi matnli hujjat yaratish (Создать -> Текстовый документ)</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-3" onclick="toggleChecklistItem(this, 3)"></div>
+              <div class="checklist-text">Yaratilgan faylni nusxalab (Копировать -> Вставить) nusxa hosil qilish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-4" onclick="toggleChecklistItem(this, 4)"></div>
+              <div class="checklist-text">Fayl nomini o'zgartirish (Переименовать -> "Epicrisis")</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-5" onclick="toggleChecklistItem(this, 5)"></div>
+              <div class="checklist-text">Windows darslik simulyatorida WinRAR dasturini o'rnatish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-6" onclick="toggleChecklistItem(this, 6)"></div>
+              <div class="checklist-text">"Очистка диска" (Disk Cleanup) yordamchi dasturini ishga tushirib diskni tozalash tartibini o'rganish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-7" onclick="toggleChecklistItem(this, 7)"></div>
+              <div class="checklist-text">"Центр обновления Windows" (Update Center) orqali yangilanishlarni tekshirish amalini bilish</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10-BO‘LIM. BILIMINGIZNI SINANG -->
+    <section id="section-11" class="scroll-animate">
+      <h2 class="section-title">10-Bo'lim. Bilimingizni Sinang (Quiz)</h2>
+      <p class="section-subtitle">20 ta interaktiv savoldan iborat test orqali o'zlashtirish darajangizni tekshiring.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="quiz-card">
+            
+            <!-- Question boxes container -->
+            <div id="quizQuestionsContainer"></div>
+
+            <!-- Quiz navigation and progress bar -->
+            <div class="quiz-nav">
+              <button class="btn btn-outline-light" onclick="prevQuizQuestion()" id="quizPrevBtn"><i class="fa-solid fa-chevron-left me-2"></i> Oldingi</button>
+              <span class="text-muted align-self-center font-weight-bold" id="quizProgressLabel">Savol 1 / 20</span>
+              <button class="btn btn-info" onclick="nextQuizQuestion()" id="quizNextBtn">Keyingi <i class="fa-solid fa-chevron-right ms-2"></i></button>
+            </div>
+
+            <!-- Results box (hidden by default) -->
+            <div id="quizResultBox" class="text-center mt-5" style="display: none;">
+              <h3 class="text-white mb-3"><i class="fa-solid fa-circle-check text-success me-2"></i> Test Yakunlandi!</h3>
+              <p class="lead">Sizning test natijangiz:</p>
+              <div class="display-3 fw-bold text-info mb-3" id="quizScoreText">18 / 20</div>
+              <p class="fs-5 text-muted mb-4" id="quizPercentageText">Foiz ko'rsatkichi: 90%</p>
+              <div class="badge bg-success fs-5 p-3 px-4 rounded-pill" id="quizGradeBadge">Baho: 5 (A'lo)</div>
+              
+              <div class="mt-4">
+                <button class="btn btn-outline-info" onclick="restartQuiz()"><i class="fa-solid fa-rotate-left me-2"></i> Testni boshidan boshlash</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11-BO‘LIM. XULOSA -->
+    <section id="section-12" class="scroll-animate">
+      <h2 class="section-title">11-Bo'lim. Yakuniy Xulosa</h2>
+      <p class="section-subtitle">Windows operatsion tizimini o'rganishning kelajak shifokorlari faoliyatidagi ahamiyati.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="glass-card text-center">
+            <h3 class="mb-4 text-info"><i class="fa-solid fa-graduation-cap me-2"></i> Tibbiyot va Tizimli Texnologiyalar Integratsiyasi</h3>
+            <p class="text-light fs-5" style="line-height: 1.8;">
+              Zamonaviy shifoxonalar, laboratoriyalar va diagnostika markazlari (MRT, raqamli rentgen, MSKT) butunlay shaxsiy kompyuterlar va Windows operatsion tizimiga tayanadi. Kelajak shifokorlarining operatsion tizimda erkin ishlashi, fayllarni xavfsiz boshqarishi, dasturlarni to'g'ri o'rnatishi va tizimni texnik parvarishlay olishi — tibbiy yozishmalar va ma'lumotlar xavfsizligini ta'minlashning eng muhim shartlaridan biridir.
+            </p>
+            <p class="text-muted">
+              Ushbu darslik tibbiyot sohasida faoliyat yurituvchi mutaxassislarga raqamli ko'nikmalarni oshirishda poydevor bo'lib xizmat qiladi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer mt-5 border-top border-secondary-subtle">
+    <div class="container text-center py-4">
+      <p class="mb-0 text-muted">&copy; 2026. Tibbiy Informatika va Axborot Texnologiyalari Kafedrasi. Barcha huquqlar himoyalangan.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap bundle with Popper CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Javascript Logic -->
+  <script>
+    /* Theme Toggler */
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      const currentTheme = htmlEl.getAttribute('data-theme');
+      const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      htmlEl.setAttribute('data-theme', targetTheme);
+      localStorage.setItem('darslik-theme', targetTheme);
+      
+      if (targetTheme === 'dark') {
+        themeIcon.className = "fa-solid fa-sun";
+      } else {
+        themeIcon.className = "fa-solid fa-moon";
+      }
+    }
+
+    /* Scroll Progress Bar Mechanism */
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      document.getElementById('topProgressBar').style.width = scrolled + "%";
+    });
+
+    /* Intersection Observer for Scroll Animations */
+    const scrollAnimateElements = document.querySelectorAll('.scroll-animate');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animated');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    scrollAnimateElements.forEach(el => observer.observe(el));
+
+    /* 2. Timeline Accordion mechanism */
+    function toggleTimelineItem(element) {
+      // Close other active items
+      const items = document.querySelectorAll('.timeline-item');
+      items.forEach(item => {
+        if (item !== element) {
+          item.classList.remove('active');
+        }
+      });
+      // Toggle current clicked item
+      element.classList.toggle('active');
+    }
+
+    /* 3. Windows Desktop Simulator Logic */
+    const desktopObjects = {
+      thispc: {
+        title: "Этот компьютер (Mening kompyuterim)",
+        desc: "Kompyuterning barcha disk haydovchilari (C:, D:), ulanadigan fleshka yoki disk qurilmalari va tizim papkalarini ko'rsatuvchi asosiy oyna. U orqali barcha fayllar omboriga kiriladi.",
+        medical: "Laboratoriya hisobotlari, tahlil arxivlari va bemorlarning shaxsiy rentgen suratlarini saqlash uchun mo'ljallangan disklarni boshqarish."
+      },
+      explorer: {
+        title: "Проводник (Fayl boshqaruvchisi)",
+        desc: "Windowsda fayl va papkalar tuzilmasi bo'ylab harakatlanish uchun xizmat qiladigan asosiy grafik interfeys oynasi. U yordamida disklar va papkalar katalogi ko'riladi.",
+        medical: "Klinik hujjatlar saqlangan papkalarni qidirish, kasallik varaqalarini alohida shifokorlar bo'yicha guruhlash."
+      },
+      recycle: {
+        title: "Корзина (Chiqindi qutisi / Savatcha)",
+        desc: "Kompyuterdan o'chirilgan fayl yoki papkalarni vaqtincha saqlovchi maxsus oyna. Agar xatolik tufayli muhim hujjat o'chirilgan bo'lsa, uni bu yerdan qayta tiklash mumkin.",
+        medical: "Tasodifan o'chirilgan tibbiy tashxis xulosalarini qayta tiklash (Восстановить) orqali ma'lumotlarni yo'qotishdan saqlanish."
+      },
+      settings: {
+        title: "Параметры (Tizim sozlamalari)",
+        desc: "Windows 10/11 versiyasida kompyuter sozlamalarini boshqarish uchun eng zamonaviy oyna. Tarmoq sozlash, displey, yangilanish va xavfsizlik amallari bajariladi.",
+        medical: "Shifoxonada monitor yorug'ligini tibbiy ko'rikka moslash, printer drayverini sozlash va Wi-Fi tarmoqlariga ulanish."
+      },
+      taskmgr: {
+        title: "Диспетчер задач (Vazifalar dispetcheri)",
+        desc: "Real vaqt rejimida protsessor (CPU), operativ xotira (RAM) va disk yuklamalarini kuzatish hamda qotib qolgan dasturlarni majburiy o'chirish darchasi.",
+        medical: "Tibbiy dastur qotib qolganda (Снять задачу buyrug'i orqali) uni majburiy to'xtatib, operativ xotirani bo'shatish."
+      }
+    };
+
+    let activeObjectKey = null;
+
+    function selectShortcut(element, key, event) {
+      event.stopPropagation();
+      // Remove active selection from other shortcuts
+      const shortcuts = document.querySelectorAll('.desktop-shortcut');
+      shortcuts.forEach(s => s.classList.remove('active'));
+      
+      element.classList.add('active');
+      activeObjectKey = key;
+
+      // Update description panel
+      const data = desktopObjects[key];
+      document.getElementById('simTitle').innerHTML = `<i class="fa-solid fa-circle-info me-2 text-info"></i> ${data.title}`;
+      document.getElementById('simDesc').innerText = data.desc;
+      document.getElementById('simContextBox').classList.remove('d-none');
+      document.getElementById('simContextText').innerText = data.medical;
+      
+      // Update action button
+      const actionBtn = document.getElementById('simActionBtn');
+      if (key === 'thispc') {
+        actionBtn.classList.remove('d-none');
+        actionBtn.innerText = "Этот компьютер oynasini ochish";
+      } else {
+        actionBtn.classList.add('d-none');
+      }
+    }
+
+    function toggleStartMenu(event) {
+      event.stopPropagation();
+      const menu = document.getElementById('startMenu');
+      const startBtn = document.getElementById('startBtn');
+      const isVisible = menu.style.display === 'block';
+      
+      menu.style.display = isVisible ? 'none' : 'block';
+      startBtn.classList.toggle('active', !isVisible);
+    }
+
+    function closeStartMenu(event) {
+      document.getElementById('startMenu').style.display = 'none';
+      document.getElementById('startBtn').classList.remove('active');
+      
+      // Remove shortcut selections on empty click
+      if (event && event.target.classList.contains('desktop-area')) {
+        const shortcuts = document.querySelectorAll('.desktop-shortcut');
+        shortcuts.forEach(s => s.classList.remove('active'));
+        document.getElementById('simTitle').innerHTML = `<i class="fa-solid fa-circle-info me-2 text-info"></i> Obyektni tanlang`;
+        document.getElementById('simDesc').innerText = "Tushuntirish olish uchun chap tomondagi simulyator ish stolidan istalgan element ustiga bosing yoki Kнопка Пуск (Windows) menyusini ochib ko'ring.";
+        document.getElementById('simContextBox').classList.add('d-none');
+        document.getElementById('simActionBtn').classList.add('d-none');
+      }
+    }
+
+    function triggerStartAction(action) {
+      document.getElementById('startMenu').style.display = 'none';
+      document.getElementById('startBtn').classList.remove('active');
+
+      if (action === 'shutdown') {
+        alert("Kompyuter to'g'ri o'chirilmoqda. Barcha tizim fayllari saqlandi (Завершение работы).");
+        // Check dynamic checklist
+        const ch = document.getElementById('check-6');
+        if (ch) toggleChecklistItem(ch.nextElementSibling.previousElementSibling, 6);
+      } else if (action === 'settings') {
+        alert("Tizim sozlamalari (Параметры) oynasi ishga tushdi.");
+      } else if (action === 'control') {
+        alert("Панель управления (Boshqaruv paneli) oynasi ishga tushdi.");
+      } else if (action === 'taskmgr') {
+        alert("Диспетчер задач (Vazifalar dispetcheri) yuklanmoqda...");
+      } else if (action === 'explorer') {
+        alert("Проводник fayl tizimi boshqaruv oynasi ochildi.");
+      } else if (action === 'chrome') {
+        alert("Google Chrome brauzeri ochildi. Tibbiy baza bilan ulanmoqda...");
+      } else if (action === 'vlc') {
+        alert("VLC pleer ochildi. Endoskopiya video yozuvi yuklanmoqda...");
+      }
+    }
+
+    function openSimWindow(winId) {
+      document.getElementById(`win-${winId}`).style.display = 'flex';
+    }
+
+    function closeSimWindow(winId) {
+      document.getElementById(`win-${winId}`).style.display = 'none';
+    }
+
+    function openActiveSimWindow() {
+      if (activeObjectKey === 'thispc') {
+        openSimWindow('thispc');
+      }
+    }
+
+    // Set simulator taskbar clock
+    function updateClock() {
+      const now = new Date();
+      let hrs = now.getHours();
+      let mins = now.getMinutes();
+      hrs = hrs < 10 ? '0' + hrs : hrs;
+      mins = mins < 10 ? '0' + mins : mins;
+      const clockText = document.getElementById('taskbarClock');
+      if (clockText) clockText.innerText = `${hrs}:${mins}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    /* 4. Explorer Operations Simulator Logic */
+    let selectedFileEl = null;
+    let clipboardFile = null; // Stores file object for copy/paste
+    let cutOperation = false; // Is it a cut (move) operation?
+
+    function selectExplorerFile(element, event) {
+      if (event) event.stopPropagation();
+      const files = document.querySelectorAll('.explorer-file-item');
+      files.forEach(f => f.classList.remove('selected'));
+      
+      element.classList.add('selected');
+      selectedFileEl = element;
+      hideExplorerContextMenu();
+    }
+
+    function showExplorerContextMenu(event) {
+      const menu = document.getElementById('explorerContextMenu');
+      const rect = document.getElementById('explorerWorkspace').getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      
+      menu.style.left = `${x}px`;
+      menu.style.top = `${y}px`;
+      menu.style.display = 'block';
+    }
+
+    function hideExplorerContextMenu() {
+      document.getElementById('explorerContextMenu').style.display = 'none';
+    }
+
+    function executeFileOperation(operation) {
+      hideExplorerContextMenu();
+      const grid = document.getElementById('explorerGrid');
+
+      if (operation === 'create-folder') {
+        const newFolder = document.createElement('div');
+        newFolder.className = 'explorer-file-item';
+        newFolder.setAttribute('data-name', 'Новая папка');
+        newFolder.onclick = function(e) { selectExplorerFile(this, e); };
+        newFolder.innerHTML = `
+          <i class="fa-solid fa-folder text-warning"></i>
+          <span class="explorer-file-name text-dark">Новая папка</span>
+        `;
+        grid.appendChild(newFolder);
+        selectExplorerFile(newFolder);
+        alert("Yangi papka yaratildi. Standart nomi: 'Новая папка'");
+        
+        // Trigger checklist item
+        markChecklistItem(1);
+      } 
+      
+      else if (operation === 'create-file') {
+        const newFile = document.createElement('div');
+        newFile.className = 'explorer-file-item';
+        newFile.setAttribute('data-name', 'Новый документ.txt');
+        newFile.onclick = function(e) { selectExplorerFile(this, e); };
+        newFile.innerHTML = `
+          <i class="fa-solid fa-file-lines text-secondary"></i>
+          <span class="explorer-file-name text-dark">Новый документ.txt</span>
+        `;
+        grid.appendChild(newFile);
+        selectExplorerFile(newFile);
+        alert("Yangi matnli fayl yaratildi: 'Новый документ.txt'");
+        
+        // Trigger checklist item
+        markChecklistItem(2);
+      } 
+      
+      else if (operation === 'copy') {
+        if (!selectedFileEl) {
+          alert("Iltimos, avval nusxalanadigan fayl yoki papkani tanlang.");
+          return;
+        }
+        clipboardFile = {
+          name: selectedFileEl.getAttribute('data-name'),
+          iconClass: selectedFileEl.querySelector('i').className
+        };
+        cutOperation = false;
+        alert(`'${clipboardFile.name}' nusxa olindi (Копировать). Endi uni 'Вставить' yordamida joylashtirishingiz mumkin.`);
+      } 
+      
+      else if (operation === 'cut') {
+        if (!selectedFileEl) {
+          alert("Iltimos, avval ko'chiriladigan fayl yoki papkani tanlang.");
+          return;
+        }
+        clipboardFile = {
+          name: selectedFileEl.getAttribute('data-name'),
+          iconClass: selectedFileEl.querySelector('i').className,
+          element: selectedFileEl
+        };
+        cutOperation = true;
+        alert(`'${clipboardFile.name}' qirqib olindi (Вырезать). Joylashtirilgandan so'ng eski o'rnidan o'chadi.`);
+      } 
+      
+      else if (operation === 'paste') {
+        if (!clipboardFile) {
+          alert("Nusxa olingan fayl mavjud emas. Avval 'Копировать' yoki 'Вырезать' amalini bajaring.");
+          return;
+        }
+        const newEl = document.createElement('div');
+        newEl.className = 'explorer-file-item';
+        const newName = cutOperation ? clipboardFile.name : clipboardFile.name + " - копия";
+        newEl.setAttribute('data-name', newName);
+        newEl.onclick = function(e) { selectExplorerFile(this, e); };
+        newEl.innerHTML = `
+          <i class="${clipboardFile.iconClass}"></i>
+          <span class="explorer-file-name text-dark">${newName}</span>
+        `;
+        grid.appendChild(newEl);
+        
+        if (cutOperation && clipboardFile.element) {
+          clipboardFile.element.remove();
+          clipboardFile = null; // Clear clipboard after cut-paste
+        }
+        
+        alert("Fayl muvaffaqiyatli joylashtirildi (Вставить)!");
+        markChecklistItem(3);
+      } 
+      
+      else if (operation === 'rename') {
+        if (!selectedFileEl) {
+          alert("Nomini o'zgartirish uchun avval fayl yoki papkani tanlang.");
+          return;
+        }
+        const oldName = selectedFileEl.getAttribute('data-name');
+        const newName = prompt("Yangi nomni kiriting:", oldName);
+        if (newName && newName.trim()) {
+          selectedFileEl.setAttribute('data-name', newName);
+          selectedFileEl.querySelector('.explorer-file-name').innerText = newName;
+          alert(`Fayl nomi o'zgartirildi: '${newName}'`);
+          markChecklistItem(4);
+        }
+      } 
+      
+      else if (operation === 'delete') {
+        if (!selectedFileEl) {
+          alert("O'chirish uchun avval fayl yoki papkani tanlang.");
+          return;
+        }
+        const name = selectedFileEl.getAttribute('data-name');
+        if (confirm(`'${name}' faylini o'chirishni (Удалить) tasdiqlaysizmi?`)) {
+          selectedFileEl.remove();
+          selectedFileEl = null;
+          alert("Fayl o'chirildi va 'Корзина'ga yuborildi.");
+        }
+      }
+    }
+
+    function searchExplorerFiles() {
+      const query = document.getElementById('explorerSearchInput').value.toLowerCase();
+      const files = document.querySelectorAll('.explorer-file-item');
+      files.forEach(f => {
+        const name = f.getAttribute('data-name').toLowerCase();
+        if (name.includes(query)) {
+          f.style.display = 'flex';
+        } else {
+          f.style.display = 'none';
+        }
+      });
+    }
+
+    // Direct helper to programmatically mark a checklist item from action
+    function markChecklistItem(idx) {
+      const ch = document.getElementById(`check-${idx}`);
+      if (ch && !ch.classList.contains('checked')) {
+        toggleChecklistItem(ch, idx);
+      }
+    }
+
+    /* 6. Software Installer Simulator Wizard Logic */
+    let currentInstallerStep = 1;
+
+    const installerSteps = {
+      1: {
+        title: "Добро пожаловать в установщик WinRAR",
+        body: `
+          <h5 class="fw-bold mb-3">Мастер установки WinRAR v6.20</h5>
+          <p class="small text-muted">Этот мастер установит программу WinRAR на ваш компьютер.</p>
+          <p class="small text-muted">Перед началом установки закройте все открытые приложения.</p>
+          <p class="small text-muted">Нажмите <strong>Далее</strong> для продолжения установки.</p>
+        `,
+        nextText: "Далее",
+        backEnabled: false
+      },
+      2: {
+        title: "Лицензионное соглашение (WinRAR)",
+        body: `
+          <h6 class="fw-bold mb-2">Лицензионное соглашение (EULA)</h6>
+          <textarea class="form-control mb-3 small" rows="5" readonly style="font-size:0.75rem; background:#fff; color:#334155;">
+Лицензия на использование архиватора WinRAR.
+1. Все авторские права принадлежат разработчику Александру Рошалу.
+2. Программа поставляется по принципу "как есть" (AS IS). Авторы не несут ответственности за возможный ущерб.
+3. Вы можете использовать пробную версию программы в течение 40 дней.
+          </textarea>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="licenseAgreeCheck" onchange="toggleLicenseAgreement(this)">
+            <label class="form-check-label small fw-bold" for="licenseAgreeCheck">
+              Я принимаю условия лицензионного соглашения (Согласен)
+            </label>
+          </div>
+        `,
+        nextText: "Согласен",
+        backEnabled: true
+      },
+      3: {
+        title: "Выбор папки установки",
+        body: `
+          <h6 class="fw-bold mb-2">Папка для установки WinRAR</h6>
+          <p class="small text-muted">Мастер установит WinRAR в следующую папку.</p>
+          <div class="input-group mb-3">
+            <input type="text" class="form-control form-control-sm" readonly value="C:\\Program Files\\WinRAR">
+            <button class="btn btn-outline-secondary btn-sm" disabled>Обзор...</button>
+          </div>
+          <p class="small text-muted">Нажмите <strong>Установить</strong> для начала копирования файлов.</p>
+        `,
+        nextText: "Установить",
+        backEnabled: true
+      },
+      4: {
+        title: "Копирование файлов WinRAR...",
+        body: `
+          <h6 class="fw-bold mb-2" id="installerProgressLabel">Подготовка к установке...</h6>
+          <div class="progress mb-3" style="height: 18px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="installerProgressBar" role="progressbar" style="width: 0%">0%</div>
+          </div>
+          <div class="small text-muted" id="installerStatusLabel">Копирование библиотек...</div>
+        `,
+        nextText: "Завершить",
+        backEnabled: false
+      }
+    };
+
+    function updateInstallerStepView() {
+      const stepData = installerSteps[currentInstallerStep];
+      const body = document.getElementById('installerBody');
+      const btnBack = document.getElementById('installerBtnBack');
+      const btnNext = document.getElementById('installerBtnNext');
+      
+      body.innerHTML = stepData.body;
+      btnBack.disabled = !stepData.backEnabled;
+      btnNext.innerText = stepData.nextText;
+      
+      if (currentInstallerStep === 2) {
+        btnNext.disabled = true; // disabled until checked license
+      } else {
+        btnNext.disabled = false;
+      }
+      
+      if (currentInstallerStep === 4) {
+        btnNext.disabled = true; // disable next button while installing progress bar runs
+        runInstallerProgressBar();
+      }
+    }
+
+    function toggleLicenseAgreement(checkbox) {
+      document.getElementById('installerBtnNext').disabled = !checkbox.checked;
+    }
+
+    function nextInstallerStep() {
+      if (currentInstallerStep < 4) {
+        currentInstallerStep++;
+        updateInstallerStepView();
+      } else {
+        // Complete installation
+        resetInstaller();
+        document.getElementById('installerSuccessAlert').classList.remove('d-none');
+        markChecklistItem(5); // Mark WinRAR as installed in checklist
+      }
+    }
+
+    function prevInstallerStep() {
+      if (currentInstallerStep > 1) {
+        currentInstallerStep--;
+        updateInstallerStepView();
+      }
+    }
+
+    function resetInstaller() {
+      currentInstallerStep = 1;
+      updateInstallerStepView();
+      document.getElementById('installerSuccessAlert').classList.add('d-none');
+    }
+
+    function runInstallerProgressBar() {
+      const bar = document.getElementById('installerProgressBar');
+      const status = document.getElementById('installerStatusLabel');
+      const progressLabel = document.getElementById('installerProgressLabel');
+      const nextBtn = document.getElementById('installerBtnNext');
+      
+      let progress = 0;
+      const statusMsgs = [
+        "Анализ дискового пространства...",
+        "Копирование rar.exe...",
+        "Копирование unrar.dll...",
+        "Создание ярлыков на Рабочем столе...",
+        "Регистрация ассоциаций файлов (.rar, .zip)...",
+        "Установка завершена!"
+      ];
+      
+      const interval = setInterval(() => {
+        progress += 10;
+        bar.style.width = `${progress}%`;
+        bar.innerText = `${progress}%`;
+        
+        // Status message update
+        const idx = Math.floor((progress / 100) * (statusMsgs.length - 1));
+        status.innerText = statusMsgs[idx];
+        
+        if (progress >= 100) {
+          clearInterval(interval);
+          progressLabel.innerText = "Установка успешно завершена!";
+          nextBtn.disabled = false; // Enable "Завершить"
+        }
+      }, 300);
+    }
+
+    // Initialize installer step on load
+    updateInstallerStepView();
+
+    /* 7. System Maintenance Details Panel Data */
+    const maintenanceData = [
+      {
+        title: "Очистка диска (Disk Cleanup)",
+        purpose: "Qattiq diskda to'plangan vaqtinchalik keraksiz fayllar (Temporary files), keshlar va savatcha ichidagi fayllarni tozalab, tizimda bo'sh joy ochish hamda tezlikni oshirish.",
+        guide: "Пуск -> 'Очистка диска' yoziladi -> Disk tanlanib keraksiz fayl turlari belgilanadi -> OK tugmasi bosiladi.",
+        benefits: "Diskdagi ortiqcha yuzlab megabayt keraksiz axlat fayllarni xavfsiz tozalaydi, tizim barqarorligini oshiradi.",
+        medical: "Shifoxona kompyuterlarida katta hajmdagi bemor rentgen va MRT tasvirlari saqlanishi tufayli yuzaga keladigan disk to'lish muammosini xavfsiz tozalash orqali bartaraf etish."
+      },
+      {
+        title: "Дефрагментация диска (Disk Defragmentation)",
+        purpose: "HDD disklarda turli qismlarga tarqalib ketgan (parchalanib ketgan) tizim fayllarini birlashtirish orqali kompyuterning ishlash tezligini oshirish (SSD disklarni optimallashtiradi).",
+        guide: "Пуск -> 'Оптимизация дисков' -> Tegishli disk tanlanadi -> 'Оптимизировать' tugmasi bosiladi.",
+        benefits: "Fayllarni o'qish va ochish tezligi sezilarli oshadi, qattiq diskning jismoniy ishlash umri uzayadi.",
+        medical: "Klinika ma'lumotlar bazalariga (HIS) so'rov yuborganda disklardagi kesh va jadvallarni tezkor o'qish imkoniyati tufayli bemor navbatlarini kamaytirish."
+      },
+      {
+        title: "Центр обновления Windows (Windows Update)",
+        purpose: "Tizimning oxirgi xavfsizlik yangilanishlari (patchlar) va drayverlar yangilanishini Microsoft serverlaridan avtomatik yuklab olish markazi.",
+        guide: "Параметры -> Обновление и безопасность -> Проверить наличие обновлений.",
+        benefits: "Tizim zaifliklarini kiberhujumlardan yopadi, kompyuterning ishlashini tezkor va xavfsiz darajada saqlaydi.",
+        medical: "Kasalxona kompyuterlariga virusli to'lov dasturlari (Ransomware) tushishini oldini olish orqali elektron tibbiy varaqalarni shifrlanishdan asrash."
+      },
+      {
+        title: "Защитник Windows (Windows Defender)",
+        purpose: "Windows tarkibiga o'rnatilgan real vaqt rejimida ishlovchi bepul standart kiber-himoya va antivirus dasturi.",
+        guide: "Параметры -> Обновление и безопасность -> Безопасность Windows -> Защита от вирусов.",
+        benefits: "Tizim resurslarini ortiqcha yuklamaydi, real vaqt rejimida yuklanuvchi barcha xavfli fayllar va troyanlarni bloklaydi.",
+        medical: "Shifokor kompyuterlaridagi shaxsiy ma'lumotlar va maxfiy tashxis blankalarining josus dasturlar tomonidan o'g'irlanishini to'xtatish."
+      },
+      {
+        title: "Архивация данных (Backup & Restore)",
+        purpose: "Operatsion tizim, muhim tizim sozlamalari yoki foydalanuvchining shaxsiy fayllarini tashqi diskka zahiralab (backup) borish tizimi.",
+        guide: "Панель управления -> Резервное копирование и восстановление -> Настроить резервное копирование.",
+        benefits: "Kompyuter qattiq diski butunlay yaroqsiz bo'lib qolganda ham, barcha ma'lumotlarni 100% tiklash kafolatini beradi.",
+        medical: "Butun klinika bo'limining bir necha yillik kasallik tarixi arxivlarini har kuni zaxiralab borish orqali favqulodda vaziyatlarda yo'qotishlarni oldini olish."
+      },
+      {
+        title: "Восстановление системы (System Restore)",
+        purpose: "Tizimda viruslar yoki xato drayverlar tufayli jiddiy muammo chiqqanda, kompyuterni oldindan yaratilgan tiklanish nuqtasiga (Restore Point) qaytarish.",
+        guide: "Панель управления -> Восстановление -> Запуск восстановления системы.",
+        benefits: "OTni qayta o'rnatmasdan turib (Windows reinstall) uning oldingi barqaror ishlash holatiga osongina qaytaradi.",
+        medical: "Tahlil dasturlari xato sababli ishlamay qolganda tizimni orqaga qaytarib, shifoxona ish jarayoni to'xtab qolishining oldini olish."
+      },
+      {
+        title: "Диспетчер устройств (Device Manager)",
+        purpose: "Kompyuter apparat vositalari, drayverlar va ulangan tashqi qurilmalar holatini nazorat qilish va drayverlarni sozlash oynasi.",
+        guide: "Пуск ustida sichqonchaning o'ng tugmasi bosiladi -> Диспетчер устройств.",
+        benefits: "Nosoz ulangan qurilmalarni (sariq undov belgili) aniqlab beradi va ularning drayverlarini yangilash imkonini yaratadi.",
+        medical: "Kardiogramma (EKG), UZI datchiklari yoki maxsus tibbiy printerlarning kompyuter bilan aloqasidagi drayver xatolarini bartaraf etish."
+      }
+    ];
+
+    function showMaintenanceDetails(index) {
+      // Remove active class from lists
+      for (let i = 0; i < maintenanceData.length; i++) {
+        document.getElementById(`m-item-${i}`).classList.remove('active');
+      }
+      // Add active to current
+      document.getElementById(`m-item-${index}`).classList.add('active');
+
+      // Update contents
+      const data = maintenanceData[index];
+      document.getElementById('maintenanceTitle').innerText = data.title;
+      document.getElementById('maintenancePurpose').innerText = data.purpose;
+      document.getElementById('maintenanceGuide').innerText = data.guide;
+      document.getElementById('maintenanceBenefits').innerText = data.benefits;
+      document.getElementById('maintenanceMedical').innerText = data.medical;
+    }
+
+    /* 9. Amaliy topshiriqlar checklist logic */
+    const checkedItems = {};
+
+    function toggleChecklistItem(element, itemId) {
+      if (checkedItems[itemId]) {
+        delete checkedItems[itemId];
+        element.classList.remove('checked');
+        element.innerHTML = "";
+      } else {
+        checkedItems[itemId] = true;
+        element.classList.add('checked');
+        element.innerHTML = '<i class="fa-solid fa-check"></i>';
+      }
+
+      // Recalculate progress
+      const total = 7;
+      const checkedCount = Object.keys(checkedItems).length;
+      const percentage = Math.round((checkedCount / total) * 100);
+
+      document.getElementById('checklistProgressText').innerText = `${percentage}% Bajarildi`;
+      document.getElementById('checklistProgressBar').style.width = `${percentage}%`;
+    }
+
+    /* 10. Bilimingizni sinang quiz logic - 20 questions */
+    const quizQuestions = [
+      {
+        q: "Operatsion tizim (OT) ning asosiy vazifasi nima?",
+        a: [
+          "Kompyuter apparat vositalari va foydalanuvchi o'rtasida muloqotni (interfeys) ta'minlash",
+          "Faqat internetga ulanishni ta'minlash",
+          "Matnli hujjatlarni chop etish",
+          "Kompyuterga antivirus dasturini o'rnatish"
+        ],
+        c: 0
+      },
+      {
+        q: "MS-DOS operatsion tizimi nechanchi yilda yaratilgan?",
+        a: ["1981-yilda", "1985-yilda", "1995-yilda", "1998-yilda"],
+        c: 0
+      },
+      {
+        q: "Windows operatsion tizimining birinchi grafik interfeysli versiyasi qaysi?",
+        a: ["Windows 1.0", "Windows 3.1", "Windows 95", "MS-DOS"],
+        c: 0
+      },
+      {
+        q: "Qaysi Windows versiyasida birinchi marta 'Рабочий стол' va 'Кнопка Пуск' interfeysi taqdim etilgan?",
+        a: ["Windows 95", "Windows XP", "Windows 7", "Windows Vista"],
+        c: 0
+      },
+      {
+        q: "Windows XP nechanchi yilda chiqarilgan va nima uchun ommalashgan?",
+        a: [
+          "2001-yilda, barqaror Windows NT yadrosi va chiroyli interfeys sababli",
+          "2007-yilda, Aero shaffof vizual effekti sababli",
+          "1998-yilda, USB ni qo'llab-quvvatlaganligi sababli",
+          "2012-yilda, plitkali Metro UI interfeysi sababli"
+        ],
+        c: 0
+      },
+      {
+        q: "Windows 11 ning eng muhim apparat talablaridan biri nima?",
+        a: [
+          "TPM 2.0 xavfsizlik moduli mavjudligi",
+          "Faqat Intel Pentium protsessorida ishlashi",
+          "100 GB operativ xotira (RAM)",
+          "Optik disk drayverining bo'lishi"
+        ],
+        c: 0
+      },
+      {
+        q: "Windows ish stolining ruscha interfeysidagi 'Корзина' elementi nima vazifani bajaradi?",
+        a: [
+          "O'chirilgan fayl va papkalarni vaqtincha saqlash va qayta tiklash",
+          "Keraksiz dasturlarni butunlay kompyuterdan o'chirish",
+          "Diskni vaqtinchalik keraksiz fayllardan tozalash",
+          "Tizimni orqaga qaytarish nuqtasini yaratish"
+        ],
+        c: 0
+      },
+      {
+        q: "Rus tilidagi Windows tizimida faylni nusxalash (copy) uchun qaysi menyu buyrug'i ishlatiladi?",
+        a: ["Копировать", "Вырезать", "Вставить", "Создать"],
+        c: 0
+      },
+      {
+        q: "Nusxalangan yoki qirqib olingan faylni kerakli joyga joylashtirish (paste) uchun qaysi buyruq ishlatiladi?",
+        a: ["Вставить", "Копировать", "Создать", "Вырезать"],
+        c: 0
+      },
+      {
+        q: "Rus tilidagi Windows 10/11 menyusida yangi papka yaratish ketma-ketligi qanday?",
+        a: [
+          "Sichqonchaning o'ng tugmasi -> Создать -> Папку",
+          "Кнопка Пуск -> Создать -> Папку",
+          "Sichqonchaning o'ng tugmasi -> Свойства -> Создать",
+          "Проводник -> Вставить -> Папку"
+        ],
+        c: 0
+      },
+      {
+        q: "Fayllarni siqish, hajmini kamaytirish va bitta arxiv fayliga jamlash uchun ishlatiladigan dasturlar guruhi qanday ataladi?",
+        a: [
+          "Arxivatorlar (WinRAR, 7-Zip)",
+          "Audio-video pleyerlar",
+          "Internet brauzerlari",
+          "Antivirus dasturlari"
+        ],
+        c: 0
+      },
+      {
+        q: "PDF formatidagi tibbiy hujjatlarni va darsliklarni o'qish uchun eng keng tarqalgan xizmatchi dastur qaysi?",
+        a: ["Adobe Acrobat Reader", "Google Chrome", "VLC Media Player", "Kaspersky Antivirus"],
+        c: 0
+      },
+      {
+        q: "Kompyuter qattiq diskidagi vaqtinchalik keraksiz fayllarni o'chirish orqali bo'sh joy ochadigan Windows dasturi qaysi?",
+        a: ["Очистка диска (Disk Cleanup)", "Дефрагментация диска", "Центр обновления Windows", "Диспетчер устройств"],
+        c: 0
+      },
+      {
+        q: "Qattiq diskda fayllar parchalanishini tartibga solib, diskning o'qish tezligini oshiruvchi amal nima deb ataladi?",
+        a: ["Дефрагментация диска", "Очистка диска", "Резервное копирование", "Восстановление системы"],
+        c: 0
+      },
+      {
+        q: "Dastur o'rnatish ustasi (Setup Wizard) bosqichlarida foydalanuvchi litsenziya shartnomasiga rozi ekanligini bildirish uchun qaysi tugmani bosadi?",
+        a: ["Согласен (yoki Принимаю условия)", "Далее", "Отмена", "Обзор"],
+        c: 0
+      },
+      {
+        q: "Windows operatsion tizimini xavfli dasturlardan va tarmoq hujumlaridan himoya qiluvchi ichki standart antivirus qanday ataladi?",
+        a: ["Защитник Windows (Windows Defender)", "Dr.Web Antivirus", "Kaspersky Free", "BitDefender"],
+        c: 0
+      },
+      {
+        q: "Kompyuter tizimi jiddiy nosozlikka uchraganda uni oldinroq yaratilgan barqaror holatga qaytarish funksiyasi qanday ataladi?",
+        a: ["Восстановление системы (System Restore)", "Архивация данных", "Диспетчер задач", "Очистка диска"],
+        c: 0
+      },
+      {
+        q: "Kompyuterning barcha drayverlari va apparat qurilmalari holatini sozlash qaysi oyna orqali boshqariladi?",
+        a: ["Диспетчер устройств (Device Manager)", "Диспетчер задач", "Панель задач", "Центр обновления"],
+        c: 0
+      },
+      {
+        q: "Shifokorning shaxsiy kompyuterida tibbiy sir va bemorlar ma'lumotlarini kiberhujumdan himoya qilish uchun qanday choralarni ko'rish zarur?",
+        a: [
+          "Kuchli kirish paroli o'rnatish, BitLocker shifrlashini qo'llash va muntazam zahiralash",
+          "Faqat devor qog'ozini o'zgartirish",
+          "Antivirusni butunlay o'chirib qo'yish",
+          "Kompyuterni kechasi o'chirmasdan doimo yoqiq qoldirish"
+        ],
+        c: 0
+      },
+      {
+        q: "Kompyuterni jismoniy to'g'ri o'chirish tartibi qanday?",
+        a: [
+          "Пуск -> Завершение работы orqali o'chirish",
+          "Tarmoq kabelini rozetkadan to'g'ridan-to'g'ri sug'urib olish",
+          "Tizim blokidagi quvvat tugmasini (Power) uzoq bosib turish",
+          "Monitor ekranini tugmasidan o'chirib qo'yish"
+        ],
+        c: 0
+      }
+    ];
+
+    let currentQuestionIdx = 0;
+    const userQuizAnswers = {};
+
+    function initQuiz() {
+      const container = document.getElementById('quizQuestionsContainer');
+      container.innerHTML = "";
+
+      quizQuestions.forEach((item, idx) => {
+        const qBox = document.createElement('div');
+        qBox.className = `quiz-question-box ${idx === 0 ? 'active' : ''}`;
+        qBox.id = `qBox${idx}`;
+
+        // Shuffle options for better interactive feedback
+        // Map original indices so we can verify correct one
+        const mappedOptions = item.a.map((opt, optIdx) => ({ text: opt, originalIdx: optIdx }));
+        // Let's sort randomly
+        mappedOptions.sort(() => Math.random() - 0.5);
+
+        qBox.innerHTML = `
+          <h5 class="text-white mb-4">Savol ${idx + 1}: ${item.q}</h5>
+          <div class="row g-2">
+            ${mappedOptions.map((option, optIdx) => `
+              <div class="col-12">
+                <button class="quiz-option-btn" id="q${idx}opt${option.originalIdx}" onclick="selectQuizOption(${idx}, ${option.originalIdx})"><span class="badge bg-secondary rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">${String.fromCharCode(65 + optIdx)}</span><span class="opt-text">${option.text}</span></button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(qBox);
+      });
+      updateQuizNav();
+    }
+
+    function selectQuizOption(questionIdx, optionIdx) {
+      if (userQuizAnswers[questionIdx] !== undefined) return; // Prevent changing answer
+
+      userQuizAnswers[questionIdx] = optionIdx;
+      const question = quizQuestions[questionIdx];
+      const correctOpt = question.c;
+
+      // Highlight selected button
+      const optBtn = document.getElementById(`q${questionIdx}opt${optionIdx}`);
+      if (optionIdx === correctOpt) {
+        optBtn.classList.add('correct');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      } else {
+        optBtn.classList.add('incorrect');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-xmark ms-auto"></i>';
+        
+        // Highlight the correct one
+        const correctBtn = document.getElementById(`q${questionIdx}opt${correctOpt}`);
+        correctBtn.classList.add('correct');
+        correctBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      }
+    }
+
+    function prevQuizQuestion() {
+      if (currentQuestionIdx > 0) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx--;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      }
+    }
+
+    function nextQuizQuestion() {
+      if (currentQuestionIdx < quizQuestions.length - 1) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx++;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function updateQuizNav() {
+      document.getElementById('quizProgressLabel').innerText = `Savol ${currentQuestionIdx + 1} / 20`;
+      document.getElementById('quizPrevBtn').disabled = (currentQuestionIdx === 0);
+      
+      const nextBtn = document.getElementById('quizNextBtn');
+      if (currentQuestionIdx === quizQuestions.length - 1) {
+        nextBtn.innerHTML = 'Natijani ko\'rish <i class="fa-solid fa-square-poll-vertical ms-2"></i>';
+        nextBtn.className = "btn btn-success";
+      } else {
+        nextBtn.innerHTML = 'Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>';
+        nextBtn.className = "btn btn-info";
+      }
+    }
+
+    function showQuizResults() {
+      document.getElementById('quizQuestionsContainer').style.display = 'none';
+      document.getElementById('quizPrevBtn').style.display = 'none';
+      document.getElementById('quizNextBtn').style.display = 'none';
+      document.getElementById('quizProgressLabel').style.display = 'none';
+
+      // Count scores
+      let score = 0;
+      quizQuestions.forEach((q, idx) => {
+        if (userQuizAnswers[idx] === q.c) {
+          score++;
+        }
+      });
+
+      const percentage = Math.round((score / quizQuestions.length) * 100);
+      let grade = "2 (Qoniqarsiz)";
+      let gradeClass = "bg-danger";
+
+      if (percentage >= 86) {
+        grade = "5 (A'lo)";
+        gradeClass = "bg-success";
+      } else if (percentage >= 71) {
+        grade = "4 (Yaxshi)";
+        gradeClass = "bg-primary";
+      } else if (percentage >= 55) {
+        grade = "3 (Qoniqarli)";
+        gradeClass = "bg-warning text-dark";
+      }
+
+      document.getElementById('quizScoreText').innerText = `${score} / 20`;
+      document.getElementById('quizPercentageText').innerText = `Foiz ko'rsatkichi: ${percentage}%`;
+      
+      const gradeBadge = document.getElementById('quizGradeBadge');
+      gradeBadge.className = `badge ${gradeClass} fs-5 p-3 px-4 rounded-pill`;
+      gradeBadge.innerText = `Baho: ${grade}`;
+
+      document.getElementById('quizResultBox').style.display = 'block';
+    }
+
+    function restartQuiz() {
+      currentQuestionIdx = 0;
+      // Clear user answers
+      for (let i = 0; i < quizQuestions.length; i++) {
+        delete userQuizAnswers[i];
+      }
+
+      document.getElementById('quizQuestionsContainer').style.display = 'block';
+      document.getElementById('quizPrevBtn').style.display = 'inline-block';
+      document.getElementById('quizNextBtn').style.display = 'inline-block';
+      document.getElementById('quizProgressLabel').style.display = 'inline-block';
+      document.getElementById('quizResultBox').style.display = 'none';
+
+      initQuiz();
+    }
+
+    // Initialize Everything
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = 'dark'; localStorage.setItem('darslik-theme', 'dark');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      const themeIcon = document.getElementById('themeIcon');
+      if (themeIcon) {
+        themeIcon.className = savedTheme === 'dark' ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      }
+      initQuiz();
+    });
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.href = '../index.html';
+    }
+
+        function applyAuthorName() {
+      const loginName = localStorage.getItem('darslik_login') || 'Napasov';
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      applyAuthorName();
+    });
+  </script>
+
+</body>
+</html>

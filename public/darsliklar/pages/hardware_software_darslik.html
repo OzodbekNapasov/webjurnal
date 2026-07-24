@@ -1,0 +1,2362 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+<head>
+  <script>
+    // Immediate login check before rendering
+    const savedLogin = localStorage.getItem('darslik_login');
+    if (savedLogin !== 'Napasov' && savedLogin !== 'Umirov') {
+      window.location.href = '../index.html';
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="../LOGO.png">
+  <title>Elektron Darslik: Kompyuter Apparat va Dasturiy Ta'minoti</title>
+  
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  
+  <!-- Google Fonts: Poppins (headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0a192f;           /* Deep Blue */
+      --secondary-bg: #112240;         /* Navy 800 */
+      --text-main: #ffffff;            /* Pure white for contrast */
+      --text-muted: #8892b0;           /* Slate 300 */
+      --text-light: #ccd6f6;           /* Slate 100 */
+      --card-bg: rgba(17, 34, 64, 0.95);/* Opaque Navy card */
+      --border-color: rgba(255, 255, 255, 0.12);
+      --accent: #ff6b00;               /* Fiery Orange */
+      --accent-glow: rgba(255, 107, 0, 0.35);
+      --primary-cyan: #64ffda;         /* Cyber Teal */
+      --primary-cyan-glow: rgba(100, 255, 218, 0.25);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --error: #ef4444;
+      --error-glow: rgba(239, 68, 68, 0.25);
+      
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 10px 30px rgba(2, 12, 27, 0.5);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;           /* Light Slate */
+      --secondary-bg: #ffffff;
+      --text-main: #0a192f;            /* Deep Blue */
+      --text-muted: #475569;           /* Slate 600 */
+      --text-light: #1e293b;           /* Slate 800 */
+      --card-bg: rgba(255, 255, 255, 0.98);
+      --border-color: rgba(10, 25, 47, 0.12);
+      --accent: #ea580c;               /* Darker orange for text contrast */
+      --accent-glow: rgba(234, 88, 12, 0.25);
+      --primary-cyan: #0f766e;
+      --shadow: 0 10px 30px rgba(10, 25, 47, 0.08);
+    }
+
+    /* Bootstrap Overrides for Readability and Contrast */
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+    .text-light {
+      color: var(--text-light) !important;
+    }
+    .lead {
+      color: var(--text-muted) !important;
+      font-weight: 500 !important;
+    }
+    p {
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+    li {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-light);
+    }
+
+    /* Light Theme Specific Readability Overrides */
+    [data-theme="light"] .text-white {
+      color: var(--text-main) !important;
+    }
+    [data-theme="light"] .text-warning {
+      color: #b45309 !important; /* Amber 700 - dark, readable orange */
+    }
+    [data-theme="light"] .text-info {
+      color: #0369a1 !important; /* Sky 700 - readable dark cyan */
+    }
+    .text-accent {
+      color: var(--accent) !important;
+    }
+
+    /* Theme-specific custom styles for background subtle helper classes to fix contrast */
+    .bg-dark-subtle {
+      background-color: var(--secondary-bg) !important;
+      border: 1px solid var(--border-color) !important;
+    }
+    
+    .bg-info-subtle {
+      background-color: rgba(100, 255, 218, 0.08) !important;
+      border: 1px solid rgba(100, 255, 218, 0.25) !important;
+      color: var(--text-main) !important;
+    }
+    .bg-info-subtle h1, .bg-info-subtle h2, .bg-info-subtle h3, 
+    .bg-info-subtle h4, .bg-info-subtle h5, .bg-info-subtle h6, 
+    .bg-info-subtle p, .bg-info-subtle span, .bg-info-subtle div {
+      color: var(--text-main) !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Core Styles */
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      position: relative;
+    }
+
+    .logo-img {
+      height: 40px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+      transition: var(--transition-smooth);
+    }
+    .logo-img:hover {
+      transform: scale(1.05);
+    }
+    
+    [data-theme="light"] .logo-img {
+      filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.15));
+    }
+
+    /* Background Gradients */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background-image: 
+        radial-gradient(at 0% 0%, var(--primary-cyan-glow) 0, transparent 40%),
+        radial-gradient(at 100% 100%, var(--accent-glow) 0, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.003) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.003) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    /* Fixed Progress Bar */
+    .top-progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: rgba(0, 0, 0, 0.1);
+      z-index: 1050;
+    }
+
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--primary-cyan), #d946ef);
+      box-shadow: 0 0 10px var(--accent);
+      transition: width 0.1s ease;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: rgba(10, 25, 47, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 6px;
+      z-index: 1000;
+      margin: 0 12px;
+      border-radius: 0 0 16px 16px;
+      transition: background-color 0.4s ease;
+    }
+
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.85);
+      border-bottom: 1px solid rgba(10, 25, 47, 0.08);
+    }
+
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--text-main) 40%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--secondary-accent) 100%) !important;
+      -webkit-background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+    .logo-img {
+      transition: var(--transition-smooth);
+    }
+    .navbar-brand:hover .logo-img {
+      transform: scale(1.08);
+    }
+
+    /* Premium Author Badge */
+    .author-badge {
+      background: linear-gradient(135deg, rgba(255, 107, 0, 0.15) 0%, rgba(100, 255, 220, 0.05) 100%);
+      border: 1px solid rgba(255, 107, 0, 0.35);
+      border-radius: 9999px;
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 0 15px rgba(255, 107, 0, 0.15), inset 0 0 10px rgba(255, 107, 0, 0.05);
+      backdrop-filter: blur(8px);
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .author-badge {
+      background: linear-gradient(135deg, rgba(234, 88, 12, 0.08) 0%, rgba(15, 118, 110, 0.03) 100%);
+      border: 1px solid rgba(234, 88, 12, 0.25);
+      box-shadow: 0 0 10px rgba(234, 88, 12, 0.05);
+    }
+
+    .author-badge:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 22px rgba(255, 107, 0, 0.35);
+      transform: translateY(-2px);
+    }
+    
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulseDot 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(0.85); opacity: 0.6; box-shadow: 0 0 6px var(--accent); }
+      50% { transform: scale(1.2); opacity: 1; box-shadow: 0 0 14px var(--accent); }
+    }
+
+    .author-name {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent) !important;
+      letter-spacing: 0.05em;
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+      transition: var(--transition-smooth);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 107, 0, 0.2);
+      box-shadow: 0 12px 30px var(--accent-glow);
+    }
+
+    /* Scroll animations */
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+
+    .scroll-animate.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Section Styles */
+    section {
+      padding: 80px 0;
+    }
+
+    .section-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin-bottom: 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--primary-cyan));
+      border-radius: 2px;
+      margin: 12px auto 0 auto;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 50px auto;
+      font-size: 1.1rem;
+    }
+
+    /* 1. Hero Section */
+    .hero-section {
+      min-height: 85vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding-top: 120px;
+    }
+
+    .hero-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2.85rem;
+      font-weight: 800;
+      line-height: 1.25;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent) 80%, var(--primary-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 24px;
+    }
+
+    [data-theme="light"] .hero-title {
+      background: linear-gradient(135deg, #0a192f 40%, var(--accent) 80%, var(--primary-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .btn-primary-custom {
+      background: linear-gradient(135deg, var(--accent), var(--primary-cyan));
+      border: none;
+      color: #ffffff;
+      padding: 12px 30px;
+      border-radius: 30px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px var(--accent-glow);
+      transition: var(--transition-smooth);
+    }
+
+    .btn-primary-custom:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--accent-glow);
+      color: #ffffff;
+    }
+
+    /* 3. Devices Click to View Grid */
+    .device-grid-item {
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      border-left: 4px solid var(--accent);
+    }
+    
+    .device-grid-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px var(--accent-glow);
+    }
+
+    .device-icon-box {
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 107, 0, 0.08);
+      border: 1px solid rgba(255, 107, 0, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: var(--accent);
+      margin-bottom: 15px;
+    }
+
+    /* 4. Interactive Motherboard */
+    .motherboard-svg {
+      background: #0f1e36;
+      border: 4px solid #334155;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .mb-socket {
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      fill: #1e293b;
+      stroke: #475569;
+    }
+
+    .mb-socket:hover, .mb-socket.active {
+      fill: rgba(255, 107, 0, 0.25);
+      stroke: var(--accent);
+    }
+
+    /* 6. Hardware Category Diagram */
+    .hw-diagram-card {
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      border-top: 4px solid var(--accent);
+      text-align: center;
+    }
+
+    .hw-diagram-card:hover, .hw-diagram-card.active {
+      transform: scale(1.03);
+      border-top-color: var(--primary-cyan);
+      box-shadow: 0 10px 20px var(--primary-cyan-glow);
+    }
+
+    /* 8. Taqqoslash Table Styles */
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    .comp-table th, .comp-table td {
+      padding: 16px 20px;
+      border: 1px solid var(--border-color);
+      color: var(--text-light);
+    }
+
+    .comp-table th {
+      background: var(--secondary-bg);
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .comp-table tr:hover {
+      background: rgba(255, 107, 0, 0.03);
+    }
+
+    /* 10. Isometric 3D Simulator */
+    .chassis-simulator {
+      background: linear-gradient(135deg, #0b1528, #112240);
+      border: 3px solid var(--border-color);
+      border-radius: 20px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .sim-component {
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .sim-component:hover {
+      filter: drop-shadow(0 0 8px var(--accent));
+      transform: scale(1.02);
+    }
+
+    .sim-component.installed {
+      filter: drop-shadow(0 0 12px var(--primary-cyan));
+    }
+
+    /* 11. Checklist */
+    .checklist-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 30px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .checklist-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-checkbox.checked {
+      background: var(--success);
+      border-color: var(--success);
+      color: #ffffff;
+    }
+
+    .checklist-text {
+      font-size: 1.05rem;
+      color: var(--text-light);
+      transition: var(--transition-smooth);
+    }
+
+    .checklist-checkbox.checked + .checklist-text {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* 12. Quiz */
+    .quiz-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 40px;
+    }
+
+    .quiz-question-box {
+      display: none;
+    }
+
+    .quiz-question-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .quiz-option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      font-size: 1rem;
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .quiz-option-btn:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    .quiz-option-btn.correct {
+      background: rgba(16, 185, 129, 0.1) !important;
+      border-color: var(--success) !important;
+      color: var(--success) !important;
+    }
+
+    .quiz-option-btn.incorrect {
+      background: rgba(239, 68, 68, 0.1) !important;
+      border-color: var(--error) !important;
+      color: var(--error) !important;
+    }
+
+    .quiz-nav {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 30px;
+    }
+
+    /* 13. Group Classification Game */
+    .game-items-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      padding: 20px;
+      border: 1px dashed var(--border-color);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.01);
+    }
+
+    .game-item {
+      padding: 10px 20px;
+      background: var(--secondary-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition-smooth);
+    }
+
+    .game-item:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .game-item.selected {
+      background: var(--accent);
+      color: #ffffff !important;
+      border-color: var(--accent);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .game-bucket {
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      min-height: 150px;
+      transition: var(--transition-smooth);
+    }
+
+    .game-bucket:hover {
+      border-color: var(--primary-cyan);
+    }
+
+    .game-bucket-title {
+      font-weight: 700;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .game-bucket-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .bucket-assigned-item {
+      padding: 6px 12px;
+      background: rgba(100, 255, 220, 0.08);
+      border: 1px solid rgba(100, 255, 220, 0.2);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  
+    /* Login Overlay Styling */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    [data-theme="light"] .login-overlay {
+      background: rgba(241, 245, 249, 0.8);
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding: 35px 30px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      animation: cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-icon {
+      width: 65px;
+      height: 65px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white;
+      font-size: 1.7rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px var(--primary-cyan-glow);
+    }
+
+    .login-title {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+
+    .login-subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .login-input-wrapper i {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.4) !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 50px;
+      padding: 12px 20px 12px 50px;
+      color: var(--text-main) !important;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .login-input {
+      background: rgba(255, 255, 255, 0.65) !important;
+    }
+
+    .login-input:focus {
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 15px var(--primary-cyan-glow);
+    }
+
+    .login-error-msg {
+      color: #ef4444;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+
+    .login-btn {
+      background: linear-gradient(135deg, var(--primary-cyan), var(--accent));
+      color: white !important;
+      border: none;
+      border-radius: 50px;
+      padding: 13px 28px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--primary-cyan-glow);
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--primary-cyan-glow);
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+  </style>
+  <link rel="stylesheet" href="darslik.css">
+</head>
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="top-progress-container">
+    <div id="topProgressBar" class="top-progress-bar"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="../index.html">
+        <img src="../LOGO.png" alt="Logo" class="logo-img">
+        <span class="logo-text">Axborot texnologiyalari</span>
+      </a>
+      <div class="d-flex align-items-center gap-3 ms-auto">
+        <a href="../index.html" class="btn btn-sm btn-outline-light border-0" title="Portalga qaytish">
+          <i class="fa-solid fa-house"></i> <span class="d-none d-sm-inline ms-1">Mundarija</span>
+        </a>
+        <div class="author-badge d-none d-md-flex">
+          <span class="pulse-dot"></span>
+          <span class="author-name">Muallif: {{AUTHOR}}</span>
+        </div>
+                <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- 1. Hero Section -->
+    <section class="hero-section" id="section-1">
+      <div class="row align-items-center">
+        <div class="col-lg-6 mb-5 mb-lg-0 scroll-animate animated">
+          <span class="badge bg-warning-subtle text-warning mb-3 px-3 py-2 rounded-pill font-weight-bold" style="letter-spacing: 0.05em; font-family:'Poppins', sans-serif;">TIBBIYOTDA AKT</span>
+          <h1 class="hero-title">Kompyuter Apparat va Dasturiy Ta'minoti</h1>
+          <p class="lead text-muted mb-4">
+            Kompyuterning ichki va tashqi qurilmalari, apparat (Hardware) va dasturiy (Software) ta'minoti hamda ularning zamonaviy klinikalardagi hayotiy vazifalarini interaktiv maketlar va simulyatorlar yordamida o'rganing.
+          </p>
+          <div class="text-muted small mb-4 font-weight-bold" style="font-family:'Poppins',sans-serif;">
+            <i class="fa-solid fa-user-doctor text-accent me-2"></i> Tuzuvchi: {{AUTHOR}} &nbsp;|&nbsp; <i class="fa-solid fa-calendar-days text-accent me-2"></i> 2026-yil
+          </div>
+          <a href="#section-2" class="btn btn-primary-custom btn-lg">Darsni Boshlash <i class="fa-solid fa-arrow-down ms-2"></i></a>
+        </div>
+        <div class="col-lg-6 scroll-animate animated">
+          <!-- PC & Hardware Concept SVG -->
+          <svg viewBox="0 0 500 400" width="100%" height="auto">
+            <defs>
+              <linearGradient id="orange-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ff6b00" />
+                <stop offset="100%" stop-color="#ff9f43" />
+              </linearGradient>
+              <linearGradient id="teal-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#64ffda" />
+                <stop offset="100%" stop-color="#00d2d3" />
+              </linearGradient>
+            </defs>
+            <!-- Background circles -->
+            <circle cx="250" cy="200" r="140" fill="none" stroke="url(#orange-grad)" stroke-width="1.5" stroke-dasharray="10 5" opacity="0.4" />
+            <circle cx="250" cy="200" r="170" fill="none" stroke="url(#teal-grad)" stroke-width="1" stroke-dasharray="4 8" opacity="0.3" />
+            
+            <!-- Monitor drawing -->
+            <rect x="130" y="110" width="240" height="150" rx="10" fill="rgba(17,34,64,0.8)" stroke="url(#orange-grad)" stroke-width="3" />
+            <!-- Inside screen: Medical ECG display -->
+            <rect x="140" y="120" width="220" height="130" fill="#0a192f" rx="4" />
+            <path d="M 150 185 L 180 185 L 190 150 L 205 220 L 215 170 L 225 185 L 260 185 L 270 140 L 285 230 L 295 175 L 305 185 L 350 185" fill="none" stroke="#64ffda" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            
+            <!-- Monitor Stand -->
+            <path d="M 230 260 L 270 260 L 280 290 L 220 290 Z" fill="#112240" stroke="url(#orange-grad)" stroke-width="2" />
+            
+            <!-- Keyboard -->
+            <rect x="150" y="310" width="200" height="20" rx="4" fill="#112240" stroke="url(#teal-grad)" stroke-width="2" />
+            <line x1="165" y1="320" x2="335" y2="320" stroke="#64ffda" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 4" />
+            
+            <!-- Mouse -->
+            <rect x="365" y="310" width="18" height="28" rx="9" fill="#112240" stroke="url(#orange-grad)" stroke-width="2" />
+            <line x1="374" y1="310" x2="374" y2="322" stroke="#ff6b00" stroke-width="1.5" />
+            
+            <!-- Floating nodes representing internal parts -->
+            <!-- CPU microchip -->
+            <g transform="translate(60, 80)">
+              <rect x="5" y="5" width="30" height="30" rx="4" fill="#112240" stroke="#ff6b00" stroke-width="2" />
+              <line x1="0" y1="12" x2="5" y2="12" stroke="#ff6b00" stroke-width="2" />
+              <line x1="0" y1="20" x2="5" y2="20" stroke="#ff6b00" stroke-width="2" />
+              <line x1="0" y1="28" x2="5" y2="28" stroke="#ff6b00" stroke-width="2" />
+              <line x1="35" y1="12" x2="40" y2="12" stroke="#ff6b00" stroke-width="2" />
+              <line x1="35" y1="20" x2="40" y2="20" stroke="#ff6b00" stroke-width="2" />
+              <line x1="35" y1="28" x2="40" y2="28" stroke="#ff6b00" stroke-width="2" />
+              <line x1="12" y1="0" x2="12" y2="5" stroke="#ff6b00" stroke-width="2" />
+              <line x1="20" y1="0" x2="20" y2="5" stroke="#ff6b00" stroke-width="2" />
+              <line x1="28" y1="0" x2="28" y2="5" stroke="#ff6b00" stroke-width="2" />
+              <line x1="12" y1="35" x2="12" y2="40" stroke="#ff6b00" stroke-width="2" />
+              <line x1="20" y1="35" x2="20" y2="40" stroke="#ff6b00" stroke-width="2" />
+              <line x1="28" y1="35" x2="28" y2="40" stroke="#ff6b00" stroke-width="2" />
+            </g>
+            <!-- Code Bracket (Software) -->
+            <g transform="translate(390, 80)">
+              <circle cx="20" cy="20" r="20" fill="rgba(100,255,220,0.1)" stroke="#64ffda" stroke-width="2" />
+              <path d="M 15 15 L 10 20 L 15 25 M 25 15 L 30 20 L 25 25" fill="none" stroke="#64ffda" stroke-width="2" stroke-linecap="round" />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2-BO‘LIM. KOMPYUTER HAQIDA TUSHUNCHA -->
+    <section id="section-2" class="scroll-animate">
+      <h2 class="section-title">2-Bo'lim. Kompyuter Haqida Tushuncha</h2>
+      <p class="section-subtitle">Kompyuter nima, uning asosiy operatsiyalari hamda tibbiy amaliyotdagi bosh o'rni.</p>
+      
+      <div class="row g-4">
+        <!-- Card 1 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-circle-question me-2"></i> Kompyuter nima?</h5>
+            <p class="small text-light mb-0">
+              Kompyuter — bu ma'lumotlarni qabul qiluvchi, ularni oldindan belgilangan dastur asosida tezkor qayta ishlovchi, saqlovchi va natijani foydalanuvchiga taqdim etuvchi universal elektron qurilmadir.
+            </p>
+          </div>
+        </div>
+        <!-- Card 2 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-list-check me-2"></i> Asosiy vazifalari</h5>
+            <p class="small text-light mb-0">
+              Ma'lumotlarni kiritish (input), axborotlarni qayta ishlash (processing), natijalarni chiqarish (output) va kelajak uchun xotirada saqlash (storage) amallarini bajarishdir.
+            </p>
+          </div>
+        </div>
+        <!-- Card 3 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-microchip me-2"></i> Zamonaviy kompyuterlar</h5>
+            <p class="small text-light mb-0">
+              Bugungi kompyuterlar sekundiga milliardlab amallarni bajaradi, internet tarmoqlari va bulutli ma'lumotlar ombori orqali tibbiy serverlarga lahzada ulanadi.
+            </p>
+          </div>
+        </div>
+        <!-- Card 4 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-stethoscope me-2"></i> Tibbiyotdagi o'rni</h5>
+            <p class="small text-light mb-0">
+              Klinikalarda bemorlar ro'yxatini yuritish, shoshilinch tashxislar qo'yish (UZI, EKG) va murakkab rentgen/MRT tasvirlarini tahlil qilishda boshqaruvchi poydevor hisoblanadi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3-BO‘LIM. KOMPYUTER QURILMALARI VA ULARNING VAZIFALARI -->
+    <section id="section-3" class="scroll-animate">
+      <h2 class="section-title">3-Bo'lim. Kompyuter Qurilmalari va Vazifalari</h2>
+      <p class="section-subtitle">Tashqi qurilmalarni tanlab, ularning ishlash prinsipi va tibbiyotdagi ahamiyati bilan batafsil tanishing.</p>
+      
+      <div class="row g-4">
+        <!-- Sidebar grid of devices -->
+        <div class="col-lg-5">
+          <div class="glass-card p-3">
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="p-3 border rounded device-grid-item text-center active" id="dev-btn-0" onclick="showDeviceDetail(0)">
+                  <div class="device-icon-box mx-auto"><i class="fa-solid fa-desktop"></i></div>
+                  <h6 class="fw-bold mb-0 text-white">Monitor</h6>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 border rounded device-grid-item text-center" id="dev-btn-1" onclick="showDeviceDetail(1)">
+                  <div class="device-icon-box mx-auto"><i class="fa-solid fa-keyboard"></i></div>
+                  <h6 class="fw-bold mb-0 text-white">Klaviatura</h6>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 border rounded device-grid-item text-center" id="dev-btn-2" onclick="showDeviceDetail(2)">
+                  <div class="device-icon-box mx-auto"><i class="fa-solid fa-mouse"></i></div>
+                  <h6 class="fw-bold mb-0 text-white">Sichqoncha</h6>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 border rounded device-grid-item text-center" id="dev-btn-3" onclick="showDeviceDetail(3)">
+                  <div class="device-icon-box mx-auto"><i class="fa-solid fa-box"></i></div>
+                  <h6 class="fw-bold mb-0 text-white">Tizim bloki</h6>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 border rounded device-grid-item text-center" id="dev-btn-4" onclick="showDeviceDetail(4)">
+                  <div class="device-icon-box mx-auto"><i class="fa-solid fa-print"></i></div>
+                  <h6 class="fw-bold mb-0 text-white">Printer</h6>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 border rounded device-grid-item text-center" id="dev-btn-5" onclick="showDeviceDetail(5)">
+                  <div class="device-icon-box mx-auto"><i class="fa-solid fa-print" style="transform: rotate(180deg);"></i></div>
+                  <h6 class="fw-bold mb-0 text-white">Skaner</h6>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 border rounded device-grid-item text-center" id="dev-btn-6" onclick="showDeviceDetail(6)">
+                  <div class="device-icon-box mx-auto"><i class="fa-solid fa-volume-high"></i></div>
+                  <h6 class="fw-bold mb-0 text-white">Karnay</h6>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="p-3 border rounded device-grid-item text-center" id="dev-btn-7" onclick="showDeviceDetail(7)">
+                  <div class="device-icon-box mx-auto"><i class="fa-solid fa-microphone"></i></div>
+                  <h6 class="fw-bold mb-0 text-white">Mikrofon</h6>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="p-3 border rounded device-grid-item text-center" id="dev-btn-8" onclick="showDeviceDetail(8)">
+                  <div class="device-icon-box mx-auto"><i class="fa-solid fa-video"></i></div>
+                  <h6 class="fw-bold mb-0 text-white">Veb-kamera</h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail display panel -->
+        <div class="col-lg-7">
+          <div class="glass-card h-100 d-flex flex-column justify-content-between" id="deviceDetailsBox">
+            <div>
+              <h3 class="text-accent mb-4 border-bottom pb-2" id="devTitle">Monitor (Displey)</h3>
+              
+              <div class="mb-4">
+                <h5 class="text-white mb-2"><i class="fa-solid fa-circle-info text-cyan me-2"></i> Vazifasi:</h5>
+                <p class="text-light" id="devPurpose">
+                  Kompyuterdagi matnli, grafik va video ma'lumotlarni ekranda foydalanuvchiga ko'rsatib beruvchi asosiy vizual chiqarish qurilmasi.
+                </p>
+              </div>
+
+              <div class="mb-4">
+                <h5 class="text-white mb-2"><i class="fa-solid fa-gears text-cyan me-2"></i> Ishlash prinsipi:</h5>
+                <p class="text-light" id="devPrinciple">
+                  Videokartadan olingan raqamli signallarni LCD yoki LED matritsalari orqali piksellar yorug'ligiga aylantirib tasvir hosil qiladi.
+                </p>
+              </div>
+            </div>
+
+            <div class="pt-3 border-top border-secondary-subtle">
+              <div class="p-3 border border-info rounded bg-info-subtle text-dark">
+                <h6 class="fw-bold mb-1"><i class="fa-solid fa-stethoscope me-2"></i> Tibbiyotdagi qo'llanilishi:</h6>
+                <p class="small mb-0 fw-medium" id="devMedical">
+                  Klinik monitoring oynalarida bemorning yurak urishi (kardiogramma) ko'rsatkichlarini real vaqtda kuzatish va ultratovush (UZI) tasvirlarini ko'rish.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4-BO‘LIM. KOMPYUTERNING ICHKI QURILMALARI -->
+    <section id="section-4" class="scroll-animate">
+      <h2 class="section-title">4-Bo'lim. Kompyuterning Ichki Qurilmalari</h2>
+      <p class="section-subtitle">Kompyuter korpusi (ona plata) ichidagi eng muhim mikrosxema va bloklar sxemasi. Ustiga bosing.</p>
+      
+      <div class="row g-4">
+        <!-- Interactive Motherboard SVG Layout -->
+        <div class="col-lg-7">
+          <div class="p-3 glass-card text-center bg-dark">
+            <h6 class="text-muted mb-3"><i class="fa-solid fa-circle-nodes me-2"></i> Ona plata (Motherboard) interaktiv maketi</h6>
+            <svg viewBox="0 0 500 400" width="100%" height="auto" class="motherboard-svg">
+              <!-- Board Base -->
+              <rect x="20" y="20" width="460" height="360" fill="#0d1e36" stroke="#06b6d4" stroke-width="3" />
+              
+              <!-- CPU Socket -->
+              <rect x="180" y="80" width="80" height="80" class="mb-socket" id="mb-cpu" onclick="selectMotherboardPart('cpu')" />
+              <text x="210" y="125" fill="#ffffff" font-size="14" font-weight="bold" pointer-events="none">CPU</text>
+              
+              <!-- RAM Slots -->
+              <rect x="290" y="70" width="15" height="100" class="mb-socket" id="mb-ram1" onclick="selectMotherboardPart('ram')" />
+              <rect x="315" y="70" width="15" height="100" class="mb-socket" id="mb-ram2" onclick="selectMotherboardPart('ram')" />
+              <text x="295" y="60" fill="#94a3b8" font-size="10" pointer-events="none">RAM slots</text>
+              
+              <!-- PCIe Slots (GPU) -->
+              <rect x="80" y="220" width="220" height="20" class="mb-socket" id="mb-gpu" onclick="selectMotherboardPart('gpu')" />
+              <text x="160" y="234" fill="#ffffff" font-size="11" font-weight="bold" pointer-events="none">PCI-e (GPU)</text>
+              
+              <!-- SATA Ports (Storage: HDD/SSD) -->
+              <rect x="380" y="240" width="40" height="40" class="mb-socket" id="mb-storage" onclick="selectMotherboardPart('storage')" />
+              <text x="384" y="264" fill="#ffffff" font-size="10" pointer-events="none">SATA</text>
+              
+              <!-- PSU Connector -->
+              <rect x="30" y="50" width="60" height="80" class="mb-socket" id="mb-psu" onclick="selectMotherboardPart('psu')" />
+              <text x="48" y="95" fill="#ffffff" font-size="12" pointer-events="none">PSU</text>
+
+              <!-- Cooler Socket Overlay -->
+              <circle cx="220" cy="120" r="28" fill="none" stroke="#64ffda" stroke-width="1.5" stroke-dasharray="6 4" class="mb-socket" id="mb-cooler" onclick="selectMotherboardPart('cooler')" />
+              <text x="202" y="152" fill="#64ffda" font-size="9" pointer-events="none">Cooler</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Detail Panel -->
+        <div class="col-lg-5">
+          <div class="glass-card h-100 d-flex flex-column justify-content-between" id="mbDetailsPanel">
+            <div>
+              <h3 class="text-accent mb-3" id="mbPartTitle"><i class="fa-solid fa-circle-info me-2"></i> Qurilmani tanlang</h3>
+              <p class="text-light" id="mbPartDesc">
+                Ona platadagi istalgan ulanish nuqtasi yoki qurilma ustiga bosib, uning kompyuter korpusi ichidagi vazifasi va tibbiy ahamiyati bilan tanishing.
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-top border-secondary-subtle">
+              <div class="p-3 border border-warning rounded bg-warning-subtle text-dark d-none" id="mbPartContext">
+                <h6 class="fw-bold mb-1"><i class="fa-solid fa-circle-exclamation me-2"></i> Muhim texnik jihati:</h6>
+                <p class="small mb-0 fw-medium" id="mbPartContextText">Tafsilotlar...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5-BO‘LIM. KOMPYUTERNING TASHQI QURILMALARI -->
+    <section id="section-5" class="scroll-animate">
+      <h2 class="section-title">5-Bo'lim. Kompyuterning Tashqi Qurilmalari</h2>
+      <p class="section-subtitle">Kompyuter korpusidan tashqarida joylashuvchi, maxsus portlar orqali ulanadigan qurilmalar.</p>
+      
+      <div class="row g-4">
+        <!-- Outer Device 1 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100 text-center">
+            <i class="fa-solid fa-print text-accent fs-2 mb-3"></i>
+            <h5 class="fw-bold text-white mb-2">Printer</h5>
+            <p class="small text-muted mb-0">
+              <strong>Vazifasi:</strong> Hujjatlarni qog'ozga chiqarish.<br>
+              <strong>Afzalligi:</strong> Hisobotlarni moddiy shakllantirish.<br>
+              <strong>Qo'llanilishi:</strong> Bemor retseptlari va tahlil varaqalarini chop etish.
+            </p>
+          </div>
+        </div>
+        <!-- Outer Device 2 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100 text-center">
+            <i class="fa-solid fa-file-invoice text-accent fs-2 mb-3"></i>
+            <h5 class="fw-bold text-white mb-2">Skaner</h5>
+            <p class="small text-muted mb-0">
+              <strong>Vazifasi:</strong> Qog'oz hujjatlarni raqamlashtirish.<br>
+              <strong>Afzalligi:</strong> Qog'oz arxivlarni kompyuter fayliga aylantirish.<br>
+              <strong>Qo'llanilishi:</strong> Bemorning eski qog'oz kasallik kartasini kiritish.
+            </p>
+          </div>
+        </div>
+        <!-- Outer Device 3 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100 text-center">
+            <i class="fa-solid fa-ticket-simple text-accent fs-2 mb-3"></i>
+            <h5 class="fw-bold text-white mb-2">Flash Xotira</h5>
+            <p class="small text-muted mb-0">
+              <strong>Vazifasi:</strong> Fayllarni mobil saqlash va tashish.<br>
+              <strong>Afzalligi:</strong> Kichik hajm, tezkor yozish, qulaylik.<br>
+              <strong>Qo'llanilishi:</strong> Rentgen rasmlarini shifokorlararo o'tkazish.
+            </p>
+          </div>
+        </div>
+        <!-- Outer Device 4 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="glass-card h-100 text-center">
+            <i class="fa-solid fa-server text-accent fs-2 mb-3"></i>
+            <h5 class="fw-bold text-white mb-2">Tashqi HDD</h5>
+            <p class="small text-muted mb-0">
+              <strong>Vazifasi:</strong> Katta hajmli arxivlarni zahiralash.<br>
+              <strong>Afzalligi:</strong> Terabaytlab xavfsiz va mobil xotira.<br>
+              <strong>Qo'llanilishi:</strong> Shifoxona yillik ma'lumotlar zaxirasini saqlash.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6-BO‘LIM. APPARAT TA'MINOTI (HARDWARE) -->
+    <section id="section-6" class="scroll-animate">
+      <h2 class="section-title">6-Bo'lim. Apparat Ta'minoti (Hardware)</h2>
+      <p class="section-subtitle">Hardware guruhlarining tasnifi. Turini tanlab, qaysi qurilmalar kirishini ko'ring.</p>
+      
+      <div class="row g-4">
+        <!-- Interactive Categories grid -->
+        <div class="col-md-3">
+          <div class="p-4 glass-card hw-diagram-card active" id="hw-btn-0" onclick="showHardwareCategory(0)">
+            <i class="fa-solid fa-keyboard text-accent fs-1 mb-3"></i>
+            <h5>Kiritish (Input)</h5>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-4 glass-card hw-diagram-card" id="hw-btn-1" onclick="showHardwareCategory(1)">
+            <i class="fa-solid fa-desktop text-accent fs-1 mb-3"></i>
+            <h5>Chiqarish (Output)</h5>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-4 glass-card hw-diagram-card" id="hw-btn-2" onclick="showHardwareCategory(2)">
+            <i class="fa-solid fa-database text-accent fs-1 mb-3"></i>
+            <h5>Saqlash (Storage)</h5>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-4 glass-card hw-diagram-card" id="hw-btn-3" onclick="showHardwareCategory(3)">
+            <i class="fa-solid fa-microchip text-accent fs-1 mb-3"></i>
+            <h5>Qayta Ishlovchi</h5>
+          </div>
+        </div>
+
+        <!-- Detail display panel -->
+        <div class="col-12 mt-4">
+          <div class="glass-card" id="hwDetailsBox">
+            <h3 class="text-cyan mb-3" id="hwTitle">Kiritish qurilmalari (Input Devices)</h3>
+            <p class="text-light fs-5" id="hwDesc">
+              Foydalanuvchi yoki tashqi muhitdan ma'lumotlarni qabul qilib, ularni kompyuterga raqamli ko'rinishda kirituvchi qurilmalar.
+            </p>
+            <div class="mt-3 p-3 border rounded bg-dark-subtle">
+              <h6 class="text-warning fw-bold mb-2">Ushbu guruhga kiruvchi qurilmalar:</h6>
+              <p class="small text-light mb-0" id="hwExamples">Klaviatura, sichqoncha, skaner, mikrofon, veb-kamera, shtrix-kod skanerlari.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7-BO‘LIM. DASTURIY TA'MINOT (SOFTWARE) -->
+    <section id="section-7" class="scroll-animate">
+      <h2 class="section-title">7-Bo'lim. Dasturiy Ta'minot (Software)</h2>
+      <p class="section-subtitle">Kompyuter apparatlarini boshqaradigan va foydalanuvchiga yo'naltirilgan dasturlar tasnifi.</p>
+      
+      <div class="row g-4">
+        <!-- System Software -->
+        <div class="col-md-4">
+          <div class="glass-card h-100 border-left border-info" style="border-left-width: 4px !important;">
+            <h4 class="text-info mb-3"><i class="fa-solid fa-windows me-2"></i> Tizimli dasturlar</h4>
+            <p class="small text-light mb-3">
+              Kompyuterning jismoniy qurilmalarini ishga tushiruvchi, boshqaruvchi hamda amaliy dasturlar ishlashi uchun muhit yaratuvchi eng fundamental dasturiy ta'minot.
+            </p>
+            <span class="badge bg-info p-2 px-3 rounded-pill text-dark">Misollar: Windows 10/11, macOS, Linux, Drayverlar</span>
+          </div>
+        </div>
+        <!-- Application Software -->
+        <div class="col-md-4">
+          <div class="glass-card h-100 border-left border-warning" style="border-left-width: 4px !important;">
+            <h4 class="text-warning mb-3"><i class="fa-solid fa-file-word me-2"></i> Amaliy dasturlar</h4>
+            <p class="small text-light mb-3">
+              Foydalanuvchilarning bevosita ofis, kasbiy va ijodiy ishlarini (matn yozish, jadvallar hisoblash, dizayn) amalga oshirishga yo'naltirilgan maxsus amaliy tizimlar.
+            </p>
+            <span class="badge bg-warning p-2 px-3 rounded-pill text-dark">Misollar: MS Word, Excel, PowerPoint, Photoshop</span>
+          </div>
+        </div>
+        <!-- Utility Software -->
+        <div class="col-md-4">
+          <div class="glass-card h-100 border-left border-success" style="border-left-width: 4px !important;">
+            <h4 class="text-success mb-3"><i class="fa-solid fa-shield-halved me-2"></i> Xizmatchi dasturlar</h4>
+            <p class="small text-light mb-3">
+              Tizimni himoyalash, qattiq disk fayllarini tartiblash, keraksiz vaqtinchalik ma'lumotlarni o'chirish va arxivlash bilan shug'ullanuvchi yordamchi dasturlar.
+            </p>
+            <span class="badge bg-success p-2 px-3 rounded-pill text-dark">Misollar: Kaspersky Antivirus, WinRAR, Disk Cleanup</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8-BO‘LIM. HARDWARE VA SOFTWARE TAQQOSLASH -->
+    <section id="section-8" class="scroll-animate">
+      <h2 class="section-title">8-Bo'lim. Hardware va Software Taqqoslash</h2>
+      <p class="section-subtitle">Kompyuterning apparat (Hardware) va dasturiy (Software) qismlarining o'zaro bog'liqligi va farqlari.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="glass-card p-4 overflow-x-auto">
+            <table class="comp-table">
+              <thead>
+                <tr>
+                  <th>Xususiyati</th>
+                  <th>Apparat ta'minoti (Hardware)</th>
+                  <th>Dasturiy ta'minot (Software)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Tushuncha</strong></td>
+                  <td>Kompyuterning barcha jismoniy, ushlab ko'rish mumkin bo'lgan qurilmalari.</td>
+                  <td>Kompyuter apparatlarini ishlatuvchi kodlar va dasturlar to'plami.</td>
+                </tr>
+                <tr>
+                  <td><strong>Jismoniylik</strong></td>
+                  <td>Moddiy va ushlab ko'rsa bo'ladi (monitir, protsessor).</td>
+                  <td>Nomoddiy, faqat ekranda ko'rinadi va xotirada saqlanadi.</td>
+                </tr>
+                <tr>
+                  <td><strong>Nosozlik turi</strong></td>
+                  <td>Fizikaviy buzilish yoki sinish (Cooler to'xtashi, kontakt uzilishi).</td>
+                  <td>Dasturiy xatolik (buglar, virus tushishi, fayl tizimi buzilishi).</td>
+                </tr>
+                <tr>
+                  <td><strong>Yangilash usuli</strong></td>
+                  <td>Eski qurilmani yangisiga almashtirish (Upgrade).</td>
+                  <td>Dasturni internet orqali yangilash yoki qayta o'rnatish.</td>
+                </tr>
+                <tr>
+                  <td><strong>O'zaro aloqa</strong></td>
+                  <td>Software ishlashi uchun jismoniy poydevor.</td>
+                  <td>Hardwarega "jon" beruvchi buyruqlar generatori.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9-BO‘LIM. TIBBIYOTDA QO‘LLANILISHI -->
+    <section id="section-9" class="scroll-animate">
+      <h2 class="section-title">9-Bo'lim. Tibbiyotda Qo'llanilishi</h2>
+      <p class="section-subtitle">Hardware va Software tizimlarining zamonaviy shifoxonalar faoliyatidagi amaliy ahamiyati.</p>
+      
+      <div class="row g-4">
+        <!-- App 1 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-hospital-user me-2"></i> Elektron tibbiy varaqalar</h5>
+            <p class="small text-light mb-0">
+              Bemorlar ma'lumotlarini (anamnez, diagnoz) saqlash va tezkor qidirish uchun mo'ljallangan dasturiy platformalar (Software) va ofis kompyuterlari (Hardware).
+            </p>
+          </div>
+        </div>
+        <!-- App 2 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-x-ray me-2"></i> Rentgen va MRT tizimlari</h5>
+            <p class="small text-light mb-0">
+              Murakkab apparatlar (jismoniy detektor va datchiklar - Hardware) orqali inson tanasini skanerdan o'tkazib, 3D tasvirga aylantiruvchi dasturlar (Software).
+            </p>
+          </div>
+        </div>
+        <!-- App 3 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="glass-card h-100">
+            <h5 class="text-accent mb-3"><i class="fa-solid fa-flask-vial me-2"></i> Laboratoriya uskunalari</h5>
+            <p class="small text-light mb-0">
+              Qon va boshqa tahlillarni soniyalar ichida tekshiruvchi jismoniy raqamli analizatorlar (Hardware) hamda natijani ekranga chiqaruvchi dasturiy oynalar (Software).
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10-BO‘LIM. 3D INTERAKTIV KOMPYUTER MODELI (Isometric) -->
+    <section id="section-10" class="scroll-animate">
+      <h2 class="section-title">10-Bo'lim. 3D Interaktiv Kompyuter Modeli</h2>
+      <p class="section-subtitle">Tizim blokining jismoniy qismlarini tanlab, ularning texnik xususiyatlari bilan tanishing.</p>
+      
+      <div class="row g-4">
+        <!-- Chassis mockup SVG -->
+        <div class="col-lg-7">
+          <div class="chassis-simulator text-center">
+            <h6 class="text-muted mb-3"><i class="fa-solid fa-cubes me-2"></i> Kompyuter korpusining ichki sxemasi (Tanlang)</h6>
+            <svg viewBox="0 0 500 400" width="100%" height="auto" class="chassis-svg">
+              <!-- Case outline -->
+              <rect x="50" y="40" width="400" height="320" fill="none" stroke="#475569" stroke-width="4" rx="8" />
+              <!-- Power Supply block (Bottom Left) -->
+              <rect x="60" y="270" width="130" height="80" class="sim-component" id="sim-psu" fill="#1e293b" stroke="#64748b" stroke-width="2" onclick="selectChassisComponent('psu')" />
+              <text x="100" y="315" fill="#94a3b8" font-size="12" font-weight="bold" pointer-events="none">PSU (Blok)</text>
+              
+              <!-- Motherboard outline (Background) -->
+              <rect x="180" y="60" width="250" height="280" fill="#0f172a" stroke="#334155" stroke-width="1" />
+              
+              <!-- CPU Cooler (Top Center) -->
+              <rect x="230" y="90" width="80" height="80" class="sim-component" id="sim-cpu" fill="#112240" stroke="#ff6b00" stroke-width="2" onclick="selectChassisComponent('cpu')" />
+              <text x="254" y="135" fill="#ffffff" font-size="12" font-weight="bold" pointer-events="none">CPU</text>
+              
+              <!-- RAM Stick (Right of CPU) -->
+              <rect x="330" y="80" width="15" height="100" class="sim-component" id="sim-ram" fill="#112240" stroke="#ff6b00" stroke-width="2" onclick="selectChassisComponent('ram')" />
+              <text x="333" y="135" fill="#ffffff" font-size="9" font-weight="bold" pointer-events="none" style="writing-mode: tb;">RAM</text>
+              
+              <!-- Graphic Card GPU (Middle) -->
+              <rect x="200" y="200" width="200" height="40" class="sim-component" id="sim-gpu" fill="#112240" stroke="#ff6b00" stroke-width="2" onclick="selectChassisComponent('gpu')" />
+              <text x="280" y="225" fill="#ffffff" font-size="12" font-weight="bold" pointer-events="none">GPU (Video)</text>
+              
+              <!-- Hard Drive HDD/SSD (Bottom Right) -->
+              <rect x="330" y="270" width="90" height="70" class="sim-component" id="sim-hdd" fill="#112240" stroke="#ff6b00" stroke-width="2" onclick="selectChassisComponent('hdd')" />
+              <text x="360" y="310" fill="#ffffff" font-size="11" font-weight="bold" pointer-events="none">SSD / HDD</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Detail display panel -->
+        <div class="col-lg-5">
+          <div class="glass-card h-100 d-flex flex-column justify-content-between" id="chassisDetailsBox">
+            <div>
+              <h3 class="text-accent mb-3" id="chTitle"><i class="fa-solid fa-circle-nodes me-2"></i> Qurilmani bosing</h3>
+              <p class="text-light" id="chDesc">
+                Tizim bloki ichidagi protsessor, tezkor xotira (RAM), video karta yoki doimiy xotira qurilmalari ustiga bosib ularning batafsil texnik parametrlari va tibbiy tashxis apparatlaridagi rolini o'rganing.
+              </p>
+            </div>
+            
+            <div class="mt-4 pt-3 border-top border-secondary-subtle">
+              <div class="p-3 border border-info rounded bg-info-subtle text-dark" id="chTechPanel">
+                <h6 class="fw-bold mb-1"><i class="fa-solid fa-microchip me-2"></i> Texnik xarakteristikasi:</h6>
+                <p class="small mb-0 fw-medium" id="chTechText">Tanlanmagan.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11-BO‘LIM. AMALIY TOPSHIRIQLAR -->
+    <section id="section-11" class="scroll-animate">
+      <h2 class="section-title">11-Bo'lim. Amaliy Topshiriqlar</h2>
+      <p class="section-subtitle">Mavzuni amalda o'zlashtirish uchun mustaqil topshiriqlarni bajaring va ularni belgilab boring.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="checklist-container">
+            <h4 class="mb-4 text-white d-flex justify-content-between align-items-center">
+              <span><i class="fa-solid fa-list-check text-info me-2"></i> Bajargan topshiriqlaringiz</span>
+              <span class="badge bg-info" id="checklistProgressText">0% Bajarildi</span>
+            </h4>
+            
+            <div class="progress mb-4" style="height: 10px;">
+              <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" id="checklistProgressBar" role="progressbar" style="width: 0%"></div>
+            </div>
+
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-1" onclick="toggleChecklistItem(this, 1)"></div>
+              <div class="checklist-text">Monitor qurilmasini tashqi qurilmalar ro'yxatidan aniqlash</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-2" onclick="toggleChecklistItem(this, 2)"></div>
+              <div class="checklist-text">Ona platada protsessor (CPU) soketini bosib aniqlash</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-3" onclick="toggleChecklistItem(this, 3)"></div>
+              <div class="checklist-text">Tezkor xotira (RAM) vazifasi va takt tezligini tushunish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-4" onclick="toggleChecklistItem(this, 4)"></div>
+              <div class="checklist-text">HDD (magnitli) va SSD (yarim o'tkazgichli) xotiralarning tezlik farqini bilish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-5" onclick="toggleChecklistItem(this, 5)"></div>
+              <div class="checklist-text">Hardware (apparat) va Software (dasturiy) ta'minotga 3 tadan misol keltirish</div>
+            </div>
+            <div class="checklist-item">
+              <div class="checklist-checkbox" id="check-6" onclick="toggleChecklistItem(this, 6)"></div>
+              <div class="checklist-text">Qurilmalarni kiritish, chiqarish va saqlash guruhlariga to'g'ri ajratish ko'nikmasiga ega bo'lish</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12-BO‘LIM. BILIMINGIZNI SINANG (Quiz) -->
+    <section id="section-12" class="scroll-animate">
+      <h2 class="section-title">12-Bo'lim. Bilimingizni Sinang (Quiz)</h2>
+      <p class="section-subtitle">Apparat va dasturiy ta'minot bo'yicha 20 ta interaktiv test savollarini topshiring.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="quiz-card">
+            
+            <!-- Question boxes container -->
+            <div id="quizQuestionsContainer"></div>
+
+            <!-- Quiz navigation and progress bar -->
+            <div class="quiz-nav">
+              <button class="btn btn-outline-light" onclick="prevQuizQuestion()" id="quizPrevBtn"><i class="fa-solid fa-chevron-left me-2"></i> Oldingi</button>
+              <span class="text-muted align-self-center font-weight-bold" id="quizProgressLabel">Savol 1 / 20</span>
+              <button class="btn btn-info" onclick="nextQuizQuestion()" id="quizNextBtn">Keyingi <i class="fa-solid fa-chevron-right ms-2"></i></button>
+            </div>
+
+            <!-- Results box (hidden by default) -->
+            <div id="quizResultBox" class="text-center mt-5" style="display: none;">
+              <h3 class="text-white mb-3"><i class="fa-solid fa-circle-check text-success me-2"></i> Test Yakunlandi!</h3>
+              <p class="lead">Sizning test natijangiz:</p>
+              <div class="display-3 fw-bold text-info mb-3" id="quizScoreText">18 / 20</div>
+              <p class="fs-5 text-muted mb-4" id="quizPercentageText">Foiz ko'rsatkichi: 90%</p>
+              <div class="badge bg-success fs-5 p-3 px-4 rounded-pill" id="quizGradeBadge">Baho: 5 (A'lo)</div>
+              
+              <div class="mt-4">
+                <button class="btn btn-outline-info" onclick="restartQuiz()"><i class="fa-solid fa-rotate-left me-2"></i> Testni boshidan boshlash</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13-BO‘LIM. O‘YINLI TOPSHIRIQ -->
+    <section id="section-13" class="scroll-animate">
+      <h2 class="section-title">13-Bo'lim. O'yinli Topshiriq: Tasniflash</h2>
+      <p class="section-subtitle">Dastur va qurilmalarni chap tomondan tanlab, ularni tegishli guruhlarga joylashtiring (Tap-to-match).</p>
+      
+      <div class="row g-4 justify-content-center">
+        <!-- Elements list -->
+        <div class="col-12">
+          <div class="glass-card">
+            <h5 class="text-white mb-3 text-center"><i class="fa-solid fa-hand-pointer text-accent me-2"></i> Tanlanadigan elementlar</h5>
+            <div class="game-items-container" id="gameItemsContainer">
+              <!-- Dynamically populated elements -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Buckets -->
+        <div class="col-md-6 col-lg-3">
+          <div class="game-bucket" onclick="assignItemToBucket('internal')">
+            <div class="game-bucket-title"><i class="fa-solid fa-microchip me-2"></i> Ichki Qurilma</div>
+            <div class="game-bucket-items" id="bucket-internal"></div>
+          </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+          <div class="game-bucket" onclick="assignItemToBucket('external')">
+            <div class="game-bucket-title"><i class="fa-solid fa-print me-2"></i> Tashqi Qurilma</div>
+            <div class="game-bucket-items" id="bucket-external"></div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="game-bucket" onclick="assignItemToBucket('system')">
+            <div class="game-bucket-title"><i class="fa-solid fa-windows me-2"></i> Tizimli dastur</div>
+            <div class="game-bucket-items" id="bucket-system"></div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+          <div class="game-bucket" onclick="assignItemToBucket('app')">
+            <div class="game-bucket-title"><i class="fa-solid fa-file-word me-2"></i> Amaliy dastur</div>
+            <div class="game-bucket-items" id="bucket-app"></div>
+          </div>
+        </div>
+
+        <!-- Success Alert -->
+        <div class="col-lg-8 text-center d-none" id="gameSuccessAlert">
+          <div class="alert alert-success">
+            <i class="fa-solid fa-circle-check me-2"></i> <strong>Barakalla!</strong> Barcha apparat qurilmalari va dasturlarni guruhlariga to'liq va to'g'ri tasnifladingiz!
+          </div>
+        </div>
+        
+        <div class="col-12 text-center mt-3">
+          <button class="btn btn-outline-light btn-sm" onclick="resetGame()"><i class="fa-solid fa-rotate-left me-2"></i> O'yinni boshidan boshlash</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 14-BO‘LIM. XULOSA -->
+    <section id="section-14" class="scroll-animate">
+      <h2 class="section-title">14-Bo'lim. Yakuniy Xulosa</h2>
+      <p class="section-subtitle">Kompyuter qurilmalari va ta'minotining tibbiyotda tutgan kelajak o'rni.</p>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="glass-card text-center">
+            <h3 class="mb-4 text-accent"><i class="fa-solid fa-graduation-cap me-2"></i> Kompyuter Texnologiyalari va Sog'liqni Saqlash</h3>
+            <p class="text-light fs-5" style="line-height: 1.8;">
+              Zamonaviy raqamli tibbiyotda kompyuterning apparat (Hardware) va dasturiy (Software) qismlari birlashib, shifokorlarga kutilmagan tashxis imkoniyatlarini beradi. MRT datchigi (Hardware) va uning tasvirni hisoblaydigan darchasi (Software) shifokorga inson tanasining ichki nuqsonlarini aniq ko'rish imkonini yaratadi. Shifokor ushbu apparatlar va dasturiy boshqaruvlarni erkin o'zlashtirishi, tibbiyotda samaradorlikni oshirish va bemorlar salomatligini saqlashning bosh poydevoridir.
+            </p>
+            <p class="text-muted">
+              Ushbu darslik tibbiyot va texnika birlashmasining fundamental poydevori sifatida xizmat qiladi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer mt-5 border-top border-secondary-subtle">
+    <div class="container text-center py-4">
+      <p class="mb-0 text-muted">&copy; 2026. Tibbiyotda Axborot Texnologiyalari O'quv Moduli. Barcha huquqlar himoyalangan.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap bundle with Popper CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Javascript Logic -->
+  <script>
+    /* Theme Toggler */
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      const currentTheme = htmlEl.getAttribute('data-theme');
+      const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      htmlEl.setAttribute('data-theme', targetTheme);
+      localStorage.setItem('darslik-theme', targetTheme);
+      
+      if (targetTheme === 'dark') {
+        themeIcon.className = "fa-solid fa-sun";
+      } else {
+        themeIcon.className = "fa-solid fa-moon";
+      }
+    }
+
+    /* Scroll Progress Bar Mechanism */
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      document.getElementById('topProgressBar').style.width = scrolled + "%";
+    });
+
+    /* Intersection Observer for Scroll Animations */
+    const scrollAnimateElements = document.querySelectorAll('.scroll-animate');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animated');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    scrollAnimateElements.forEach(el => observer.observe(el));
+
+    /* 3. Devices Grid details data */
+    const devicesData = [
+      {
+        title: "Monitor (Displey)",
+        purpose: "Kompyuterdagi matnli, grafik va video ma'lumotlarni ekranda foydalanuvchiga ko'rsatib beruvchi asosiy vizual chiqarish qurilmasi.",
+        principle: "Videokartadan olingan raqamli signallarni LCD yoki LED matritsalari orqali piksellar yorug'ligiga aylantirib tasvir hosil qiladi.",
+        medical: "Klinik monitoring oynalarida bemorning yurak urishi (kardiogramma) ko'rsatkichlarini real vaqtda kuzatish va ultratovush (UZI) tasvirlarini ko'rish."
+      },
+      {
+        title: "Klaviatura (Keyboard)",
+        purpose: "Kompyuterga matnli ma'lumotlar, sonlar va boshqaruv buyruqlarini kiritish uchun ishlatiladigan asosiy kiritish qurilmasi.",
+        principle: "Klaviaturadagi har bir tugma ostida kontakt bo'lib, bosilganda elektr zanjiri yopiladi va boshqaruvchi mikrosxema mos simvol kodini protsessorga yuboradi.",
+        medical: "Shifokor tomonidan bemorning klinik epikrizi va tashxis varaqasini elektron tibbiy kartaga (HIS) yozib kiritish."
+      },
+      {
+        title: "Sichqoncha (Mouse)",
+        purpose: "Kompyuter ekranidagi ko'rsatkichni (kursor) boshqarish va grafik interfeys elementlari bilan ishlash uchun kiritish qurilmasi.",
+        principle: "Sichqoncha ostidagi optik sensor sirt bo'ylab harakatni o'qiydi va kursorning ekrandagi koordinatalarini kompyuterga uzatadi.",
+        medical: "Rentgen yoki MRT suratlarining ma'lum joylarini kattalashtirish, tahlil oynalarida kerakli ma'lumotlar bo'limini tanlash."
+      },
+      {
+        title: "Tizim bloki (System Unit)",
+        purpose: "Kompyuterning ishlashi uchun barcha asosiy ichki qurilmalarni (CPU, RAM, HDD, ona plata) o'z ichida saqlovchi va himoya qiluvchi korpus.",
+        principle: "Elektr energiyasini quvvat bloki orqali taqsimlab, ona platadagi barcha mikrosxemalararo aloqani saqlab beradi.",
+        medical: "Barcha tibbiy tashxis va tahlil uskunalaridan olinadigan raqamli ma'lumotlarni birlamchi yig'ish va qayta ishlash markazi."
+      },
+      {
+        title: "Printer (Chop etish qurilmasi)",
+        purpose: "Kompyuter xotirasidagi raqamli matnlar va rasmlarni qog'oz varaqasiga chiqarib beruvchi tashqi qurilma.",
+        principle: "Lazer yordamida toner kukunini qizdirib qog'ozga yopishtiradi (Lazerli printer) yoki suyuq siyohni purkaydi (Siyohli printer).",
+        medical: "Bemorga retseptlar, umumiy laboratoriya tahlillari natijalari va rentgen xulosalarini chiqarib berish."
+      },
+      {
+        title: "Skaner (Scanner)",
+        purpose: "Qog'ozdagi matn yoki tasvirlarni o'qib, ularni raqamli rasm formatida kompyuter xotirasiga kirituvchi qurilma.",
+        principle: "Qog'oz yuzasiga yorug'lik yo'naltirilib, qaytgan nurlarni optik datchiklar (CCD/CIS) orqali elektr signaliga va faylga aylantiradi.",
+        medical: "Bemorning eski qog'oz kasallik tarixi hujjatlarini skanerlab, shifoxonaning yagona elektron klyent tizimiga saqlash."
+      },
+      {
+        title: "Karnay (Speakers)",
+        purpose: "Kompyuterdan chiqadigan elektr audio signallarini inson eshitadigan tovush to'lqinlariga aylantirib beruvchi qurilma.",
+        principle: "Audio signallar dinamik magnit g'altagida tebranish hosil qiladi va diffuzor yordamida havoda tovush hosil qiladi.",
+        medical: "Klinik reanimatsiya xonalarida bemor hayotiy ko'rsatkichlari (puls, nafas) kritik darajaga yetganda shoshilinch ovozli signal berish."
+      },
+      {
+        title: "Mikrofon (Microphone)",
+        purpose: "Inson ovozi yoki tashqi tovush to'lqinlarini elektr signallariga aylantirib, kompyuterga kirituvchi qurilma.",
+        principle: "Ovoz to'lqini mikrofon membranasini tebratadi va bu tebranishlar magnit maydon yordamida elektr to'lqinlariga aylanadi.",
+        medical: "Shifokorning bemor haqidagi tashxis xulosalarini ovoz orqali elektron bazaga (Voice-to-Text dasturi yordamida) avtomatik yozishi."
+      },
+      {
+        title: "Veb-kamera (Webcam)",
+        purpose: "Real vaqtdagi video va tasvirlarni raqamli ko'rinishda kompyuterga kirituvchi optik qurilma.",
+        principle: "Tasvir optik linzalar orqali yorug'lik sezgir sensorga (CMOS) tushadi va soniyasiga 30 ta kadr tezlikdagi oqimga aylanadi.",
+        medical: "Telemeditsina sohasida chekka hududdagi bemorlar bilan shifokorlar o'rtasida masofaviy video-konsilium va suhbatlar o'tkazish."
+      }
+    ];
+
+    function showDeviceDetail(index) {
+      // Remove active class from lists
+      const items = document.querySelectorAll('.device-grid-item');
+      items.forEach(i => i.classList.remove('active'));
+      
+      // Add active to current click
+      document.getElementById(`dev-btn-${index}`).classList.add('active');
+
+      // Update detail panel
+      const data = devicesData[index];
+      document.getElementById('devTitle').innerText = data.title;
+      document.getElementById('devPurpose').innerText = data.purpose;
+      document.getElementById('devPrinciple').innerText = data.principle;
+      document.getElementById('devMedical').innerText = data.medical;
+    }
+
+    /* 4. Motherboard Interactive Parts data */
+    const motherboardParts = {
+      cpu: {
+        title: "CPU (Markaziy protsessor) soketi",
+        desc: "Kompyuterning 'boshi' bo'lmish mikrosxema o'rnatiladigan o'rin. U barcha apparatlardan keladigan axborotlarni qayta ishlaydi va kompyuter ishini boshqaradi.",
+        context: "Takt chastotasi va yadrolar soni protsessor tezligini belgilaydi. Protsessor doimiy ishlaganda qizib ketadi, shuning uchun uning ustiga cooler (fan) o'rnatiladi.",
+        medical: "MRT yoki 3D kardiografiya ma'lumotlarini soniyalar ichida hisoblab, shifokor ekraniga animatsiya ko'rinishida chiqarish."
+      },
+      ram: {
+        title: "RAM (Tezkor xotira) slotlari",
+        desc: "Kompyuter faol ishlayotgan vaqtda zarur bo'lgan ma'lumotlar va buyruqlarni vaqtincha saqlovchi juda tezkor mikrosxemalar uchun uyalar.",
+        context: "Kompyuter o'chirilganda RAM ichidagi barcha vaqtinchalik ma'lumotlar to'liq o'chib ketadi. Xotira hajmi gigabaytda (GB) o'lchanadi.",
+        medical: "Bir vaqtning o'zida shifoxona bazasi, rentgen surati va UZI tahlillarini ekranda qotmasdan tezkor ochib turishni ta'minlash."
+      },
+      gpu: {
+        title: "PCI-e (Videokarta) sloti",
+        desc: "Grafik kartani (GPU) ona plataga ulaydigan yuqori tezlikdagi magistral. Videokarta murakkab 3D tasvirlarni hisoblash va ekranga chiqarish uchun xizmat qiladi.",
+        context: "Zamonaviy videokartalarda grafik hisoblashlar uchun alohida videoxotira va mustaqil protsessor (GPU) o'rnatilgan.",
+        medical: "Bemorning kalla suyagi yoki ichki a'zolarining murakkab 3D-modellashtirish renderlarini yuqori aniqlikda yaratish."
+      },
+      storage: {
+        title: "SATA portlari (SSD / HDD ulanishi)",
+        desc: "Operatsion tizim (Windows) va barcha doimiy fayllarni saqlaydigan qattiq disklar (HDD yoki SSD) ona plataga ulanadigan port.",
+        context: "HDD disk magnitli disk yordamida sekin ishlaydi, SSD esa yarim o'tkazgichli mikrosxemalar ustida o'ta yuqori tezlikda ma'lumot yozadi.",
+        medical: "Butun shifoxonaning bir necha yillik elektron tibbiy daftarlarini va rentgen tasvirlari bazasini doimiy xavfsiz saqlash."
+      },
+      psu: {
+        title: "Quvvat bloki (PSU) ulanish nuqtasi",
+        desc: "Kompyuter tizimlarini elektr energiya bilan ta'minlovchi blokdan keladigan quvvat shnurlari ona platadagi barcha qurilmalarga tok tarqatadigan rozetka.",
+        context: "Tashqi 220V tok kuchlanishini kompyuter qurilmalariga mos keluvchi 12V, 5V va 3.3V o'zgarmas tok darajasiga aylantirib beradi.",
+        medical: "Klinika quvvat bloklari EKG yoki boshqa xavfli tahlillarni bajarayotgan paytda tok kesilishidan asrash uchun muhim."
+      },
+      cooler: {
+        title: "Cooler (Sovutish tizimi) montaj o'rni",
+        desc: "Markaziy protsessor (CPU) ustiga o'rnatiladigan va uning yuqori qizib ketishini oldini oluvchi alyuminiy radiator va ventilyator o'rni.",
+        context: "Radiator protsessordan issiqlikni o'ziga oladi, ventilyator esa uni havo oqimi yordamida tashqariga haydaydi. Ba'zan suyuqlikli (suvli) sovutish ham ishlatiladi.",
+        medical: "UZI apparati ichidagi kompyuterning 24 soat to'xtovsiz qizib qotmasdan ishlashini ta'minlash."
+      }
+    };
+
+    function selectMotherboardPart(partKey) {
+      // Deactivate all parts in SVG visually
+      const parts = document.querySelectorAll('.mb-socket');
+      parts.forEach(p => p.classList.remove('active'));
+
+      // Highlight active part
+      const activeEl = document.getElementById(`mb-${partKey}`);
+      if (activeEl) activeEl.classList.add('active');
+
+      // Update detail panel
+      const data = motherboardParts[partKey];
+      document.getElementById('mbPartTitle').innerHTML = `<i class="fa-solid fa-microchip me-2 text-accent"></i> ${data.title}`;
+      document.getElementById('mbPartDesc').innerText = data.desc;
+      
+      const contextBox = document.getElementById('mbPartContext');
+      contextBox.classList.remove('d-none');
+      document.getElementById('mbPartContextText').innerText = data.context;
+      
+      // Check checklist item
+      if (partKey === 'cpu') markChecklistItem(2);
+      if (partKey === 'ram') markChecklistItem(3);
+    }
+
+    /* 6. Hardware Category click diagram logic */
+    const hardwareCategories = [
+      {
+        title: "Kiritish qurilmalari (Input)",
+        desc: "Foydalanuvchi yoki tashqi muhitdan ma'lumotlarni qabul qilib, ularni kompyuterga raqamli ko'rinishda kirituvchi qurilmalar.",
+        examples: "Klaviatura, sichqoncha, skaner, mikrofon, veb-kamera, shtrix-kod skanerlari."
+      },
+      {
+        title: "Chiqarish qurilmalari (Output)",
+        desc: "Kompyuter xotirasidagi qayta ishlangan raqamli axborotlarni foydalanuvchiga tushunarli matn, rasm yoki tovush ko'rinishida taqdim etuvchi qurilmalar.",
+        examples: "Monitor (displey), printer (chop etuvchi), karnaylar (dinamiklar), proektorlar."
+      },
+      {
+        title: "Saqlash qurilmalari (Storage)",
+        desc: "Operatsion tizim, dasturlar va foydalanuvchi fayllarini (matn, rasm, video) doimiy yoki vaqtincha xotirada saqlash uchun mo'ljallangan qurilmalar.",
+        examples: "Qattiq disk (HDD), tezkor xotira disklar (SSD), USB flesh-xotira, tashqi qattiq disklar."
+      },
+      {
+        title: "Qayta ishlovchi qurilmalar (Processing)",
+        desc: "Tizimga kiritilgan barcha buyruqlar va ma'lumotlar ustida matematik, logik va hisoblash amallarini bajarib, tizimni to'liq muvofiqlashtiruvchi markaz.",
+        examples: "Markaziy protsessor (CPU) va grafik protsessor (GPU / videokarta yadrosi)."
+      }
+    ];
+
+    function showHardwareCategory(index) {
+      // Update active states
+      for (let i = 0; i < 4; i++) {
+        document.getElementById(`hw-btn-${i}`).classList.toggle('active', i === index);
+      }
+
+      // Update details
+      const data = hardwareCategories[index];
+      document.getElementById('hwTitle').innerText = data.title;
+      document.getElementById('hwDesc').innerText = data.desc;
+      document.getElementById('hwExamples').innerText = data.examples;
+    }
+
+    /* 10. Isometric Chassis Simulator components data */
+    const chassisComponents = {
+      cpu: {
+        title: "Markaziy protsessor (CPU)",
+        desc: "Kompyuterning barcha matematik, logik va grafik amallarini boshqaradigan eng kichik va eng kuchli mikrosxemasi.",
+        spec: "Intel Core i7 / AMD Ryzen 7. 8 yadro, 16 potok, 4.8 GHz takt chastotasi. Protsessor qizib ketishini oldini olish uchun sovutkich radiator o'rnatiladi."
+      },
+      ram: {
+        title: "Tezkor xotira (RAM)",
+        desc: "Operatsion tizim va ishlayotgan dasturlarning joriy vaqtinchalik ma'lumotlarini o'qish va yozish uchun ishlatiladigan o'ta yuqori tezlikdagi xotira.",
+        spec: "DDR5 16GB. 5600 MHz ishchi chastota, ikki kanalli (Dual-channel) rejim. Elektr ta'minoti uzilganda ma'lumotlar o'chib ketadi."
+      },
+      gpu: {
+        title: "Videokarta (Grafik karta / GPU)",
+        desc: "Ekranga chiqariladigan murakkab 3D tasvirlarni va grafik ma'lumotlarni hisoblovchi, o'zining shaxsiy video xotirasiga ega bo'lgan qurilma.",
+        spec: "NVIDIA GeForce RTX. 8GB GDDR6 xotira. Ray Tracing va kiber-tibbiy 3D renderlar yaratishni to'liq qo'llab-quvvatlaydi."
+      },
+      hdd: {
+        title: "SSD / HDD doimiy xotira qurilmasi",
+        desc: "Kompyuter o'chirilgandan keyin ham operatsion tizim (Windows) va barcha doimiy klinik hujjatlarni, bemor tahlillarini saqlovchi xotira.",
+        spec: "NVMe M.2 SSD 1TB. O'qish tezligi: 3500 MB/s, PCIe Gen4. Eski magnit disklardan (HDD) farqli ravishda shovqinsiz va 10 barobar tezroq ishlaydi."
+      },
+      psu: {
+        title: "Quvvat berish bloki (PSU)",
+        desc: "Tashqi tarmoqdagi 220V o'zgaruvchan tok kuchlanishini kompyuter ichki tizimlari uchun barqaror 12V, 5V tok darajasiga aylantiruvchi qurilma.",
+        spec: "650 Watt quvvat, 80 Plus Bronze energiya samaradorligi sertifikati. Tizim blokini barqaror elektr bilan ta'minlaydi."
+      }
+    };
+
+    function selectChassisComponent(partKey) {
+      // Toggle color in SVG
+      const components = document.querySelectorAll('.sim-component');
+      components.forEach(c => c.classList.remove('installed'));
+      
+      const el = document.getElementById(`sim-${partKey}`);
+      if (el) el.classList.add('installed');
+
+      // Update info panel
+      const data = chassisComponents[partKey];
+      document.getElementById('chTitle').innerHTML = `<i class="fa-solid fa-microchip text-accent me-2"></i> ${data.title}`;
+      document.getElementById('chDesc').innerText = data.desc;
+      
+      document.getElementById('chTechPanel').style.display = 'block';
+      document.getElementById('chTechText').innerText = data.spec;
+
+      // Update checklists
+      if (partKey === 'hdd') markChecklistItem(4);
+    }
+
+    /* 11. Checklist Checklist Logic */
+    const checkedItems = {};
+
+    function toggleChecklistItem(element, itemId) {
+      if (checkedItems[itemId]) {
+        delete checkedItems[itemId];
+        element.classList.remove('checked');
+        element.innerHTML = "";
+      } else {
+        checkedItems[itemId] = true;
+        element.classList.add('checked');
+        element.innerHTML = '<i class="fa-solid fa-check"></i>';
+      }
+
+      // Recalculate progress
+      const total = 6;
+      const checkedCount = Object.keys(checkedItems).length;
+      const percentage = Math.round((checkedCount / total) * 100);
+
+      document.getElementById('checklistProgressText').innerText = `${percentage}% Bajarildi`;
+      document.getElementById('checklistProgressBar').style.width = `${percentage}%`;
+    }
+
+    function markChecklistItem(idx) {
+      const el = document.getElementById(`check-${idx}`);
+      if (el && !el.classList.contains('checked')) {
+        toggleChecklistItem(el, idx);
+      }
+    }
+
+    /* 12. 20-Question Quiz Logic */
+    const quizQuestions = [
+      {
+        q: "Kompyuterning barcha jismoniy, ushlab ko'rish mumkin bo'lgan qismlari guruhi qanday ataladi?",
+        a: ["Software (Dasturlar)", "Hardware (Apparatlar)", "Malware (Viruslar)", "Peopleware"],
+        c: 1
+      },
+      {
+        q: "Kompyuterning 'boshi' bo'lmish, barcha amallarni bajaruvchi mikrosxema qaysi?",
+        a: ["Operativ xotira (RAM)", "Markaziy protsessor (CPU)", "Ona plata (Motherboard)", "Qattiq disk (HDD)"],
+        c: 1
+      },
+      {
+        q: "Kompyuter o'chirilganda RAM (Tezkor xotira) ichidagi ma'lumotlar nima bo'ladi?",
+        a: ["Qattiq diskka avtomat o'tadi", "Butunlay o'chib ketadi", "Bulutli OneDrivega yuklanadi", "Fleshkaga saqlanadi"],
+        c: 1
+      },
+      {
+        q: "Operatsion tizim va barcha fayllar uzoq vaqt saqlanadigan xotira qaysi?",
+        a: ["Operativ xotira (RAM)", "Doimiy xotira disklar (HDD / SSD)", "Kesh xotira", "Registrlar"],
+        c: 1
+      },
+      {
+        q: "Yarim o'tkazgichli mikrosxemalar asosida ishlovchi, shovqinsiz va o'ta tezkor doimiy xotira nima deb ataladi?",
+        a: ["HDD qattiq diski", "SSD disk", "RAM tezkor xotira", "Ona plata"],
+        c: 1
+      },
+      {
+        q: "Murakkab 3D tasvirlar, MRT renderlari va grafik o'yinlarni ekranga chiqarishni hisoblaydigan qurilma qaysi?",
+        a: ["Videokarta (GPU)", "Mikrofon", "Karnay", "Printer"],
+        c: 0
+      },
+      {
+        q: "Kompyuter ichidagi barcha jismoniy qurilmalarni o'zaro bog'laydigan eng katta plata qanday ataladi?",
+        a: ["Ona plata (Motherboard)", "Protsessor", "Quvvat bloki", "Videokarta"],
+        c: 0
+      },
+      {
+        q: "Sichqoncha va klaviatura Hardwarening qaysi guruhiga kiradi?",
+        a: ["Chiqarish qurilmalari", "Kiritish qurilmalari (Input)", "Saqlash qurilmalari", "Qayta ishlovchi qurilmalar"],
+        c: 1
+      },
+      {
+        q: "Monitor va printer Hardwarening qaysi guruhiga kiradi?",
+        a: ["Kiritish qurilmalari", "Chiqarish qurilmalari (Output)", "Saqlash qurilmalari", "Boshqaruv qurilmalari"],
+        c: 1
+      },
+      {
+        q: "Bemorning qog'oz kasallik kartasini kompyuterga rasm ko'rinishida kiritish uchun qaysi qurilma ishlatiladi?",
+        a: ["Printer", "Skaner", "Klaviatura", "Karnay"],
+        c: 1
+      },
+      {
+        q: "Tibbiy reanimatsiya xonalarida bemor hayotiy belgilari buzilganda ovozli ogohlantirish beruvchi qurilma qaysi?",
+        a: ["Printer", "Karnaylar (Dinamiklar)", "Mikrofon", "Skaner"],
+        c: 1
+      },
+      {
+        q: "Telemeditsinada shifokor va bemor o'rtasida jonli video aloqani ta'minlovchi kiritish qurilmasi qaysi?",
+        a: ["Veb-kamera", "Printer", "Karnay", "Skaner"],
+        c: 0
+      },
+      {
+        q: "Kompyuter qurilmalarini elektr bilan ta'minlaydigan blok qanday ataladi?",
+        a: ["Cooler (Kuler)", "Quvvat bloki (PSU)", "Ona plata", "Protsessor"],
+        c: 1
+      },
+      {
+        q: "Kompyuterni viruslardan himoya qiluvchi Kaspersky va Avast qaysi dasturlar guruhiga kiradi?",
+        a: ["Tizimli dasturlar", "Xizmatchi dasturlar (Utility)", "Amaliy dasturlar", "Drayverlar"],
+        c: 1
+      },
+      {
+        q: "Kompyuterning apparatlarini ishlatuvchi eng fundamental tizimli dastur bu...",
+        a: ["Microsoft Word", "Operatsion tizim (Windows, macOS)", "Antivirus", "Photoshop"],
+        c: 1
+      },
+      {
+        q: "Shifokorga hisobot va ilmiy anjuman slaydlarini tayyorlash imkonini beruvchi dastur qaysi?",
+        a: ["MS PowerPoint", "Windows Defender", "WinRAR", "Drayverlar"],
+        c: 0
+      },
+      {
+        q: "Kasallik blankalari va retsept shablonlarini loyihalash uchun ishlatiladigan amaliy dastur qaysi?",
+        a: ["MS Word", "Kaspersky Antivirus", "Windows 11", "BIOS"],
+        c: 0
+      },
+      {
+        q: "Qattiq diskda to'plangan keraksiz tizim fayllarini tozalab, bo'sh joy ochadigan standart dastur qaysi?",
+        a: ["Очистка диска (Disk Cleanup)", "Photoshop", "BIOS", "Microsoft PowerPoint"],
+        c: 0
+      },
+      {
+        q: "Shifokor kompyuterida bemor ma'lumotlarini kiberhujumdan saqlashning eng xavfsiz chorasi nima?",
+        a: [
+          "Tizimga murakkab parol qo'yish va BitLocker disk shifrlashini qo'llash",
+          "Kompyuter devor qog'ozini yashil rangga o'zgartirish",
+          "Kompyuterni Wi-Fi tarmoqlaridan butunlay uzib qo'yish",
+          "Antivirusni o'chirib qo'yish"
+        ],
+        c: 0
+      },
+      {
+        q: "Tibbiyotda EMR (Elektron tibbiy varaqalar) tizimlarining eng asosiy afzalligi nima?",
+        a: [
+          "Bemor ma'lumotlarini qulay saqlash va shifokorlar o'rtasida tezkor almashish",
+          "Kompyuter ishlash tezligini jismonan oshirish",
+          "Kompyuterdan viruslarni avtomatik haydash",
+          "Tizim drayverlarini avtomatik yangilash"
+        ],
+        c: 0
+      }
+    ];
+
+    let currentQuestionIdx = 0;
+    const userQuizAnswers = {};
+
+    function initQuiz() {
+      const container = document.getElementById('quizQuestionsContainer');
+      container.innerHTML = "";
+
+      quizQuestions.forEach((item, idx) => {
+        const qBox = document.createElement('div');
+        qBox.className = `quiz-question-box ${idx === 0 ? 'active' : ''}`;
+        qBox.id = `qBox${idx}`;
+
+        // Shuffle options for better interactive feedback
+        const mappedOptions = item.a.map((opt, optIdx) => ({ text: opt, originalIdx: optIdx }));
+        mappedOptions.sort(() => Math.random() - 0.5);
+
+        qBox.innerHTML = `
+          <h5 class="text-white mb-4">Savol ${idx + 1}: ${item.q}</h5>
+          <div class="row g-2">
+            ${mappedOptions.map((option, optIdx) => `
+              <div class="col-12">
+                <button class="quiz-option-btn" id="q${idx}opt${option.originalIdx}" onclick="selectQuizOption(${idx}, ${option.originalIdx})"><span class="badge bg-secondary rounded-circle" style="width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">${String.fromCharCode(65 + optIdx)}</span><span class="opt-text">${option.text}</span></button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(qBox);
+      });
+      updateQuizNav();
+    }
+
+    function selectQuizOption(questionIdx, optionIdx) {
+      if (userQuizAnswers[questionIdx] !== undefined) return; // Prevent changing answer
+
+      userQuizAnswers[questionIdx] = optionIdx;
+      const question = quizQuestions[questionIdx];
+      const correctOpt = question.c;
+
+      // Highlight selected button
+      const optBtn = document.getElementById(`q${questionIdx}opt${optionIdx}`);
+      if (optionIdx === correctOpt) {
+        optBtn.classList.add('correct');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      } else {
+        optBtn.classList.add('incorrect');
+        optBtn.innerHTML += ' <i class="fa-solid fa-circle-xmark ms-auto"></i>';
+        
+        // Highlight the correct one
+        const correctBtn = document.getElementById(`q${questionIdx}opt${correctOpt}`);
+        correctBtn.classList.add('correct');
+        correctBtn.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto"></i>';
+      }
+    }
+
+    function prevQuizQuestion() {
+      if (currentQuestionIdx > 0) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx--;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      }
+    }
+
+    function nextQuizQuestion() {
+      if (currentQuestionIdx < quizQuestions.length - 1) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx++;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function updateQuizNav() {
+      document.getElementById('quizProgressLabel').innerText = `Savol ${currentQuestionIdx + 1} / 20`;
+      document.getElementById('quizPrevBtn').disabled = (currentQuestionIdx === 0);
+      
+      const nextBtn = document.getElementById('quizNextBtn');
+      if (currentQuestionIdx === quizQuestions.length - 1) {
+        nextBtn.innerHTML = 'Natijani ko\'rish <i class="fa-solid fa-square-poll-vertical ms-2"></i>';
+        nextBtn.className = "btn btn-success";
+      } else {
+        nextBtn.innerHTML = 'Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>';
+        nextBtn.className = "btn btn-info";
+      }
+    }
+
+    function showQuizResults() {
+      document.getElementById('quizQuestionsContainer').style.display = 'none';
+      document.getElementById('quizPrevBtn').style.display = 'none';
+      document.getElementById('quizNextBtn').style.display = 'none';
+      document.getElementById('quizProgressLabel').style.display = 'none';
+
+      // Count scores
+      let score = 0;
+      quizQuestions.forEach((q, idx) => {
+        if (userQuizAnswers[idx] === q.c) {
+          score++;
+        }
+      });
+
+      const percentage = Math.round((score / quizQuestions.length) * 100);
+      let grade = "2 (Qoniqarsiz)";
+      let gradeClass = "bg-danger";
+
+      if (percentage >= 86) {
+        grade = "5 (A'lo)";
+        gradeClass = "bg-success";
+      } else if (percentage >= 71) {
+        grade = "4 (Yaxshi)";
+        gradeClass = "bg-primary";
+      } else if (percentage >= 55) {
+        grade = "3 (Qoniqarli)";
+        gradeClass = "bg-warning text-dark";
+      }
+
+      document.getElementById('quizScoreText').innerText = `${score} / 20`;
+      document.getElementById('quizPercentageText').innerText = `Foiz ko'rsatkichi: ${percentage}%`;
+      
+      const gradeBadge = document.getElementById('quizGradeBadge');
+      gradeBadge.className = `badge ${gradeClass} fs-5 p-3 px-4 rounded-pill`;
+      gradeBadge.innerText = `Baho: ${grade}`;
+
+      document.getElementById('quizResultBox').style.display = 'block';
+    }
+
+    function restartQuiz() {
+      currentQuestionIdx = 0;
+      for (let i = 0; i < quizQuestions.length; i++) {
+        delete userQuizAnswers[i];
+      }
+
+      document.getElementById('quizQuestionsContainer').style.display = 'block';
+      document.getElementById('quizPrevBtn').style.display = 'inline-block';
+      document.getElementById('quizNextBtn').style.display = 'inline-block';
+      document.getElementById('quizProgressLabel').style.display = 'inline-block';
+      document.getElementById('quizResultBox').style.display = 'none';
+
+      initQuiz();
+    }
+
+    /* 13. Group Classification Game Logic */
+    const gameItems = [
+      { id: "cpu", text: "CPU (Protsessor)", type: "internal" },
+      { id: "printer", text: "Printer", type: "external" },
+      { id: "windows", text: "Windows 11", type: "system" },
+      { id: "ram", text: "RAM (Tezkor xotira)", type: "internal" },
+      { id: "word", text: "MS Word", type: "app" },
+      { id: "monitor", text: "Monitor", type: "external" },
+      { id: "ssd", text: "SSD disk", type: "internal" },
+      { id: "photoshop", text: "Photoshop", type: "app" }
+    ];
+
+    let selectedGameItem = null;
+    const bucketAnswers = {
+      internal: [],
+      external: [],
+      system: [],
+      app: []
+    };
+
+    function initGame() {
+      const container = document.getElementById('gameItemsContainer');
+      container.innerHTML = "";
+      
+      // Shuffle elements
+      const shuffled = [...gameItems].sort(() => Math.random() - 0.5);
+      shuffled.forEach(item => {
+        const div = document.createElement('div');
+        div.className = "game-item";
+        div.id = `gi-${item.id}`;
+        div.innerText = item.text;
+        div.onclick = () => selectGameItem(item);
+        container.appendChild(div);
+      });
+
+      // Clear buckets
+      document.getElementById('bucket-internal').innerHTML = "";
+      document.getElementById('bucket-external').innerHTML = "";
+      document.getElementById('bucket-system').innerHTML = "";
+      document.getElementById('bucket-app').innerHTML = "";
+      
+      for (let key in bucketAnswers) {
+        bucketAnswers[key] = [];
+      }
+      document.getElementById('gameSuccessAlert').classList.add('d-none');
+    }
+
+    function selectGameItem(item) {
+      // Remove previous selection styles
+      const els = document.querySelectorAll('.game-item');
+      els.forEach(el => el.classList.remove('selected'));
+
+      // Highlight selected
+      const el = document.getElementById(`gi-${item.id}`);
+      if (el) el.classList.add('selected');
+      selectedGameItem = item;
+    }
+
+    function assignItemToBucket(bucketId) {
+      if (!selectedGameItem) {
+        alert("Iltimos, avval tasniflanadigan elementni tanlang!");
+        return;
+      }
+
+      if (selectedGameItem.type === bucketId) {
+        // Correct classification
+        // Remove item from choices
+        document.getElementById(`gi-${selectedGameItem.id}`).remove();
+        
+        // Add to bucket list
+        const bucket = document.getElementById(`bucket-${bucketId}`);
+        const div = document.createElement('div');
+        div.className = "bucket-assigned-item";
+        div.innerHTML = `
+          <span>${selectedGameItem.text}</span>
+          <i class="fa-solid fa-circle-check text-success"></i>
+        `;
+        bucket.appendChild(div);
+        
+        bucketAnswers[bucketId].push(selectedGameItem);
+        selectedGameItem = null;
+
+        // Check if game complete
+        checkGameComplete();
+      } else {
+        // Incorrect classification - flash selected item red
+        const el = document.getElementById(`gi-${selectedGameItem.id}`);
+        el.classList.add('btn-danger', 'text-white');
+        setTimeout(() => {
+          el.classList.remove('btn-danger', 'text-white');
+        }, 500);
+      }
+    }
+
+    function checkGameComplete() {
+      let total = 0;
+      for (let key in bucketAnswers) {
+        total += bucketAnswers[key].length;
+      }
+
+      if (total === gameItems.length) {
+        document.getElementById('gameSuccessAlert').classList.remove('d-none');
+      }
+    }
+
+    function resetGame() {
+      initGame();
+    }
+
+    // Initialize Everything on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = 'dark'; localStorage.setItem('darslik-theme', 'dark');
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      const themeIcon = document.getElementById('themeIcon');
+      if (themeIcon) {
+        themeIcon.className = savedTheme === 'dark' ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      }
+      initQuiz();
+      initGame();
+      // Select monitor by default
+      showDeviceDetail(0);
+      // Select CPU motherboard part by default
+      selectMotherboardPart('cpu');
+      // Select Hardware category 0 by default
+      showHardwareCategory(0);
+      // Select Isometric CPU by default
+      selectChassisComponent('cpu');
+    });
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.href = '../index.html';
+    }
+
+        function applyAuthorName() {
+      const loginName = localStorage.getItem('darslik_login') || 'Napasov';
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      applyAuthorName();
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,3244 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="dark">
+
+<head>
+  <script>
+    // Immediate login check before rendering
+    const savedLogin = localStorage.getItem('darslik_login');
+    if (savedLogin !== 'Napasov' && savedLogin !== 'Umirov') {
+      window.location.href = '../index.html';
+    }
+
+    // Immediate theme preference restore
+    const savedTheme = 'dark'; localStorage.setItem('darslik-theme', 'dark');
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link class="favicon" rel="icon" type="image/png" href="../LOGO.png">
+  <title>Elektron Darslik: Telegram messenjeri bilan ishlash</title>
+
+  <!-- Bootstrap 5 CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome Icons via CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <!-- Google Fonts: Poppins (headings), Montserrat (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    /* Design Tokens / CSS Variables */
+    :root {
+      --primary-bg: #0b0f19;
+      /* Cyber Deep Navy */
+      --secondary-bg: #151d30;
+      /* Slate 800 */
+      --text-main: #f8fafc;
+      /* Off-white */
+      --text-muted: #94a3b8;
+      /* Muted Slate */
+      --text-light: #cbd5e1;
+      /* Light Slate */
+      --card-bg: rgba(21, 29, 48, 0.7);
+      /* Glassmorphism */
+      --border-color: rgba(255, 255, 255, 0.08);
+      --accent: #229ed9;
+      /* Neon Orange */
+      --accent-glow: rgba(34, 158, 217, 0.35);
+      --telegram-blue: #229ed9;
+      /* Telegram Cyan-Blue */
+      --telegram-glow: rgba(34, 158, 217, 0.25);
+      --success: #10b981;
+      --error: #ef4444;
+
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="light"] {
+      --primary-bg: #f8fafc;
+      /* Light Slate */
+      --secondary-bg: #ffffff;
+      /* White */
+      --text-main: #0b0f19;
+      /* Dark Slate */
+      --text-muted: #475569;
+      /* Slate 600 */
+      --text-light: #1e293b;
+      /* Slate 800 */
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --border-color: rgba(11, 15, 25, 0.08);
+      --accent: #0284c7;
+      /* Deep Orange */
+      --accent-glow: rgba(2, 132, 199, 0.15);
+      --telegram-blue: #0284c7;
+      /* Deeper Telegram Blue */
+      --telegram-glow: rgba(2, 132, 199, 0.10);
+      --shadow: 0 10px 30px rgba(11, 15, 25, 0.05);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      background-color: var(--primary-bg);
+      color: var(--text-main);
+      font-family: 'Montserrat', sans-serif;
+      transition: var(--transition-smooth);
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-top: 56px;
+      position: relative;
+    }
+
+    /* Subtle grid background */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background-image:
+        radial-gradient(at 0% 0%, var(--telegram-glow) 0, transparent 40%),
+        radial-gradient(at 100% 100%, var(--accent-glow) 0, transparent 40%);
+      background-size: 100% 100%;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    p {
+      font-size: 1.02rem;
+      line-height: 1.7;
+    }
+
+    .text-muted {
+      color: var(--text-muted) !important;
+    }
+
+    .text-light {
+      color: var(--text-light) !important;
+    }
+
+    .text-accent {
+      color: var(--accent) !important;
+    }
+
+    .text-telegram {
+      color: var(--telegram-blue) !important;
+    }
+
+    /* Force deep blue background on specific components */
+    .bg-dark {
+      background-color: #121927 !important;
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .bg-dark * {
+      color: #ffffff !important;
+    }
+
+    .bg-dark .text-muted {
+      color: #94a3b8 !important;
+    }
+
+    .bg-dark-sidebar {
+      background-color: #0d121c !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* Fixed Widescreen container limit */
+    .widescreen-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Top Progress Bar */
+    .top-progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: rgba(0, 0, 0, 0.1);
+      z-index: 2000;
+    }
+
+    .top-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--telegram-blue), var(--accent));
+      box-shadow: 0 0 8px var(--accent);
+      transition: width 0.1s ease;
+    }
+
+    /* Navbar styling */
+    .navbar {
+      background: rgba(21, 29, 48, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      transition: var(--transition-smooth);
+    }
+
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .navbar-brand {
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .logo-img {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px var(--telegram-glow));
+    }
+
+    .logo-text {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      background: linear-gradient(135deg, var(--telegram-blue) 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      transition: var(--transition-smooth);
+    }
+
+    .author-badge {
+      border: 1px solid var(--accent);
+      background: rgba(249, 115, 22, 0.1);
+      color: var(--accent);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Layout styling */
+    .sidebar-col {
+      position: sticky;
+      top: 76px;
+      height: calc(100vh - 100px);
+      overflow-y: auto;
+      padding-right: 15px;
+    }
+
+    .sidebar-col::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .sidebar-col::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+    }
+
+    .toc-list {
+      list-style: none;
+      padding-left: 0;
+      border-left: 2px solid var(--border-color);
+    }
+
+    .toc-item a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      display: block;
+      padding: 6px 16px;
+      transition: var(--transition-smooth);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toc-item.active a,
+    .toc-item a:hover {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .toc-item.active {
+      border-left: 2px solid var(--accent);
+      margin-left: -2px;
+    }
+
+    /* Content Cards */
+    .custom-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      transition: var(--transition-smooth);
+    }
+
+    .custom-card:hover {
+      border-color: rgba(249, 115, 22, 0.25);
+    }
+
+    .section-title {
+      font-weight: 700;
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-main);
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    .section-title i {
+      color: var(--accent);
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+    }
+
+    /* Sub-cards and Info Cards */
+    .info-card {
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 4px solid var(--telegram-blue);
+      border-radius: 4px 12px 12px 4px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+    }
+
+    [data-theme="light"] .info-card {
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    /* Theme Switcher Button */
+    .theme-toggle-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    /* Button accents */
+    .btn-accent-solid {
+      background: linear-gradient(135deg, var(--accent), #f97316);
+      color: #ffffff !important;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      transition: var(--transition-smooth);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .btn-accent-solid:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px var(--accent-glow);
+    }
+
+    .btn-telegram-solid {
+      background: linear-gradient(135deg, var(--telegram-blue), #0088cc);
+      color: #ffffff !important;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      transition: var(--transition-smooth);
+      box-shadow: 0 4px 12px var(--telegram-glow);
+    }
+
+    .btn-telegram-solid:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px var(--telegram-glow);
+    }
+
+    /* Hero Banner Illustration styling */
+    .hero-panel {
+      position: relative;
+      background: linear-gradient(135deg, #131d35, #080d17);
+      border-radius: 20px;
+      border: 1px solid rgba(34, 158, 217, 0.2);
+      padding: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      min-height: 250px;
+    }
+
+    .hero-panel::before {
+      content: '';
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, var(--telegram-glow) 0%, transparent 70%);
+      top: -20px;
+      left: -20px;
+    }
+
+    .hero-panel::after {
+      content: '';
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      bottom: -20px;
+      right: -20px;
+    }
+
+    .hero-paper-plane {
+      font-size: 5.5rem;
+      color: var(--telegram-blue);
+      animation: paperPlaneFloat 3s infinite ease-in-out;
+      filter: drop-shadow(0 0 15px rgba(34, 158, 217, 0.6));
+    }
+
+    @keyframes paperPlaneFloat {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-12px) rotate(-8deg);
+      }
+    }
+
+    /* Phones / Desktops simulator frames */
+    .phone-mock {
+      width: 100%;
+      max-width: 340px;
+      height: 580px;
+      border: 12px solid #1e293b;
+      border-radius: 36px;
+      background-color: #0f172a;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      margin: 0 auto;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .phone-header {
+      height: 40px;
+      background: #1e293b;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 20px;
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    .phone-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #0b0f19;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .phone-camera-notch {
+      width: 100px;
+      height: 18px;
+      background: #1e293b;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 0 0 12px 12px;
+      z-index: 10;
+    }
+
+    /* Desktop Window Mock */
+    .desktop-mock {
+      width: 100%;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background-color: #0f172a;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    .desktop-titlebar {
+      height: 36px;
+      background-color: #1e293b;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 0 16px;
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .window-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .dot-red {
+      background: #ef4444;
+    }
+
+    .dot-yellow {
+      background: #f59e0b;
+    }
+
+    .dot-green {
+      background: #10b981;
+    }
+
+    /* Desktop layout split */
+    .tg-desktop-layout {
+      height: 480px;
+      display: flex;
+      background-color: #0e1624;
+    }
+
+    .tg-desktop-sidebar {
+      width: 30%;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      font-size: 0.82rem;
+    }
+
+    .tg-desktop-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .tg-search-bar {
+      padding: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .tg-search-input {
+      width: 100%;
+      background: #172130;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      color: #fff;
+    }
+
+    .tg-chat-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .tg-chat-item {
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+      transition: background 0.2s;
+    }
+
+    .tg-chat-item:hover,
+    .tg-chat-item.active {
+      background: #182538;
+    }
+
+    .tg-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+
+    .avatar-blue {
+      background: #229ed9;
+    }
+
+    .avatar-orange {
+      background: #f97316;
+    }
+
+    .avatar-green {
+      background: #10b981;
+    }
+
+    .avatar-purple {
+      background: #a855f7;
+    }
+
+    .avatar-gray {
+      background: #64748b;
+    }
+
+    .tg-chat-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .tg-chat-preview {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Explorer tooltip box */
+    .explorer-tooltip-box {
+      border-top: 1px solid var(--border-color);
+      border-radius: 0 0 12px 12px;
+    }
+
+    /* Registration steps cards inside mobile mock */
+    .reg-step {
+      display: none;
+      padding: 24px;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .reg-step.active {
+      display: flex;
+    }
+
+    .reg-input {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      width: 100%;
+      margin-bottom: 16px;
+    }
+
+    .reg-input:focus {
+      outline: none;
+      border-color: var(--telegram-blue);
+      box-shadow: 0 0 6px var(--telegram-glow);
+    }
+
+    .reg-btn {
+      width: 100%;
+      padding: 10px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      background: var(--telegram-blue);
+      color: #fff;
+      transition: var(--transition-smooth);
+    }
+
+    .reg-btn:hover {
+      filter: brightness(1.15);
+    }
+
+    /* Chat bubble simulator styles */
+    .chat-container {
+      background: #0f172a;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      height: 350px;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chat-bubble {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 0.88rem;
+      position: relative;
+      word-wrap: break-word;
+    }
+
+    .chat-bubble.sent {
+      align-self: flex-end;
+      background: #182538;
+      color: #fff;
+      border-bottom-right-radius: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .chat-bubble.received {
+      align-self: flex-start;
+      background: #202b3e;
+      color: #fff;
+      border-bottom-left-radius: 2px;
+    }
+
+    .chat-meta {
+      font-size: 0.68rem;
+      color: #94a3b8;
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4px;
+      gap: 4px;
+    }
+
+    /* Voice Note visualizer */
+    .voice-visualizer-card {
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 20px;
+    }
+
+    .voice-btn {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px var(--accent-glow);
+      transition: var(--transition-smooth);
+    }
+
+    .voice-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .voice-waves {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 40px;
+      flex: 1;
+    }
+
+    .voice-wave-bar {
+      width: 3px;
+      height: 10px;
+      background: var(--text-muted);
+      border-radius: 2px;
+      transition: height 0.1s ease;
+    }
+
+    .voice-waves.playing .voice-wave-bar {
+      animation: soundWave 0.8s infinite alternate ease-in-out;
+      background: var(--telegram-blue);
+    }
+
+    .voice-waves.playing .voice-wave-bar:nth-child(2n) {
+      animation-delay: 0.2s;
+    }
+
+    .voice-waves.playing .voice-wave-bar:nth-child(3n) {
+      animation-delay: 0.4s;
+    }
+
+    .voice-waves.playing .voice-wave-bar:nth-child(4n) {
+      animation-delay: 0.1s;
+    }
+
+    @keyframes soundWave {
+      0% {
+        height: 6px;
+      }
+
+      100% {
+        height: 35px;
+      }
+    }
+
+    /* Capstone Simulator Tabs */
+    .sim-tab-header {
+      background: #172130;
+      display: flex;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sim-tab-btn {
+      flex: 1;
+      padding: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      border-bottom: 2px solid transparent;
+    }
+
+    .sim-tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: rgba(249, 115, 22, 0.05);
+    }
+
+    .sim-tab-content {
+      display: none;
+      padding: 15px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .sim-tab-content.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* File upload animation box */
+    .file-progress-box {
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      background: #182538;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.8rem;
+    }
+
+    .file-progress-ring {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      animation: spinRing 0.8s infinite linear;
+    }
+
+    @keyframes spinRing {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Tap-to-Match Game Styling */
+    .match-container {
+      display: flex;
+      justify-content: flex-start;
+      gap: 40px;
+      position: relative;
+    }
+
+    .match-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .match-item {
+      background: var(--secondary-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition-smooth);
+      user-select: none;
+    }
+
+    .match-item:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .match-item.selected {
+      background: rgba(249, 115, 22, 0.15);
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .match-item.matched {
+      background: rgba(16, 185, 129, 0.15) !important;
+      border-color: #10b981 !important;
+      color: #10b981 !important;
+      cursor: default;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Test/Quiz styling */
+    .quiz-card {
+      background: rgba(21, 29, 48, 0.95);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+
+    .quiz-question-box {
+      display: none;
+    }
+
+    .quiz-question-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .quiz-question-number {
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .quiz-question-text {
+      font-weight: 600;
+      font-size: 1.15rem;
+      margin: 8px 0 20px 0;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .quiz-option-btn {
+      background: #182133;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #ffffff;
+      border-radius: 8px;
+      padding: 12px 18px;
+      text-align: left;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+      cursor: pointer;
+    }
+
+    .quiz-option-btn:hover {
+      background: #202b40;
+      border-color: var(--accent);
+    }
+
+    .quiz-option-btn.correct {
+      background: rgba(16, 185, 129, 0.2) !important;
+      border-color: #10b981 !important;
+      color: #10b981 !important;
+    }
+
+    .quiz-option-btn.incorrect {
+      background: rgba(239, 68, 68, 0.2) !important;
+      border-color: #ef4444 !important;
+      color: #ef4444 !important;
+    }
+
+    /* Checklist Progress */
+    .checklist-progress-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      width: 0%;
+      border-radius: 6px;
+      transition: width 0.3s ease;
+    }
+
+    .task-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    /* Fixed light theme overrides for inputs and simulators to stay readable */
+    [data-theme="light"] .phone-screen,
+    [data-theme="light"] .desktop-mock,
+    [data-theme="light"] .tg-desktop-layout,
+    [data-theme="light"] .chat-container,
+    [data-theme="light"] .sim-tab-header,
+    [data-theme="light"] .file-progress-box,
+    [data-theme="light"] .reg-step,
+    [data-theme="light"] .quiz-option-btn {
+      color: #ffffff !important;
+    }
+
+    [data-theme="light"] .reg-input {
+      color: #ffffff !important;
+      background: #1e293b !important;
+    }
+
+    [data-theme="light"] .quiz-option-btn:hover {
+      background: #202b40 !important;
+    }
+
+    /* Logout Button Style */
+    .logout-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: rgba(239, 68, 68, 0.08);
+      color: #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.18);
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+      transform: scale(1.05);
+    }
+
+    [data-theme="light"] .logout-btn {
+      background: rgba(239, 68, 68, 0.05);
+    }
+  </style>
+  <link rel="stylesheet" href="darslik.css">
+</head>
+
+<body>
+
+  <!-- Top Progress Bar -->
+  <div class="top-progress-container">
+    <div class="top-progress-bar" id="topProgressBar"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg fixed-top py-2">
+    <div class="container-fluid widescreen-container">
+      <a class="navbar-brand d-flex align-items-center text-decoration-none text-main" href="../index.html">
+        <img class="logo-img me-2" src="../LOGO.png" alt="Logo">
+        <span class="logo-text d-none d-sm-inline">Axborot texnologiyalari</span>
+      </a>
+
+      <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-3">
+        <div class="author-badge">
+          <i class="fa-solid fa-user-tie"></i>
+          <span>Muallif: {{AUTHOR}}</span>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Chiqish" id="logoutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+        
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Structure -->
+  <div class="container-fluid content-wrapper widescreen-container px-3 px-md-4">
+    <div class="row">
+
+      <!-- Main Content Area -->
+      <div class="col-12 pb-5">
+
+        <!-- Section 1: Kirish -->
+        <section id="section-1" class="custom-card">
+          <h2 class="section-title"><i class="fa-brands fa-telegram"></i> 1-Bo'lim. Kirish</h2>
+
+          <div class="row align-items-center mb-4">
+            <div class="col-md-7 col-12">
+              <p class="lead fw-semibold text-accent">Mavzu: Telegram messenjeri bilan ishlash</p>
+              <p>
+                <strong>Telegram</strong> – bu matnli xabarlar, ovozli va video qo'ng'iroqlar almashish, shuningdek
+                media fayllar va turli formatdagi hujjatlarni yuborish imkonini beruvchi bepul, yuqori tezlikda
+                ishlovchi global bulutli xizmat (messenjer) hisoblanadi.
+              </p>
+              <p>
+                Telegram messenjeri 2013-yilda rossiyalik aka-uka <strong>Pavel va Nikolay Durovlar</strong> tomonidan
+                yaratilgan. Dasturning asosiy yo'nalishi – tezlik, foydalanish soddaligi va yuqori darajadagi xavfsizlik
+                (maxfiylik) hisoblanadi.
+              </p>
+            </div>
+            <div class="col-md-5 col-12">
+              <div class="hero-panel text-center">
+                <i class="fa-solid fa-paper-plane hero-paper-plane"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <h6 class="fw-bold text-accent mb-2"><i class="fa-solid fa-bolt"></i> Telegramning asosiy afzalliklari:</h6>
+            <ul class="mb-0">
+              <li><strong>Bulutli saqlash:</strong> Xabarlar va fayllar shaxsiy qurilmangiz xotirasini band qilmaydi,
+                barcha ma'lumotlar serverda xavfsiz saqlanadi.</li>
+              <li><strong>Katta hajmli fayllar:</strong> Foydalanuvchilar har biri 2 GB (Telegram Premium bilan 4 GB)
+                gacha bo'lgan fayllarni yuborishi mumkin.</li>
+              <li><strong>Ko'p qurilmali tizim (Multiplatform):</strong> Bir vaqtning o'zida kompyuter, planshet va bir
+                nechta telefonlarda seansni uzmasdan foydalanish mumkin.</li>
+              <li><strong>Keng auditoriya:</strong> Guruhlarga 200 000 tagacha a'zo qo'shish va cheksiz obunachiga ega
+                kanallar ochish imkoniyati bor.</li>
+            </ul>
+          </div>
+
+          <h5 class="fw-bold mt-4 mb-3 text-accent"><i class="fa-solid fa-scale-balanced"></i> Boshqa messenjerlar bilan
+            taqqoslash:</h5>
+          <div class="table-responsive">
+            <table class="table table-dark table-striped table-bordered border-secondary align-middle">
+              <thead>
+                <tr>
+                  <th>Xususiyat / Messenjer</th>
+                  <th>Telegram</th>
+                  <th>WhatsApp</th>
+                  <th>Viber</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Bulutli xotira</strong></td>
+                  <td class="text-success"><i class="fa-solid fa-circle-check"></i> Ha (Qurilma to'lmaydi)</td>
+                  <td class="text-danger"><i class="fa-solid fa-circle-xmark"></i> Yo'q (Lokal backup)</td>
+                  <td class="text-danger"><i class="fa-solid fa-circle-xmark"></i> Yo'q</td>
+                </tr>
+                <tr>
+                  <td><strong>Fayl yuborish limiti</strong></td>
+                  <td class="text-success">2 GB (yoki 4 GB)</td>
+                  <td class="text-warning">2 GB (yaqinda oshirildi)</td>
+                  <td>200 MB</td>
+                </tr>
+                <tr>
+                  <td><strong>Ochiq kodli Botlar</strong></td>
+                  <td class="text-success"><i class="fa-solid fa-circle-check"></i> Ha (Cheksiz imkoniyatlar)</td>
+                  <td class="text-danger"><i class="fa-solid fa-circle-xmark"></i> Yo'q</td>
+                  <td>Qisman</td>
+                </tr>
+                <tr>
+                  <td><strong>Maxfiylik kodi</strong></td>
+                  <td>Yopiq (Serverlar tarqoq)</td>
+                  <td class="text-success">End-to-End (Shifrlangan)</td>
+                  <td class="text-success">End-to-End (Shifrlangan)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Section 2: Telegramni O'rnatish -->
+        <section id="section-2" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-download"></i> 2-Bo'lim. Telegramni o'rnatish</h2>
+          <p>
+            Telegram messenjeri har xil turdagi operatsion tizimlar (Windows, macOS, Android, iOS) uchun maxsus
+            ilovalarga ega. Quyida o'rnatish bosqichlari ko'rsatilgan.
+          </p>
+
+          <div class="row g-4 mt-2">
+            <!-- Kompyuter uchun -->
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded h-100" style="background: rgba(255,255,255,0.02)">
+                <h5 class="fw-bold text-accent mb-3"><i class="fa-solid fa-desktop"></i> Kompyuter uchun (Telegram
+                  Desktop):</h5>
+                <ol class="small mb-0">
+                  <li class="mb-2">Kompyuter brauzerida rasmiy saytga kiring: <code>desktop.telegram.org</code>.</li>
+                  <li class="mb-2"><strong>"Get Telegram for Windows"</strong> (yoki x32/macOS) ko'k tugmasini bosing va
+                    o'rnatish faylini (<code>tsetup.exe</code>) yuklab oling.</li>
+                  <li class="mb-2">Yuklangan faylni sichqoncha bilan ikki marta bosib oching.</li>
+                  <li class="mb-2">O'rnatish tilini tanlang (masalan, Ingliz yoki Rus tili) va <strong>Next</strong>
+                    (Далее) tugmalarini bosib o'rnatishni yakunlang.</li>
+                  <li class="mb-2">Ish stolidagi <strong>Telegram</strong> yorlig'ini bosing va dasturni ishga
+                    tushiring.</li>
+                </ol>
+              </div>
+            </div>
+
+            <!-- Mobil telefon uchun -->
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded h-100" style="background: rgba(255,255,255,0.02)">
+                <h5 class="fw-bold text-accent mb-3"><i class="fa-solid fa-mobile-screen-button"></i> Telefon uchun
+                  (Telegram Mobile):</h5>
+                <ol class="small mb-0">
+                  <li class="mb-2">Android tizimidagi telefonlar uchun <strong>Google Play Market</strong>, Apple iPhone
+                    telefonlari uchun <strong>App Store</strong> ilovasiga kiring.</li>
+                  <li class="mb-2">Qidiruv satriga (Поиск) <strong>"Telegram"</strong> deb yozing.</li>
+                  <li class="mb-2">Rasmiy ko'k qog'oz samolyot ko'rinishidagi ilovani tanlang.</li>
+                  <li class="mb-2"><strong>"Install"</strong> (Установить yoki Скачать) tugmasini bosing va yuklanishini
+                    kuting.</li>
+                  <li class="mb-2">Ilova yuklab olingach, telefon ekranida paydo bo'lgan Telegram ikonkasini oching.
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3: Telegramda Ro'yxatdan O'tish -->
+        <section id="section-3" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-user-plus"></i> 3-Bo'lim. Telegramda ro'yxatdan o'tish</h2>
+          <p class="mb-4">
+            Telegramda ro'yxatdan o'tish uchun faqat faol telefon raqami kerak bo'ladi. Quyidagi virtual telefonda
+            ro'yxatdan o'tish qadamlarini sinab ko'ring:
+          </p>
+
+          <div class="row align-items-center">
+            <div class="col-lg-6 col-12 mb-4 mb-lg-0">
+              <h5 class="fw-bold text-accent"><i class="fa-solid fa-clipboard-list"></i> Ro'yxatdan o'tish qadamlari:
+              </h5>
+              <ul class="small">
+                <li class="mb-2"><strong>1-qadam:</strong> Mamlakat kodini tanlash va telefon raqamini kiritish. Kod
+                  O'zbekiston uchun <code>+998</code>.</li>
+                <li class="mb-2"><strong>2-qadam:</strong> Telefoningizga kelgan 5 xonali maxfiy SMS kodni kiritish.
+                </li>
+                <li class="mb-2"><strong>3-qadam:</strong> Ismingizni (Имя) va Familiyangizni (Фамилия - majburiy emas)
+                  kiritish.</li>
+                <li class="mb-2"><strong>4-qadam:</strong> Profil yaratilib, Telegramning bosh oynasi ochiladi.</li>
+              </ul>
+              <div class="alert alert-warning p-2 small mt-3 border-warning" style="background: rgba(245,158,11,0.05)">
+                <i class="fa-solid fa-triangle-exclamation"></i> <strong>Eslatma:</strong> SMS kodni hech qachon begona
+                shaxslarga yoki soxta saytlarga bermang, bu profilingizni o'g'irlashlariga sabab bo'lishi mumkin!
+              </div>
+            </div>
+
+            <div class="col-lg-6 col-12">
+              <!-- Phone simulator for Registration -->
+              <div class="phone-mock">
+                <div class="phone-camera-notch"></div>
+                <div class="phone-header">
+                  <span>12:00</span>
+                  <div>
+                    <i class="fa-solid fa-wifi"></i>
+                    <i class="fa-solid fa-battery-three-quarters ms-1"></i>
+                  </div>
+                </div>
+                <div class="phone-screen bg-dark">
+
+                  <!-- Reg Step 1 -->
+                  <div class="reg-step active" id="regStep1">
+                    <div class="text-center mb-4">
+                      <i class="fa-brands fa-telegram text-telegram fs-1"></i>
+                      <h5 class="fw-bold mt-2 text-white">Telegram</h5>
+                      <p class="small text-muted">Telefon raqamingizni kiriting</p>
+                    </div>
+                    <label class="small text-light mb-1">Mamlakat</label>
+                    <select class="reg-input text-white" style="background: #172130">
+                      <option>O'zbekiston (+998)</option>
+                    </select>
+                    <label class="small text-light mb-1">Telefon raqam</label>
+                    <input type="tel" class="reg-input" id="regPhone" placeholder="90 123 45 67">
+                    <button class="reg-btn mt-3" onclick="nextRegStep(1)">Davom etish (Далее)</button>
+                  </div>
+
+                  <!-- Reg Step 2 -->
+                  <div class="reg-step" id="regStep2">
+                    <div class="text-center mb-4">
+                      <i class="fa-solid fa-message text-telegram fs-1"></i>
+                      <h5 class="fw-bold mt-2 text-white">SMS Kod</h5>
+                      <p class="small text-muted" id="regPhoneText">Kod yuborildi</p>
+                    </div>
+                    <label class="small text-light mb-1">Maxfiy kod (SMS)</label>
+                    <input type="number" class="reg-input" id="regCode" placeholder="Kod: 77777">
+                    <p class="small text-warning text-center" style="font-size: 0.72rem;"><i
+                        class="fa-solid fa-info-circle"></i> O'quv kodi: <strong>77777</strong></p>
+                    <button class="reg-btn mt-2" onclick="nextRegStep(2)">Kodni tasdiqlash</button>
+                    <button class="btn btn-sm btn-link text-muted mt-2 text-decoration-none"
+                      onclick="prevRegStep(2)">Orqaga qaytish</button>
+                  </div>
+
+                  <!-- Reg Step 3 -->
+                  <div class="reg-step" id="regStep3">
+                    <div class="text-center mb-4">
+                      <i class="fa-solid fa-user-gear text-telegram fs-1"></i>
+                      <h5 class="fw-bold mt-2 text-white">Ma'lumotlar</h5>
+                      <p class="small text-muted">Ism va familiyangizni yozing</p>
+                    </div>
+                    <label class="small text-light mb-1">Ism (Имя) *</label>
+                    <input type="text" class="reg-input" id="regFirstName" placeholder="Ozodbek">
+                    <label class="small text-light mb-1">Familiya (Фамилия)</label>
+                    <input type="text" class="reg-input" id="regLastName" placeholder="Napasov">
+                    <button class="reg-btn mt-3" onclick="nextRegStep(3)">Profilni yaratish</button>
+                  </div>
+
+                  <!-- Reg Step 4 (Success) -->
+                  <div class="reg-step text-center" id="regStep4">
+                    <i class="fa-solid fa-circle-check text-success fs-1 mb-3"></i>
+                    <h4 class="fw-bold text-white">Muvaffaqiyatli!</h4>
+                    <p class="small text-light" id="regWelcomeText">Xush kelibsiz, Ozodbek!</p>
+                    <div class="p-3 border border-secondary rounded mb-4" style="background: rgba(255,255,255,0.05)">
+                      <p class="small text-muted mb-0">Siz virtual ro'yxatdan o'tish qadamlarini to'liq bajardingiz.
+                        Endi Telegram messenjerini o'rganishingiz mumkin.</p>
+                    </div>
+                    <button class="reg-btn" onclick="resetRegSim()">Qayta boshlash</button>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4: Telegram Oynasi Tuzilishi -->
+        <section id="section-4" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-window-maximize"></i> 4-Bo'lim. Telegram oynasi tuzilishi</h2>
+          <p class="mb-4">
+            Kompyuterdagi <strong>Telegram Desktop</strong> oynasining ruscha interfeysi va uning asosiy elementlari
+            bilan tanishing.
+            Elementlar ustiga bosib, ularning vazifasini pastdagi ma'lumot oynasida o'qing:
+          </p>
+
+          <!-- Desktop window simulator -->
+          <div class="desktop-mock bg-dark">
+            <div class="desktop-titlebar">
+              <div class="window-dots">
+                <span class="window-dot dot-red"></span>
+                <span class="window-dot dot-yellow"></span>
+                <span class="window-dot dot-green"></span>
+              </div>
+              <span class="small">Telegram Desktop</span>
+              <span style="width: 40px;"></span>
+            </div>
+
+            <div class="tg-desktop-layout">
+              <!-- Left Sidebar -->
+              <div class="tg-desktop-sidebar bg-dark-sidebar">
+                <!-- Search -->
+                <div class="tg-search-bar"
+                  onclick="exploreElement('Поиск (Qidiruv)', 'Поиск maydoni yordamida kontaktlar, guruhlar, kanallar, botlar yoki xabarlarni ismi va kalit so\'zlar bo\'yicha topishingiz mumkin.')">
+                  <div class="tg-search-input"><i class="fa-solid fa-search me-1"></i> Поиск...</div>
+                </div>
+                <!-- Chat List -->
+                <div class="tg-chat-list">
+                  <div class="tg-chat-item active"
+                    onclick="exploreElement('Избранное (Saqlangan xabarlar)', 'Избранное - foydalanuvchining shaxsiy chat maydoni bo\'lib, bu yerga o\'zi uchun muhim matnlar, rasmlar va har xil fayllarni tashlab qo\'yishi (shaxsiy bulut xotirasi sifatida) mumkin.')">
+                    <div class="tg-avatar avatar-blue"><i class="fa-solid fa-bookmark"></i></div>
+                    <div>
+                      <div class="tg-chat-name">Избранное</div>
+                      <div class="tg-chat-preview">Mening shaxsiy bulut omborim</div>
+                    </div>
+                  </div>
+                  <div class="tg-chat-item"
+                    onclick="exploreElement('Чаты (Chatlar)', 'Чаты - chap tarafdagi suhbatdoshlar, guruhlar va kanallar ro\'yxati joylashgan panel bo\'lib, siz barcha yangi kelgan xabarlarni shu yerdan kuzatasiz.')">
+                    <div class="tg-avatar avatar-green">TT</div>
+                    <div>
+                      <div class="tg-chat-name">Tibbiyot Talabalari</div>
+                      <div class="tg-chat-preview">Ertaga dars soat 08:30 da...</div>
+                    </div>
+                  </div>
+                  <div class="tg-chat-item"
+                    onclick="exploreElement('Контакты (Kontaktlar)', 'Контакты - Telegramdagi telefon raqamingiz orqali ulangan kontaktlar ro\'yxati. Ularning qachon onlayn bo\'lganini ham shu yerda ko\'rasiz.')">
+                    <div class="tg-avatar avatar-purple"><i class="fa-solid fa-users"></i></div>
+                    <div>
+                      <div class="tg-chat-name">Контакты</div>
+                      <div class="tg-chat-preview">Telefon raqamli do'stlar</div>
+                    </div>
+                  </div>
+                  <div class="tg-chat-item"
+                    onclick="exploreElement('Настройки (Sozlamalar)', 'Настройки - foydalanuvchi profil ma\'lumotlari (Ism, bio, rasm), maxfiylik sozlamalari, til, bildirishnomalar va xavfsizlik konfiguratsiyalarini sozlash oynasi.')">
+                    <div class="tg-avatar avatar-orange"><i class="fa-solid fa-cog"></i></div>
+                    <div>
+                      <div class="tg-chat-name">Настройки</div>
+                      <div class="tg-chat-preview">Sozlamalar paneli</div>
+                    </div>
+                  </div>
+                  <div class="tg-chat-item"
+                    onclick="exploreElement('Архив (Arxiv)', 'Архив - vaqtincha faol bo\'lmagan yoki chalg\'ituvchi guruh/kanallarni asosiy chatlar ro\'yxatidan yashirib, tap-to-match orqali o\'rganish uchun mo\'ljallangan arxiv papkasi.')">
+                    <div class="tg-avatar avatar-gray"><i class="fa-solid fa-box-archive"></i></div>
+                    <div>
+                      <div class="tg-chat-name">Архив</div>
+                      <div class="tg-chat-preview">Yashirilgan chatlar ro'yxati</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Chat Area -->
+              <div class="tg-desktop-content">
+                <div
+                  class="d-flex align-items-center justify-content-between p-3 border-bottom border-secondary bg-dark"
+                  style="height: 50px;">
+                  <div class="fw-bold small text-white"><i class="fa-solid fa-bookmark text-telegram"></i> Избранное
+                  </div>
+                  <i class="fa-solid fa-search text-muted" style="cursor:pointer;"
+                    onclick="exploreElement('Поиск по чату (Chat ichidan qidirish)', 'Muayyan suhbat ichidan aniq kalit so\'zlar bo\'yicha kerakli xabarlarni tezda izlab topish funksiyasi.')"></i>
+                </div>
+                <div class="flex-grow-1 p-3 d-flex flex-column justify-content-center align-items-center text-center">
+                  <i class="fa-solid fa-arrow-pointer text-accent fs-1 mb-3 animate-bounce"></i>
+                  <h6 class="text-white">Interfeysni o'rganing!</h6>
+                  <p class="small text-muted px-4">Chap paneldagi elementlarning (Чаты, Контакты, Поиск, Настройки,
+                    Избранное, Архив) ustiga bosing.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Explaining panel -->
+            <div class="explorer-tooltip-box bg-dark p-3">
+              <h6 class="fw-bold text-accent" id="expTitle">Element ustiga bosing</h6>
+              <p class="small mb-0 text-light" id="expDesc">Siz tanlagan Telegram interfeys elementining ruscha nomi va
+                uning darslikdagi batafsil vazifasi shu yerda ko'rinadi.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 5: Xabar Yuborish -->
+        <section id="section-5" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-paper-plane"></i> 5-Bo'lim. Xabar yuborish</h2>
+          <p>
+            Telegramda matn yozish va xabar yuborish juda sodda. Matndan tashqari, his-tuyg'ularni ifodalash uchun
+            <strong>Emoji</strong>, <strong>Stikerlar</strong> va harakatlanuvchi <strong>GIF</strong> rasmlaridan
+            foydalanish mumkin.
+          </p>
+
+          <div class="row g-4 mt-2">
+            <div class="col-lg-6 col-12">
+              <h5 class="fw-bold text-accent mb-3">Interaktiv xabar yuborish mashqi:</h5>
+              <p class="small">
+                O'ngdagi suhbat oynasiga xabar yuborish uchun quyidagi tayyor tugmalarni bosing. Xabaringiz chat
+                oynasiga joylashadi va so'ng suhbatdosh javob qaytaradi:
+              </p>
+              <div class="d-flex flex-column gap-2 mb-3">
+                <button class="btn btn-outline-secondary btn-sm text-start text-white bg-dark border-secondary"
+                  onclick="simulateSendMessage('Salom, ertaga tibbiy amaliyot darsi qayerda bo\'ladi? 🩺', 'Assalomu alaykum! Ertaga dars Respublika Klinik shifoxonasida bo\'ladi. 🏥')">
+                  <i class="fa-solid fa-hospital me-2 text-accent"></i> Salom, amaliyot darsi qayerda?
+                </button>
+                <button class="btn btn-outline-secondary btn-sm text-start text-white bg-dark border-secondary"
+                  onclick="simulateSendMessage('MS Wordda tayyorlagan tibbiy klinik hisobotimni jo\'nataymi? 📄', 'Ha, albatta. PDF yoki Word formatida jo\'nating, tekshirib beraman. 👍')">
+                  <i class="fa-solid fa-file-pdf me-2 text-accent"></i> Klinik hisobotni jo'nataymi?
+                </button>
+                <button class="btn btn-outline-secondary btn-sm text-start text-white bg-dark border-secondary"
+                  onclick="simulateSendMessage('Rahmat, darsga kechikmay yetib boraman! 😊', 'Sizga muvaffaqiyatlar tilayman! Ko\'rishguncha. 👨‍⚕️')">
+                  <i class="fa-solid fa-thumbs-up me-2 text-accent"></i> Rahmat, kechikmay boraman!
+                </button>
+              </div>
+            </div>
+
+            <div class="col-lg-6 col-12">
+              <div class="chat-container bg-dark" id="chatSimContainer">
+                <div class="chat-bubble received">
+                  Salom! Axborot texnologiyalari darsligining 5-bo'limiga xush kelibsiz.
+                  <div class="chat-meta">13:42</div>
+                </div>
+                <div class="chat-bubble received">
+                  Suhbatni boshlash uchun chapdagi tayyor savollardan birini tanlang.
+                  <div class="chat-meta">13:43</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 6: Fayllar Yuborish -->
+        <section id="section-6" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-file-arrow-up"></i> 6-Bo'lim. Fayllar yuborish</h2>
+          <p>
+            Telegramda ta'lim va shifokorlik faoliyatida turli formatdagi fayllarni (hujjatlar, rasmlar, videolar)
+            almashish juda qulay:
+          </p>
+
+          <div class="row g-4 mt-2">
+            <div class="col-md-4 col-12">
+              <div class="p-3 border border-secondary rounded text-center h-100"
+                style="background: rgba(255,255,255,0.02)">
+                <i class="fa-solid fa-file-pdf fs-1 text-danger mb-3"></i>
+                <h6 class="fw-bold">Tibbiy Hujjatlar</h6>
+                <p class="small text-muted mb-0">PDF, Word (DOCX), Excel (XLSX) formatidagi tibbiy hisobotlar va
+                  qo'llanmalar.</p>
+              </div>
+            </div>
+            <div class="col-md-4 col-12">
+              <div class="p-3 border border-secondary rounded text-center h-100"
+                style="background: rgba(255,255,255,0.02)">
+                <i class="fa-solid fa-image fs-1 text-success mb-3"></i>
+                <h6 class="fw-bold">Tibbiy Rasmlar</h6>
+                <p class="small text-muted mb-0">Rentgen, MRT yoki tahlil natijalari tasvirlari (JPEG, PNG).</p>
+              </div>
+            </div>
+            <div class="col-md-4 col-12">
+              <div class="p-3 border border-secondary rounded text-center h-100"
+                style="background: rgba(255,255,255,0.02)">
+                <i class="fa-solid fa-video fs-1 text-warning mb-3"></i>
+                <h6 class="fw-bold">Videolar</h6>
+                <p class="small text-muted mb-0">Operatsiyalar jarayoni yoki klinik ko'rsatmalarning videotasvirlari
+                  (MP4, AVI).</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-card mt-4">
+            <h6 class="fw-bold text-accent mb-2"><i class="fa-solid fa-info-circle"></i> Fayl o'lchami va saqlash
+              muddatlari:</h6>
+            <p class="small mb-0">
+              Oddiy foydalanuvchilar uchun har bir yuboriladigan faylning maksimal hajmi <strong>2 GB</strong> ni
+              tashkil qiladi. Telegram Premium obunachilari esa <strong>4 GB</strong> gacha bo'lgan juda katta hajmli
+              videofilmlar yoki ma'lumotlar arxivini yubora oladi. Bulutli xotira tizimi tufayli bu fayllar serverda
+              <strong>cheksiz vaqt</strong> saqlanadi va kompyuter yoki telefoningiz xotirasini aslo egallamaydi.
+            </p>
+          </div>
+        </section>
+
+        <!-- Section 7: Ovozli Xabar -->
+        <section id="section-7" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-microphone"></i> 7-Bo'lim. Ovozli xabar (Голосовое сообщение)
+          </h2>
+          <p>
+            Matn yozishga vaqt bo'lmaganda yoki tezkor ma'lumot yetkazish zarurati tug'ilganda (masalan, favqulodda
+            tibbiy yordam paytida) <strong>Голосовое сообщение</strong> (Ovozli xabar) yuborish juda qulaydir.
+          </p>
+
+          <div class="row align-items-center mt-3">
+            <div class="col-lg-6 col-12">
+              <h5 class="fw-bold text-accent mb-3">Ovozli xabar bilan ishlash:</h5>
+              <ul>
+                <li class="mb-2"><strong>Yozish (Запись):</strong> Mikrofon belgisini <i
+                    class="fa-solid fa-microphone text-telegram"></i> bosib ushlab turiladi va ovozli xabar gapiriladi.
+                  Agar tepaga sudralsa, yozish qulflanadi (avtomatik davom etadi).</li>
+                <li class="mb-2"><strong>Yuborish (Отправить):</strong> Mikrofon qo'yib yuborilsa xabar darhol
+                  jo'natiladi. Agar yozish jarayonida chapga sudralsa, yozuv bekor qilinadi (Удалить).</li>
+                <li class="mb-2"><strong>Tinglash (Прослушать):</strong> Kelgan ovozli xabarni faollashtirish uchun
+                  <strong>Play</strong> <i class="fa-solid fa-play"></i> tugmasi bosiladi. Uni 1.5x va 2x tezlashtirib
+                  eshitish ham mumkin.</li>
+              </ul>
+            </div>
+
+            <div class="col-lg-6 col-12">
+              <!-- Voice message player simulator -->
+              <div class="voice-visualizer-card bg-dark text-center">
+                <h6 class="fw-bold mb-3 text-white">Ovoz yozish va tinglash simulyatori</h6>
+
+                <div class="d-flex align-items-center justify-content-center gap-3 mb-4">
+                  <button class="voice-btn" id="voiceMicBtn" onclick="toggleVoiceRecording()">
+                    <i class="fa-solid fa-microphone" id="voiceMicIcon"></i>
+                  </button>
+
+                  <div class="text-start">
+                    <div class="fw-bold small text-white" id="voiceStatusText">Yozishni boshlash uchun bosing</div>
+                    <div class="small text-muted" id="voiceTimer">00:00</div>
+                  </div>
+                </div>
+
+                <!-- Animated sound wave visualizer -->
+                <div
+                  class="d-flex justify-content-center align-items-center gap-1 border border-secondary rounded p-3 bg-dark-sidebar"
+                  style="height: 60px;">
+                  <div class="voice-waves" id="voiceWaveContainer">
+                    <!-- Javascript generates waves dynamically -->
+                    <div class="voice-wave-bar" style="height: 12px"></div>
+                    <div class="voice-wave-bar" style="height: 18px"></div>
+                    <div class="voice-wave-bar" style="height: 8px"></div>
+                    <div class="voice-wave-bar" style="height: 25px"></div>
+                    <div class="voice-wave-bar" style="height: 14px"></div>
+                    <div class="voice-wave-bar" style="height: 20px"></div>
+                    <div class="voice-wave-bar" style="height: 10px"></div>
+                    <div class="voice-wave-bar" style="height: 30px"></div>
+                    <div class="voice-wave-bar" style="height: 16px"></div>
+                    <div class="voice-wave-bar" style="height: 12px"></div>
+                  </div>
+                </div>
+
+                <button class="btn btn-sm btn-accent-solid mt-3 d-none" id="voiceSendBtn"
+                  onclick="sendVoiceMessage()">Xabarni chatga yuborish</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 8: Telegram Guruhlari -->
+        <section id="section-8" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-users"></i> 8-Bo'lim. Telegram guruhlari</h2>
+          <p>
+            Telegram guruhi (<strong>Группа</strong>) – bu bir vaqtning o'zida ko'plab foydalanuvchilar bilan jamoaviy
+            suhbatlashish uchun mo'ljallangan chat shaklidir. Unda guruh a'zolari bir-biri bilan bevosita muloqot qiladi
+            va fayllar almashadi.
+          </p>
+
+          <div class="info-card">
+            <h6 class="fw-bold text-accent mb-2"><i class="fa-solid fa-users-gear"></i> Guruh yaratish va sozlash
+              (Создать группу):</h6>
+            <ol class="small mb-0">
+              <li class="mb-2">Telegram bosh oynasining chap burchagidagi menyuni (uchta chiziq) oching va
+                <strong>"Создать группу"</strong> tugmasini bosing.</li>
+              <li class="mb-2">Guruhga qo'shilishi kerak bo'lgan a'zolarni tanlang va <strong>"Далее"</strong> tugmasini
+                bosing.</li>
+              <li class="mb-2">Guruh uchun nom (masalan: <em>"Pediatriya_102-guruh"</em>) kiriting va profil rasmini
+                tanlang, so'ng <strong>"Создать"</strong> tugmasini bosing.</li>
+              <li class="mb-2"><strong>Administrator tayinlash:</strong> Guruh egasi guruh a'zolaridan birini admin
+                qilib tayinlashi, unga xabarlarni o'chirish, foydalanuvchilarni bloklash yoki yangi a'zolar qo'shish
+                huquqini berishi mumkin.</li>
+            </ol>
+          </div>
+
+          <div class="row g-3 mt-2">
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-lock-open"></i> Ommaviy guruh (Публичная):</h6>
+                <p class="small text-muted mb-0">Istalgan foydalanuvchi qidiruv (Поиск) yordamida nomini yozib topa
+                  oladi va ulanishi mumkin. Guruh havolasi ochiq bo'ladi (t.me/guruh_nomi).</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-lock"></i> Shaxsiy guruh (Частная):</h6>
+                <p class="small text-muted mb-0">Qidiruv orqali topib bo'lmaydi. Guruhga faqat ma'murlar tomonidan
+                  yuborilgan maxsus taklif havolasi (Ссылка-приглашение) orqali kirish mumkin.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 9: Telegram Kanallari -->
+        <section id="section-9" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-bullhorn"></i> 9-Bo'lim. Telegram kanallari</h2>
+          <p>
+            Telegram kanallari (<strong>Каналы</strong>) – bu keng auditoriyaga bir tomonlama axborot tarqatish
+            (translyatsiya qilish) vositasidir. Kanallarda faqat ma'murlar post joylashtiradi, foydalanuvchilar ise
+            ularni o'qiydi (va ruxsat berilgan bo'lsa, izoh qoldiradi yoki reaksiya bildiradi).
+          </p>
+
+          <div class="row align-items-center mt-3">
+            <div class="col-md-7 col-12">
+              <h5 class="fw-bold text-accent mb-3">Kanal yaratish (Создать канал):</h5>
+              <ol class="small">
+                <li class="mb-2">Menyuni ochib <strong>"Создать канал"</strong> buyrug'ini bosing.</li>
+                <li class="mb-2">Kanal nomini, tavsifini (Описание) kiriting va rasmini yuklab,
+                  <strong>"Создать"</strong> tugmasini bosing.</li>
+                <li class="mb-2"><strong>Kanal turini tanlang:</strong> Ommaviy (Публичный) kanal uchun t.me havolasi
+                  yaratiladi; Shaxsiy (Частный) kanal esa faqat maxsus taklif kodi orqali a'zo qo'shadi.</li>
+                <li class="mb-2">Kanal postlariga o'quvchilar javob yozishi uchun <strong>Muhokama guruhini (Группа
+                    обсуждения)</strong> bog'lash mumkin.</li>
+              </ol>
+            </div>
+            <div class="col-md-5 col-12">
+              <div class="p-3 border border-secondary rounded bg-dark text-white">
+                <div class="d-flex align-items-center gap-2 mb-2 text-telegram">
+                  <i class="fa-solid fa-circle-check"></i> <strong>Kanal xususiyatlari:</strong>
+                </div>
+                <ul class="small mb-0 ps-3">
+                  <li class="mb-1">Obunachilar soni cheklanmagan</li>
+                  <li class="mb-1">Statistika va ko'rishlar sonini tahlil qilish</li>
+                  <li class="mb-1">Postlarni rejalashtirish (Отложенная отправка)</li>
+                  <li class="mb-1">Postlar ostiga reaksiya qo'shish</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 10: Telegram Botlari -->
+        <section id="section-10" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-robot"></i> 10-Bo'lim. Telegram botlari</h2>
+          <p>
+            Telegram botlari – bu Telegram ichida ishlaydigan va foydalanuvchilarning turli so'rovlariga avtomatik
+            tarzda (dasturlangan algoritm orqali) javob beradigan maxsus sun'iy akkauntlardir. Bot foydalanuvchiga
+            yordam beradi va jarayonlarni avtomatlashtiradi.
+          </p>
+
+          <div class="row g-4 mt-2">
+            <div class="col-md-4 col-12">
+              <div class="p-3 border border-secondary rounded h-100" style="background: rgba(255,255,255,0.02)">
+                <div class="text-accent fs-3 mb-2"><i class="fa-solid fa-language"></i></div>
+                <h6 class="fw-bold">Tarjimon Botlar</h6>
+                <p class="small text-muted mb-0">Matn yoki tibbiy termin kiritilganda uni avtomatik ruscha, inglizcha
+                  yoki o'zbekchaga tarjima qilib beradi.</p>
+              </div>
+            </div>
+            <div class="col-md-4 col-12">
+              <div class="p-3 border border-secondary rounded h-100" style="background: rgba(255,255,255,0.02)">
+                <div class="text-accent fs-3 mb-2"><i class="fa-solid fa-brain"></i></div>
+                <h6 class="fw-bold">Sun'iy Intellekt Botlari</h6>
+                <p class="small text-muted mb-0">Gemini yoki ChatGPT modellari asosida ishlaydigan botlar bo'lib, tibbiy
+                  va o'quv savollariga tezkor javob topadi.</p>
+              </div>
+            </div>
+            <div class="col-md-4 col-12">
+              <div class="p-3 border border-secondary rounded h-100" style="background: rgba(255,255,255,0.02)">
+                <div class="text-accent fs-3 mb-2"><i class="fa-solid fa-graduation-cap"></i></div>
+                <h6 class="fw-bold">Ta'limiy Botlar</h6>
+                <p class="small text-muted mb-0">Viktorinalar (Quiz) yaratadi, test topshiriqlarini avtomatik tekshiradi
+                  va ma'ruzalarni yuklab beradi.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-card mt-4">
+            <h6 class="fw-bold text-accent mb-2"><i class="fa-solid fa-play"></i> Botdan foydalanish tartibi:</h6>
+            <p class="small mb-0">
+              Qidiruv satriga botning manzilini yozasiz (masalan, <code>@QuizBot</code> yoki
+              <code>@Translate_tibbiyot_bot</code>). Bot chat oynasini ochib, pastki qismidagi
+              <strong>"Запустить"</strong> (Ishga tushirish / Start) tugmasini bosasiz. Shundan so'ng bot ko'rsatgan
+              buyruqlarni (yoki tugmalarni) tanlab, muloqot qilishingiz mumkin.
+            </p>
+          </div>
+        </section>
+
+        <!-- Section 11: Qidiruv (Поиск) -->
+        <section id="section-11" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-magnifying-glass"></i> 11-Bo'lim. Qidiruv (Поиск)</h2>
+          <p>
+            Telegram global va ichki qidiruv (<strong>Поиск</strong>) tizimiga ega bo'lib, u orqali o'zingizga kerakli
+            bo'lgan ma'lumotlarni sekundlar ichida topishingiz mumkin.
+          </p>
+
+          <div class="row align-items-center mt-3">
+            <div class="col-lg-6 col-12 mb-4 mb-lg-0">
+              <h5 class="fw-bold text-accent mb-3">Qidiruv turlari:</h5>
+              <ul class="small">
+                <li class="mb-2"><strong>Global qidiruv:</strong> Barcha ochiq kanallar, botlar va guruhlarni qidirish
+                  uchun ishlatiladi (Messenjer boshidagi Поиск maydoniga yoziladi).</li>
+                <li class="mb-2"><strong>Chat ichidagi qidiruv:</strong> Alohida suhbatdoshingiz yoki ma'lum bir guruh
+                  ichidagi yozishmalarni kalit so'z bo'yicha qidiradi.</li>
+                <li class="mb-2"><strong>Media qidiruv:</strong> Faqat yuborilgan rasmlar, videolar, havolalar yoki
+                  fayllarni filterlab izlash imkoniyati.</li>
+              </ul>
+
+              <!-- Search Interactive Sandbox -->
+              <div class="border border-secondary rounded p-3 mt-3" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold small text-white">Interaktiv qidiruv mashqi:</h6>
+                <p class="small text-muted mb-2">Quyida "tibbiyot", "bot" yoki "guruh" so'zini yozib qidiruvni sinab
+                  ko'ring:</p>
+                <div class="d-flex gap-2">
+                  <input type="text" class="form-control form-control-sm text-white bg-dark border-secondary"
+                    id="sandboxSearchInput" placeholder="Kalit so'z yozing...">
+                  <button class="btn btn-sm btn-accent-solid" onclick="simulateSearchSandbox()">Izlash</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6 col-12">
+              <div class="border border-secondary rounded p-3 bg-dark" style="min-height: 200px;">
+                <h6 class="fw-bold text-accent border-bottom border-secondary pb-2 small text-white"><i
+                    class="fa-solid fa-list"></i> Qidiruv natijalari</h6>
+                <div id="searchResultList" class="small text-muted mt-3 text-center">
+                  Qidiruvni sinash uchun chap tomondagi maydonga so'z kiriting.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 12: Saqlangan Xabarlar -->
+        <section id="section-12" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-bookmark"></i> 12-Bo'lim. Saqlangan xabarlar (Избранное)</h2>
+          <p>
+            <strong>Избранное</strong> (Saved Messages) – bu foydalanuvchining Telegram serverlaridagi shaxsiy bulut
+            omboridir.
+          </p>
+
+          <div class="row align-items-center mt-3">
+            <div class="col-md-7 col-12">
+              <p>
+                Boshqa chatlardan o'zingizga kerakli va muhim bo'lgan xabarlar, darsliklar va tibbiy fayllarni
+                <strong>Избранное</strong> ga yo'naltirib (Переслать) qo'yishingiz mumkin. Shuningdek, ushbu chatga
+                o'zingiz ham to'g'ridan-to'g'ri matn yozishingiz, kompyuterdan o'quv materiallari va kitoblarni yuklab
+                saqlab qo'yishingiz mumkin.
+              </p>
+              <div class="info-card mb-0">
+                <h6 class="fw-bold text-accent mb-2"><i class="fa-solid fa-circle-check"></i> Asosiy qulayliklari:</h6>
+                <ul class="small mb-0 ps-3">
+                  <li class="mb-1">Fayllar muddatsiz saqlanadi (o'chib ketmaydi)</li>
+                  <li class="mb-1">Siz xohlagan vaqtda istalgan qurilmadan kirish mumkin</li>
+                  <li class="mb-1">Fayllarni saralash uchun xatcho'p (Tag) qo'yish imkoni bor</li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-md-5 col-12">
+              <div class="p-3 border border-secondary rounded bg-dark text-center">
+                <i class="fa-solid fa-cloud-arrow-up fs-1 text-telegram mb-3 animate-pulse"></i>
+                <h6 class="fw-bold text-white">Shaxsiy bulut xotira</h6>
+                <p class="small text-muted mb-0">Sizning barcha kitoblaringiz va tibbiy ma'lumotlaringiz xavfsiz
+                  Telegram bulutida saqlanadi.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 13: Telegramda Qo'ng'iroqlar -->
+        <section id="section-13" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-phone"></i> 13-Bo'lim. Telegramda qo'ng'iroqlar</h2>
+          <p>
+            Telegram orqali dunyoning istalgan nuqtasidagi suhbatdoshlar bilan yuqori sifatli ovozli va video aloqa
+            o'rnatish mumkin:
+          </p>
+
+          <div class="row g-4 mt-2">
+            <div class="col-md-4 col-12">
+              <div class="p-3 border border-secondary rounded text-center h-100"
+                style="background: rgba(255,255,255,0.02)">
+                <i class="fa-solid fa-phone-flip fs-2 text-accent mb-3"></i>
+                <h6 class="fw-bold">Ovozli qo'ng'iroqlar</h6>
+                <p class="small text-muted mb-0">Internet-trafikni minimal darajada sarflaydigan yuqori aniqlikdagi
+                  ovozli aloqa.</p>
+              </div>
+            </div>
+            <div class="col-md-4 col-12">
+              <div class="p-3 border border-secondary rounded text-center h-100"
+                style="background: rgba(255,255,255,0.02)">
+                <i class="fa-solid fa-video fs-2 text-accent mb-3"></i>
+                <h6 class="fw-bold">Video qo'ng'iroqlar</h6>
+                <p class="small text-muted mb-0">Teletibbiyot va tibbiy maslahatlarda shifokor bilan yuzma-yuz vizual
+                  bog'lanish imkoni.</p>
+              </div>
+            </div>
+            <div class="col-md-4 col-12">
+              <div class="p-3 border border-secondary rounded text-center h-100"
+                style="background: rgba(255,255,255,0.02)">
+                <i class="fa-solid fa-people-group fs-2 text-accent mb-3"></i>
+                <h6 class="fw-bold">Guruhli konferensiyalar</h6>
+                <p class="small text-muted mb-0">Guruh a'zolari bilan onlayn yig'ilish, video-dars va tibbiy
+                  konsiliumlar o'tkazish vositasi.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 14: Telegram Sozlamalari -->
+        <section id="section-14" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-sliders"></i> 14-Bo'lim. Telegram sozlamalari (Настройки)</h2>
+          <p>
+            Messenjerni shaxsiy ehtiyojlaringizga moslashtirish uchun <strong>Настройки</strong> (Sozlamalar) bo'limidan
+            foydalaniladi:
+          </p>
+
+          <div class="row g-4 mt-2">
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-user"></i> Профиль (Profil):</h6>
+                <p class="small text-muted mb-0">Ismingiz, username (@belgi), profil rasmini hamda foydalanuvchi
+                  ma'lumotini (О себе) o'zgartirish.</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-shield-halved"></i> Конфиденциальность
+                  (Maxfiylik):</h6>
+                <p class="small text-muted mb-0">Telefon raqamingiz, oxirgi marta onlayn bo'lgan vaqtingiz va
+                  rasmlaringizni kimlar ko'ra olishini sozlash.</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-bell"></i> Уведомления (Bildirishnomalar):</h6>
+                <p class="small text-muted mb-0">Guruh, kanal yoki shaxsiy chatlardan keladigan xabarlarning tovushi va
+                  ekran xabarlarini yoqish/o'chirish.</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-language"></i> Язык (Til):</h6>
+                <p class="small text-muted mb-0">Telegram ilovasining interfeys tilini (O'zbek, Rus, Ingliz va
+                  boshqalar) tanlash.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 15: Maxfiylik va Xavfsizlik -->
+        <section id="section-15" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-user-shield"></i> 15-Bo'lim. Maxfiylik va xavfsizlik</h2>
+          <p>
+            Tibbiyot xodimi va talaba sifatida bemorlarning shaxsiy ma'lumotlarini (diagnostika, rentgen, tahlillar)
+            saqlashda xavfsizlik qoidalariga rioya qilish o'ta muhimdir.
+          </p>
+
+          <div class="info-card">
+            <h6 class="fw-bold text-accent mb-2"><i class="fa-solid fa-key"></i> Profil xavfsizligini ta'minlash:</h6>
+            <ul class="small mb-0">
+              <li class="mb-2"><strong>Двухэтапная аутентификация (Ikki bosqichli tasdiqlash):</strong> Sozlamalardan
+                qo'shimcha shaxsiy parol o'rnating. Telefoningizga SMS kod kelsa ham, shaxsiy parolsiz hech kim
+                akkauntingizga kira olmaydi.</li>
+              <li class="mb-2"><strong>Код-пароль (Ilova paroli):</strong> Telegram ilovasi ochilganda so'raladigan
+                maxsus 4 xonali kod o'rnating. Telefoni begona qo'lga tushsa ham, yozishmalarni o'qiy olmaydi.</li>
+              <li class="mb-2"><strong>Секретный чат (Maxfiy chat):</strong> Faqat telefonlar o'rtasida shifrlangan
+                muloqot. Bu xabarlar Telegram serverlarida umuman saqlanmaydi va ma'lum vaqtdan keyin o'z-o'zidan o'chib
+                ketadi (Самоуничтожение).</li>
+            </ul>
+          </div>
+
+          <div class="alert alert-danger p-2 small mt-3 border-danger" style="background: rgba(239,68,68,0.05)">
+            <i class="fa-solid fa-triangle-exclamation"></i> <strong>Tibbiyot maxfiyligi qoidasi:</strong> Bemor tahlil
+            natijalarini yoki kasallik tarixini ochiq ommaviy kanallarga aslo joylashtirmang! Ularni faqat shifrlangan
+            shaxsiy chat yoki yopiq shaxsiy guruhlar orqali jo'nating.
+          </div>
+        </section>
+
+        <!-- Section 16: Telegram Web -->
+        <section id="section-16" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-globe"></i> 16-Bo'lim. Telegram Web</h2>
+          <p>
+            Kompyuterga qo'shimcha dastur o'rnatish imkoni bo'lmagan holatlarda (masalan, kasalxona yoki kutubxonadagi
+            begona kompyuterlarda) Telegram Web xizmatidan foydalanish mumkin.
+          </p>
+
+          <div class="row align-items-center mt-3">
+            <div class="col-md-8 col-12">
+              <p>
+                <strong>Telegram Web</strong> – bu messenjerni kompyuter brauzeri (Google Chrome, Edge) orqali hech
+                qanday dastur yuklab olmasdan ishga tushirish imkoniyatidir.
+              </p>
+              <h6 class="fw-bold text-accent mb-2">QR-kod orqali ulanish tartibi:</h6>
+              <ol class="small mb-0">
+                <li class="mb-1">Brauzerda <code>web.telegram.org</code> manzilini oching.</li>
+                <li class="mb-1">Kompyuter ekranida maxsus **QR-kod** paydo bo'ladi.</li>
+                <li class="mb-1">Telefoningizdagi Telegramga kiring: <em>Настройки → Устройства → Подключить
+                    устройство</em> buyrug'ini bosing.</li>
+                <li class="mb-1">Telefon kamerasini kompyuter ekranidagi QR-kodga qarating.</li>
+                <li class="mb-1">Brauzerda profilingiz avtomatik tarzda yuklanadi.</li>
+              </ol>
+            </div>
+            <div class="col-md-4 col-12 text-center">
+              <div class="p-3 border border-secondary rounded bg-dark">
+                <!-- Inline SVG for a clean QR code -->
+                <svg width="100" height="100" viewBox="0 0 100 100" class="mb-2">
+                  <rect width="100" height="100" fill="#1e293b" />
+                  <!-- Corners -->
+                  <rect x="10" y="10" width="20" height="20" fill="#229ed9" />
+                  <rect x="15" y="15" width="10" height="10" fill="#1e293b" />
+                  <rect x="70" y="10" width="20" height="20" fill="#229ed9" />
+                  <rect x="75" y="15" width="10" height="10" fill="#1e293b" />
+                  <rect x="10" y="70" width="20" height="20" fill="#229ed9" />
+                  <rect x="15" y="75" width="10" height="10" fill="#1e293b" />
+                  <!-- Random blocks -->
+                  <rect x="40" y="20" width="10" height="10" fill="#f97316" />
+                  <rect x="50" y="40" width="20" height="10" fill="#229ed9" />
+                  <rect x="40" y="60" width="10" height="20" fill="#f97316" />
+                  <rect x="70" y="70" width="10" height="10" fill="#229ed9" />
+                </svg>
+                <div class="small fw-bold text-white">QR Code Login</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 17: Tibbiyotda Telegramdan Foydalanish -->
+        <section id="section-17" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-briefcase-medical"></i> 17-Bo'lim. Tibbiyotda Telegramdan
+            foydalanish</h2>
+          <p>
+            Telegram messenjeri zamonaviy shifokor va tibbiyot talabasi hayotiga chuqur kirib borgan. Uning tibbiyotdagi
+            asosiy qo'llanish sohalari quyidagilardir:
+          </p>
+
+          <div class="row g-4 mt-2">
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded h-100" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-graduation-cap"></i> Talabalar guruhlari:</h6>
+                <p class="small text-muted mb-0">Talabalar dars jadvallari, amaliyot ma'ruzalari, PDF darsliklar va
+                  vazifalarni o'zaro guruh chatlarida tezkor almashadilar.</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded h-100" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-user-md"></i> Shifokorlar o'rtasida konsiliumlar:
+                </h6>
+                <p class="small text-muted mb-0">Shifokorlar murakkab klinik holatlar, bemor rentgen tahlillarini yopiq
+                  guruhlarda shaxsiy ma'lumotlarni yashirgan holda muhokama qiladilar.</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded h-100" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-hospital-user"></i> Onlayn konsultatsiyalar
+                  (Teletibbiyot):</h6>
+                <p class="small text-muted mb-0">Bemorlar shifokorlar bilan Telegram orqali masofadan bog'lanib,
+                  birlamchi maslahat oladilar yoki dori-darmonlar qabul qilish tartibini aniqlashtiradilar.</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-12">
+              <div class="p-3 border border-secondary rounded h-100" style="background: rgba(255,255,255,0.02)">
+                <h6 class="fw-bold text-accent"><i class="fa-solid fa-book-medical"></i> Tibbiy ilmiy kanallar:</h6>
+                <p class="small text-muted mb-0">Jahondagi eng so'nggi tibbiy kashfiyotlar, JSST (WHO) tavsiyalari va
+                  ilmiy maqolalar tarqatiladigan kanallarni kuzatib borish.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 18: Interaktiv Telegram Simulyatori -->
+        <section id="section-18" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-gamepad"></i> 18-Bo'lim. Interaktiv Telegram simulyatori</h2>
+          <p class="mb-4">
+            Quyida keltirilgan virtual Telegram Desktop ilovasida amaliy mashqlarni bajarib ko'ring:
+          </p>
+
+          <!-- Telegram Main Simulator Window -->
+          <div class="desktop-mock bg-dark">
+            <div class="desktop-titlebar">
+              <div class="window-dots">
+                <span class="window-dot dot-red"></span>
+                <span class="window-dot dot-yellow"></span>
+                <span class="window-dot dot-green"></span>
+              </div>
+              <span class="small">Telegram Desktop (Simulator)</span>
+              <span style="width: 40px;"></span>
+            </div>
+
+            <div class="tg-desktop-layout">
+              <!-- Left Sidebar -->
+              <div class="tg-desktop-sidebar bg-dark-sidebar">
+                <div class="p-2 border-bottom border-secondary text-white fw-bold text-center small bg-dark">
+                  Чаты (Chatlar)
+                </div>
+                <div class="tg-chat-list" id="simChatList">
+                  <div class="tg-chat-item active" onclick="switchSimChat('doctor_ai')" id="chat-doctor_ai">
+                    <div class="tg-avatar avatar-blue"><i class="fa-solid fa-robot"></i></div>
+                    <div class="flex-grow-1">
+                      <div class="tg-chat-name">@DoctorAI_bot</div>
+                      <div class="tg-chat-preview" id="preview-doctor_ai">Ishga tushirish uchun bosing</div>
+                    </div>
+                  </div>
+                  <div class="tg-chat-item" onclick="switchSimChat('saved')" id="chat-saved">
+                    <div class="tg-avatar avatar-orange"><i class="fa-solid fa-bookmark"></i></div>
+                    <div class="flex-grow-1">
+                      <div class="tg-chat-name">Избранное</div>
+                      <div class="tg-chat-preview" id="preview-saved">Bulutli shaxsiy xotira</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Chat Area -->
+              <div class="tg-desktop-content">
+                <!-- Sim Header -->
+                <div
+                  class="d-flex align-items-center justify-content-between p-2 border-bottom border-secondary bg-dark"
+                  style="height: 45px;">
+                  <div class="fw-bold small text-white" id="simChatHeaderTitle">@DoctorAI_bot</div>
+                </div>
+
+                <!-- Sim Tab Buttons -->
+                <div class="sim-tab-header">
+                  <button class="sim-tab-btn active" id="tabBtnSend" onclick="switchSimTab('send')">Yozish</button>
+                  <button class="sim-tab-btn" id="tabBtnFile" onclick="switchSimTab('file')">Fayl jo'natish</button>
+                  <button class="sim-tab-btn" id="tabBtnCreate" onclick="switchSimTab('create')">Guruh/Kanal</button>
+                  <button class="sim-tab-btn" id="tabBtnBot" onclick="switchSimTab('bot')">Bot Boshqaruvi</button>
+                </div>
+
+                <!-- Chat history viewport -->
+                <div class="flex-grow-1 p-3 d-flex flex-column gap-2 bg-dark-sidebar" style="overflow-y: auto;"
+                  id="simChatHistory">
+                  <!-- Doctor AI Bot Chat -->
+                  <div class="chat-bubble received" data-chat="doctor_ai">
+                    Assalomu alaykum! Men tibbiy savollarga javob beruvchi virtual assistentman. Muloqotni boshlash
+                    uchun "Bot Boshqaruvi" bo'limidan "/start" buyrug'ini yuboring.
+                    <div class="chat-meta">13:45</div>
+                  </div>
+                </div>
+
+                <!-- Simulator Tab Contents -->
+                <!-- Tab: Send -->
+                <div class="sim-tab-content active" id="simTabSend">
+                  <div class="d-flex gap-2">
+                    <input type="text" class="form-control form-control-sm text-white bg-dark border-secondary"
+                      id="simTextInput" placeholder="Xabaringizni kiriting...">
+                    <button class="btn btn-sm btn-telegram-solid" onclick="simSendMessage()">Yuborish</button>
+                  </div>
+                </div>
+
+                <!-- Tab: File -->
+                <div class="sim-tab-content" id="simTabFile">
+                  <div class="d-flex flex-column gap-2">
+                    <div class="small text-muted mb-1 text-white">Chop etish va tarqatish uchun tibbiy faylni tanlang:
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button class="btn btn-sm btn-outline-secondary text-white bg-dark border-secondary"
+                        onclick="simUploadFile('retsept.pdf', '1.2 MB')">
+                        <i class="fa-solid fa-file-pdf text-danger me-1"></i> retsept.pdf
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary text-white bg-dark border-secondary"
+                        onclick="simUploadFile('rentgen.png', '4.5 MB')">
+                        <i class="fa-solid fa-image text-success me-1"></i> rentgen.png
+                      </button>
+                      <button class="btn btn-sm btn-outline-secondary text-white bg-dark border-secondary"
+                        onclick="simUploadFile('tahlillar.xlsx', '850 KB')">
+                        <i class="fa-solid fa-file-excel text-success me-1"></i> tahlillar.xlsx
+                      </button>
+                    </div>
+                    <!-- Uploading status (dynamically shown) -->
+                    <div class="file-progress-box d-none" id="simFileProgress">
+                      <div class="file-progress-ring"></div>
+                      <div>Fayl yuklanmoqda: <strong id="simFileName">retsept.pdf</strong>...</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tab: Create -->
+                <div class="sim-tab-content" id="simTabCreate">
+                  <div class="row g-2">
+                    <div class="col-8">
+                      <input type="text" class="form-control form-control-sm text-white bg-dark border-secondary"
+                        id="simCreateName" placeholder="Guruh yoki kanal nomi...">
+                    </div>
+                    <div class="col-4">
+                      <select class="form-select form-select-sm text-white bg-dark border-secondary" id="simCreateType">
+                        <option value="group">Guruh (Группа)</option>
+                        <option value="channel">Kanal (Канал)</option>
+                      </select>
+                    </div>
+                    <div class="col-12 mt-2">
+                      <button class="btn btn-sm btn-accent-solid w-100" onclick="simCreateGroupChannel()">Yaratish
+                        (Создать)</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tab: Bot -->
+                <div class="sim-tab-content" id="simTabBot">
+                  <div class="d-flex flex-column gap-2" id="botControlArea">
+                    <button class="btn btn-sm btn-telegram-solid w-100" onclick="simBotStart()">
+                      <i class="fa-solid fa-play me-2"></i> Запустить Bot (/start)
+                    </button>
+                    <div class="d-none" id="botMenuOptions">
+                      <div class="small text-muted mb-2 text-white">Bot buyruqlari menyusi:</div>
+                      <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-sm btn-outline-secondary text-white bg-dark border-secondary"
+                          onclick="simBotCommand('Tibbiy tahlillar sharhi 🧬')">1. Tahlillar tahlili</button>
+                        <button class="btn btn-sm btn-outline-secondary text-white bg-dark border-secondary"
+                          onclick="simBotCommand('Tez yordam chaqirish 📞')">2. Tez yordam raqamlari</button>
+                        <button class="btn btn-sm btn-outline-secondary text-white bg-dark border-secondary"
+                          onclick="simBotCommand('Farmatsevtika / Dorilar ro\'yxati 💊')">3. Dorilar tavsiflari</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Section 19: Amaliy Topshiriqlar -->
+        <section id="section-19" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-list-check"></i> 19-Bo'lim. Amaliy topshiriqlar</h2>
+          <p>
+            Mavzuni to'liq o'zlashtirish uchun Telegramdagi amaliy topshiriqlarni mustaqil ravishda bajaring va quyidagi
+            checklistni to'ldirib boring.
+            Sizning natijangiz progress bar orqali hisoblanadi:
+          </p>
+
+          <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small fw-bold">Topshiriqlar bajarilishi progressi:</span>
+              <span class="badge bg-accent-glow text-accent border border-accent" id="checklistPercentage">0%</span>
+            </div>
+            <div class="progress" style="height: 12px; background: rgba(255,255,255,0.05)">
+              <div class="checklist-progress-bar-inner" id="checklistProgressBar"></div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column gap-3">
+            <div class="d-flex align-items-center gap-3 p-2 border border-secondary rounded"
+              style="background: rgba(255,255,255,0.01)">
+              <input type="checkbox" class="task-checkbox" onchange="updateChecklistProgress()" id="chk1">
+              <div>
+                <strong class="text-white small">1. Telegram ilovasini o'rnatish</strong>
+                <p class="small text-muted mb-0">Telefon yoki kompyuterga rasmiy Telegram ilovasini yuklab olish va
+                  o'rnatish.</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 p-2 border border-secondary rounded"
+              style="background: rgba(255,255,255,0.01)">
+              <input type="checkbox" class="task-checkbox" onchange="updateChecklistProgress()" id="chk2">
+              <div>
+                <strong class="text-white small">2. Ro'yxatdan o'tish va profil yaratish</strong>
+                <p class="small text-muted mb-0">Telefon raqam yordamida ro'yxatdan o'tib, ism va username (@belgi)
+                  yozib olish.</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 p-2 border border-secondary rounded"
+              style="background: rgba(255,255,255,0.01)">
+              <input type="checkbox" class="task-checkbox" onchange="updateChecklistProgress()" id="chk3">
+              <div>
+                <strong class="text-white small">3. Suhbatdoshga xabar va emoji yuborish</strong>
+                <p class="small text-muted mb-0">Kontaktlar ro'yxatidan do'stingizni topib, unga matnli xabar va emoji
+                  jo'natish.</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 p-2 border border-secondary rounded"
+              style="background: rgba(255,255,255,0.01)">
+              <input type="checkbox" class="task-checkbox" onchange="updateChecklistProgress()" id="chk4">
+              <div>
+                <strong class="text-white small">4. Tibbiy PDF hujjat yuborish</strong>
+                <p class="small text-muted mb-0">Qog'oz qisqich (Скрепка) ikonasi yordamida o'quv PDF darsligini yoki
+                  retseptni jo'natish.</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 p-2 border border-secondary rounded"
+              style="background: rgba(255,255,255,0.01)">
+              <input type="checkbox" class="task-checkbox" onchange="updateChecklistProgress()" id="chk5">
+              <div>
+                <strong class="text-white small">5. Ovozli xabar yuborish</strong>
+                <p class="small text-muted mb-0">Mikrofon belgisini bosib, suhbatdoshga tezkor ovozli xabar yozib
+                  jo'natish.</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 p-2 border border-secondary rounded"
+              style="background: rgba(255,255,255,0.01)">
+              <input type="checkbox" class="task-checkbox" onchange="updateChecklistProgress()" id="chk6">
+              <div>
+                <strong class="text-white small">6. Yangi o'quv guruhi yaratish</strong>
+                <p class="small text-muted mb-0">"Создать группу" buyrug'i yordamida kursdoshlarni qo'shib guruh tashkil
+                  qilish.</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 p-2 border border-secondary rounded"
+              style="background: rgba(255,255,255,0.01)">
+              <input type="checkbox" class="task-checkbox" onchange="updateChecklistProgress()" id="chk7">
+              <div>
+                <strong class="text-white small">7. Shaxsiy o'quv kanali yaratish</strong>
+                <p class="small text-muted mb-0">"Создать канал" buyrug'i bilan kanal ochish va unga birinchi o'quv
+                  postini joylash.</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 p-2 border border-secondary rounded"
+              style="background: rgba(255,255,255,0.01)">
+              <input type="checkbox" class="task-checkbox" onchange="updateChecklistProgress()" id="chk8">
+              <div>
+                <strong class="text-white small">8. Tibbiy botni ishga tushirish</strong>
+                <p class="small text-muted mb-0">Qidiruvdan foydali tibbiy botni yoki tarjimon botni topib, "/start"
+                  berib tekshirish.</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 p-2 border border-secondary rounded"
+              style="background: rgba(255,255,255,0.01)">
+              <input type="checkbox" class="task-checkbox" onchange="updateChecklistProgress()" id="chk9">
+              <div>
+                <strong class="text-white small">9. Saqlangan xabarlar (Избранное) bulutidan foydalanish</strong>
+                <p class="small text-muted mb-0">Boshqa chatdagi muhim ma'ruzani o'zingizning "Избранное" chatingizga
+                  saqlab qo'yish.</p>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-3 p-2 border border-secondary rounded"
+              style="background: rgba(255,255,255,0.01)">
+              <input type="checkbox" class="task-checkbox" onchange="updateChecklistProgress()" id="chk10">
+              <div>
+                <strong class="text-white small">10. Ikki bosqichli xavfsizlik paroloni yoqish</strong>
+                <p class="small text-muted mb-0">Sozlamalarga kirib, "Двухэтапная аутентификация" qo'shimcha parolini
+                  o'rnatish.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 20: O'yinli topshiriqlar -->
+        <section id="section-20" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-puzzle-piece"></i> 20-Bo'lim. O'yinli mashqlar</h2>
+          <p class="mb-4">
+            Telegram atamalarining ruscha nomlarini o'zbek tilidagi mos izohlari bilan bog'lang.
+            Chap tomondagi ko'k atamani, so'ng o'ng tomondagi mos ta'rifni bosing:
+          </p>
+
+          <div class="match-container">
+            <!-- Left Column: Terms -->
+            <div class="match-column">
+              <div class="match-item" id="term-group" onclick="selectMatchItem('group', 'term')">Группа (Guruh)</div>
+              <div class="match-item" id="term-channel" onclick="selectMatchItem('channel', 'term')">Канал (Kanal)</div>
+              <div class="match-item" id="term-bot" onclick="selectMatchItem('bot', 'term')">Бот (Bot)</div>
+              <div class="match-item" id="term-saved" onclick="selectMatchItem('saved', 'term')">Избранное
+                (Saqlanganlar)</div>
+            </div>
+
+            <!-- Right Column: Definitions -->
+            <div class="match-column">
+              <div class="match-item" id="def-bot" onclick="selectMatchItem('bot', 'def')">Sun'iy dastrurlangan
+                avtomatlashtirilgan xizmat akkaunti</div>
+              <div class="match-item" id="def-saved" onclick="selectMatchItem('saved', 'def')">Shaxsiy bulut xotirasi va
+                muhim xabarlar saqlagichi</div>
+              <div class="match-item" id="def-group" onclick="selectMatchItem('group', 'def')">Ko'p foydalanuvchilar
+                o'rtasidagi jamoaviy suhbat chati</div>
+              <div class="match-item" id="def-channel" onclick="selectMatchItem('channel', 'def')">Keng auditoriyaga bir
+                tomonlama axborot tarqatish vositasi</div>
+            </div>
+          </div>
+
+          <div class="text-center mt-3">
+            <span class="badge bg-dark border border-secondary text-white p-2" id="matchGameStatus">Ulanishlarni
+              boshlang.</span>
+          </div>
+        </section>
+
+        <!-- Section 21: Bilimingizni sinang (Test) -->
+        <section id="section-21" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-square-poll-vertical"></i> 21-Bo'lim. Bilimingizni sinang</h2>
+          <p class="mb-4">
+            Telegram messenjeri haqidagi bilimingizni tekshirish uchun 20 ta test savoliga javob bering. Baholash OTM
+            reyting tizimiga asoslangan:
+          </p>
+
+          <div class="p-4 rounded bg-dark border border-secondary" id="quizWrapperBox">
+            <div id="quizQuestionsContainer">
+              <!-- Questions are dynamically inserted here -->
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top border-secondary"
+              id="quizNavControls">
+              <button class="btn btn-secondary" onclick="prevQuizQuestion()" id="quizPrevBtn" disabled>
+                <i class="fa-solid fa-chevron-left me-2"></i> Avvalgisi
+              </button>
+              <span class="fw-bold text-accent" id="quizProgressLabel">Savol 1 / 20</span>
+              <button class="btn btn-accent-solid text-white" onclick="nextQuizQuestion()" id="quizNextBtn">
+                Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>
+              </button>
+            </div>
+
+            <!-- Quiz Results Box -->
+            <div class="p-4 border border-secondary rounded bg-dark text-center d-none" id="quizResultBox">
+              <i class="fa-solid fa-award text-accent fs-1 mb-3"></i>
+              <h3 class="text-white mb-3"><i class="fa-solid fa-circle-check text-success me-2"></i> Test Yakunlandi!
+              </h3>
+              <h4 class="mb-2 text-white">Natija: <span id="quizScoreText" class="text-accent fw-bold">0 / 20</span>
+              </h4>
+              <p id="quizPercentageText" class="text-muted">Foiz ko'rsatkichi: 0%</p>
+              <div id="quizGradeBadge" class="badge bg-success fs-5 p-3 px-4 rounded-pill mb-3">Baho: --</div>
+              <p class="text-light italic" id="quizGradeText">Tavsiyalar...</p>
+              <div class="progress my-3 mx-auto"
+                style="height: 10px; max-width: 400px; background: rgba(255,255,255,0.05)">
+                <div class="progress-bar bg-accent text-accent" id="quizProgressBar" style="width: 0%"></div>
+              </div>
+              <div>
+                <button class="btn btn-accent-solid mt-2 px-4" onclick="restartQuiz()"><i
+                    class="fa-solid fa-arrows-rotate me-2"></i> Qaytadan topshirish</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 22: Xulosa -->
+        <section id="section-22" class="custom-card">
+          <h2 class="section-title"><i class="fa-solid fa-flag-checkered"></i> 22-Bo'lim. Xulosa</h2>
+          <p>
+            Telegram messenjeri faqat muloqot vositasi emas, balki tibbiyot xodimlari va talabalar uchun dars
+            jarayonini, klinik ma'lumotlarni saqlash va tezkor fikr almashish tizimini tashkil qilishda eng muhim
+            platformalardan biri hisoblanadi.
+          </p>
+          <div class="info-card border-left-accent border-secondary">
+            <p class="small mb-0 text-light">
+              Ushbu darslik orqali talabalar Telegram Desktop va Telegram Mobile ilovalarining rus tilidagi interfeysi
+              asosida profil ochish, xavfsiz suhbatlar tashkil qilish, guruh va kanallar yaratish, ma'lumot qidirish
+              hamda xizmat botlari bilan ishlash bo'yicha to'liq amaliy ko'nikmalarga ega bo'ldilar. Shaxsiy ma'lumotlar
+              va shifokor siriga oid fayllar almashinuvida maxfiylik sozlamalariga qat'iy rioya etish talab etiladi.
+            </p>
+          </div>
+
+          <!-- Pagination navigation -->
+          <div class="d-flex justify-content-between align-items-center mt-5 pt-3 border-top border-secondary">
+            <a href="web_browsers_darslik.html"
+              class="btn btn-sm btn-outline-secondary text-white bg-dark border-secondary px-3 py-2">
+              <i class="fa-solid fa-arrow-left me-2"></i> 13-Modul: Web brauzerlar
+            </a>
+            <a href="../index.html" class="btn btn-sm btn-accent-solid px-3 py-2">
+              Mundarijaga qaytish <i class="fa-solid fa-house ms-2"></i>
+            </a>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="py-4 border-top border-secondary mt-5" style="background: rgba(11,15,25,0.9);">
+    <div class="container text-center">
+      <p class="small text-muted mb-1">&copy; 2026 Axborot Texnologiyalari Elektron Darsliklar Portali.</p>
+      <p class="small text-muted mb-0">Tuzuvchi: {{AUTHOR}} | Barcha huquqlar himoyalangan.</p>
+    </div>
+  </footer>
+
+  <!-- Core Javascript Logic -->
+  <script>
+    /* Theme Toggle */
+    function toggleTheme() {
+      const htmlEl = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      const currentTheme = htmlEl.getAttribute('data-theme');
+      const targetTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+      htmlEl.setAttribute('data-theme', targetTheme);
+      localStorage.setItem('darslik-theme', targetTheme);
+
+      if (targetTheme === 'dark') {
+        themeIcon.className = "fa-solid fa-sun";
+      } else {
+        themeIcon.className = "fa-solid fa-moon";
+      }
+    }
+
+    // Set initial theme icon
+    window.addEventListener('DOMContentLoaded', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const themeIcon = document.getElementById('themeIcon');
+      if (currentTheme === 'dark') {
+        themeIcon.className = "fa-solid fa-sun";
+      } else {
+        themeIcon.className = "fa-solid fa-moon";
+      }
+    });
+
+    /* Progress bar scroll event */
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      document.getElementById('topProgressBar').style.width = scrolled + "%";
+    });
+
+    /* 3-Bo'lim: Registration Simulator Javascript */
+    let currentRegStepNum = 1;
+    function nextRegStep(step) {
+      if (step === 1) {
+        const phoneVal = document.getElementById('regPhone').value.trim();
+        if (!phoneVal) {
+          alert('Iltimos, telefon raqamingizni kiriting!');
+          return;
+        }
+        document.getElementById('regPhoneText').innerText = `+998 ${phoneVal} raqamiga 5 xonali kod jo'natildi.`;
+        document.getElementById('regStep1').classList.remove('active');
+        document.getElementById('regStep2').classList.add('active');
+      } else if (step === 2) {
+        const codeVal = document.getElementById('regCode').value.trim();
+        if (codeVal !== '77777') {
+          alert('Noto\'g\'ri kod! Qaytadan urinib ko\'ring. (O\'quv kodi: 77777)');
+          return;
+        }
+        document.getElementById('regStep2').classList.remove('active');
+        document.getElementById('regStep3').classList.add('active');
+      } else if (step === 3) {
+        const firstName = document.getElementById('regFirstName').value.trim();
+        if (!firstName) {
+          alert('Iltimos, ismingizni kiriting!');
+          return;
+        }
+        document.getElementById('regWelcomeText').innerText = `Xush kelibsiz, ${firstName}!`;
+        document.getElementById('regStep3').classList.remove('active');
+        document.getElementById('regStep4').classList.add('active');
+      }
+    }
+    function prevRegStep(step) {
+      if (step === 2) {
+        document.getElementById('regStep2').classList.remove('active');
+        document.getElementById('regStep1').classList.add('active');
+      }
+    }
+    function resetRegSim() {
+      document.getElementById('regPhone').value = '';
+      document.getElementById('regCode').value = '';
+      document.getElementById('regFirstName').value = '';
+      document.getElementById('regLastName').value = '';
+      document.getElementById('regStep4').classList.remove('active');
+      document.getElementById('regStep1').classList.add('active');
+    }
+
+    /* 4-Bo'lim: Telegram Layout Explorer */
+    function exploreElement(title, desc) {
+      document.getElementById('expTitle').innerText = title;
+      document.getElementById('expDesc').innerText = desc;
+    }
+
+    /* 5-Bo'lim: Interactive Chat Simulator */
+    function simulateSendMessage(text, replyText) {
+      const container = document.getElementById('chatSimContainer');
+
+      // Append user message
+      const time = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+      const userBubble = document.createElement('div');
+      userBubble.className = "chat-bubble sent";
+      userBubble.innerHTML = `${text}<div class="chat-meta">${time}</div>`;
+      container.appendChild(userBubble);
+      container.scrollTop = container.scrollHeight;
+
+      // Auto reply after 1s
+      setTimeout(() => {
+        const replyBubble = document.createElement('div');
+        replyBubble.className = "chat-bubble received";
+        replyBubble.innerHTML = `${replyText}<div class="chat-meta">${time}</div>`;
+        container.appendChild(replyBubble);
+        container.scrollTop = container.scrollHeight;
+      }, 1000);
+    }
+
+    /* 7-Bo'lim: Voice Recording Visualizer */
+    let voiceRecording = false;
+    let voiceTimerInterval = null;
+    let voiceSeconds = 0;
+
+    function toggleVoiceRecording() {
+      const statusText = document.getElementById('voiceStatusText');
+      const micIcon = document.getElementById('voiceMicIcon');
+      const timer = document.getElementById('voiceTimer');
+      const waveContainer = document.getElementById('voiceWaveContainer');
+      const sendBtn = document.getElementById('voiceSendBtn');
+
+      if (!voiceRecording) {
+        // Start recording
+        voiceRecording = true;
+        statusText.innerText = "Ovoz yozilmoqda...";
+        micIcon.className = "fa-solid fa-square text-white";
+        waveContainer.classList.add('playing');
+        sendBtn.classList.add('d-none');
+        voiceSeconds = 0;
+
+        voiceTimerInterval = setInterval(() => {
+          voiceSeconds++;
+          const mins = Math.floor(voiceSeconds / 60).toString().padStart(2, '0');
+          const secs = (voiceSeconds % 60).toString().padStart(2, '0');
+          timer.innerText = `${mins}:${secs}`;
+
+          // Randomize waves dynamically
+          const bars = waveContainer.querySelectorAll('.voice-wave-bar');
+          bars.forEach(bar => {
+            const newHeight = Math.floor(Math.random() * 30) + 6;
+            bar.style.height = `${newHeight}px`;
+          });
+        }, 300);
+      } else {
+        // Stop recording
+        voiceRecording = false;
+        clearInterval(voiceTimerInterval);
+        statusText.innerText = "Ovoz yozib olindi!";
+        micIcon.className = "fa-solid fa-microphone";
+        waveContainer.classList.remove('playing');
+        sendBtn.classList.remove('d-none');
+      }
+    }
+
+    function sendVoiceMessage() {
+      alert("Ovozli xabar virtual tarzda yuborildi!");
+      document.getElementById('voiceSendBtn').classList.add('d-none');
+      document.getElementById('voiceStatusText').innerText = "Yozishni boshlash uchun bosing";
+      document.getElementById('voiceTimer').innerText = "00:00";
+    }
+
+    /* 11-Bo'lim: Global Search Sandbox */
+    const searchData = [
+      { name: "Tibbiyot Akademiyasi", type: "Kanal", handle: "@tibbiyot_akademiyasi" },
+      { name: "Tibbiy Malaka Oshirish", type: "Kanal", handle: "@tibbiy_malaka" },
+      { name: "Pediatriya Guruh", type: "Guruh", handle: "@pediatriya_102" },
+      { name: "Farmatsevtlar Hamjamiyati", type: "Guruh", handle: "@farmasevtlar" },
+      { name: "Translate Tibbiyot Bot", type: "Bot", handle: "@tibbiyot_tarjimon_bot" },
+      { name: "ChatGPT Tibbiy Yordamchi", type: "Bot", handle: "@doctorAI_bot" }
+    ];
+
+    function simulateSearchSandbox() {
+      const query = document.getElementById('sandboxSearchInput').value.trim().toLowerCase();
+      const resultsDiv = document.getElementById('searchResultList');
+
+      if (!query) {
+        resultsDiv.innerHTML = "Iltimos, kalit so'z kiriting!";
+        return;
+      }
+
+      const filtered = searchData.filter(item =>
+        item.name.toLowerCase().includes(query) ||
+        item.type.toLowerCase().includes(query) ||
+        item.handle.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        resultsDiv.innerHTML = "<div class='text-warning'><i class='fa-solid fa-triangle-exclamation'></i> Hech narsa topilmadi!</div>";
+        return;
+      }
+
+      let html = '<div class="list-group list-group-flush text-start">';
+      filtered.forEach(item => {
+        let typeIcon = "fa-bullhorn";
+        if (item.type === "Guruh") typeIcon = "fa-users";
+        if (item.type === "Bot") typeIcon = "fa-robot";
+
+        html += `
+          <div class="list-group-item bg-dark border-secondary d-flex justify-content-between align-items-center p-2 text-white">
+            <div>
+              <i class="fa-solid ${typeIcon} text-accent me-2"></i><strong>${item.name}</strong>
+              <div class="small text-muted">${item.handle}</div>
+            </div>
+            <span class="badge bg-secondary-subtle text-muted text-white">${item.type}</span>
+          </div>
+        `;
+      });
+      html += '</div>';
+      resultsDiv.innerHTML = html;
+    }
+
+    /* 18-Bo'lim: Capstone Simulator Javascript */
+    let currentSimChat = 'doctor_ai';
+    let simChats = {
+      doctor_ai: {
+        title: '@DoctorAI_bot',
+        history: [
+          { sender: 'bot', text: 'Assalomu alaykum! Men tibbiy savollarga javob beruvchi virtual assistentman. Muloqotni boshlash uchun "Bot Boshqaruvi" bo\'limidan "/start" buyrug\'ini yuboring.', time: '13:45' }
+        ],
+        preview: 'Ishga tushirish uchun bosing'
+      },
+      saved: {
+        title: 'Избранное',
+        history: [
+          { sender: 'bot', text: 'Bu yer sizning shaxsiy xavfsiz bulutli saqlash omboringizdir.', time: '12:00' }
+        ],
+        preview: 'Bulutli shaxsiy xotira'
+      }
+    };
+
+    function switchSimChat(chatId) {
+      currentSimChat = chatId;
+
+      // Update sidebar active class
+      document.querySelectorAll('#simChatList .tg-chat-item').forEach(item => item.classList.remove('active'));
+      document.getElementById(`chat-${chatId}`).classList.add('active');
+
+      // Update Chat Header
+      document.getElementById('simChatHeaderTitle').innerText = simChats[chatId].title;
+
+      // Render History
+      renderSimHistory();
+    }
+
+    function renderSimHistory() {
+      const container = document.getElementById('simChatHistory');
+      container.innerHTML = '';
+
+      simChats[currentSimChat].history.forEach(msg => {
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${msg.sender === 'user' ? 'sent' : 'received'}`;
+        bubble.innerHTML = `${msg.text}<div class="chat-meta">${msg.time}</div>`;
+        container.appendChild(bubble);
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function switchSimTab(tabId) {
+      document.querySelectorAll('.sim-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.sim-tab-content').forEach(c => c.classList.remove('active'));
+
+      document.getElementById(`tabBtn${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).classList.add('active');
+      document.getElementById(`simTab${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`).classList.add('active');
+    }
+
+    function simSendMessage() {
+      const textInput = document.getElementById('simTextInput');
+      const textVal = textInput.value.trim();
+      if (!textVal) return;
+
+      const time = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+
+      // Add user message
+      simChats[currentSimChat].history.push({ sender: 'user', text: textVal, time: time });
+      renderSimHistory();
+
+      // Update sidebar preview
+      document.getElementById(`preview-${currentSimChat}`).innerText = textVal;
+
+      textInput.value = '';
+
+      // Bot reply if active chat is doctor_ai
+      if (currentSimChat === 'doctor_ai') {
+        setTimeout(() => {
+          let botResponse = "Kechirasiz, men hali ishga tushirilmadim. 'Bot Boshqaruvi' menyusidan '/start' tugmasini bosing.";
+          if (botIsActive) {
+            botResponse = `Siz yozdingiz: "${textVal}". Shifokor assistenti sifatida ushbu savol bo'yicha ma'lumotlarni tekshirmoqdaman...`;
+          }
+          simChats.doctor_ai.history.push({ sender: 'bot', text: botResponse, time: time });
+          renderSimHistory();
+          document.getElementById('preview-doctor_ai').innerText = botResponse;
+        }, 1200);
+      }
+    }
+
+    function simUploadFile(fileName, fileSize) {
+      const progressBox = document.getElementById('simFileProgress');
+      const nameEl = document.getElementById('simFileName');
+
+      nameEl.innerText = fileName;
+      progressBox.classList.remove('d-none');
+
+      setTimeout(() => {
+        progressBox.classList.add('d-none');
+        const time = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+        const fileMarkup = `<i class="fa-solid fa-file-arrow-down me-1"></i> <strong>${fileName}</strong> (${fileSize}) - yuklandi`;
+
+        simChats[currentSimChat].history.push({ sender: 'user', text: fileMarkup, time: time });
+        renderSimHistory();
+        document.getElementById(`preview-${currentSimChat}`).innerText = `Fayl: ${fileName}`;
+      }, 1500);
+    }
+
+    let botIsActive = false;
+    function simBotStart() {
+      botIsActive = true;
+      document.getElementById('botMenuOptions').classList.remove('d-none');
+
+      const time = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+      simChats.doctor_ai.history.push({ sender: 'user', text: '/start', time: time });
+
+      const reply = "Бот запущен! 🤖 Quyidagi menyudan kerakli bo'limni tanlang yoki shaxsiy savolingizni yozib yuboring:";
+      simChats.doctor_ai.history.push({ sender: 'bot', text: reply, time: time });
+
+      renderSimHistory();
+      document.getElementById('preview-doctor_ai').innerText = reply;
+    }
+
+    function simBotCommand(cmdText) {
+      const time = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+      simChats.doctor_ai.history.push({ sender: 'user', text: cmdText, time: time });
+
+      let botReply = "";
+      if (cmdText.includes('Tahlillar')) {
+        botReply = "🧬 **Tahlillar sharhi:** Leykotsitlar miqdori oshishi organizmda yallig'lanish borligini anglatadi. Tashxis uchun shifokorga ko'rining.";
+      } else if (cmdText.includes('yordam')) {
+        botReply = "📞 **Tez yordam chaqirish:** Respublika tez tibbiy yordam raqami: **103**. Shoshilinch aloqa markazlari onlayn holatda.";
+      } else {
+        botReply = "💊 **Farmatsevtika:** Paratsetamol - isitma va og'riq qoldiruvchi preparat. Katta yoshdagilar uchun sutkalik doza 4 g dan oshmasligi kerak.";
+      }
+
+      setTimeout(() => {
+        simChats.doctor_ai.history.push({ sender: 'bot', text: botReply, time: time });
+        renderSimHistory();
+        document.getElementById('preview-doctor_ai').innerText = botReply;
+      }, 1000);
+    }
+
+    function simCreateGroupChannel() {
+      const nameInput = document.getElementById('simCreateName');
+      const typeSelect = document.getElementById('simCreateType');
+      const nameVal = nameInput.value.trim();
+      const typeVal = typeSelect.value;
+
+      if (!nameVal) {
+        alert("Nom kiriting!");
+        return;
+      }
+
+      const slug = typeVal === 'group' ? `group_${Date.now()}` : `channel_${Date.now()}`;
+      const titleText = typeVal === 'group' ? `👥 ${nameVal} (Guruh)` : `📢 ${nameVal} (Kanal)`;
+
+      // Add to list
+      simChats[slug] = {
+        title: titleText,
+        history: [
+          { sender: 'bot', text: `Siz muvaffaqiyatli yangi ${typeVal === 'group' ? 'guruh' : 'kanal'} yaratdingiz!`, time: 'Hozir' }
+        ],
+        preview: 'Yangi yaratilgan chat'
+      };
+
+      const chatList = document.getElementById('simChatList');
+      const newItem = document.createElement('div');
+      newItem.className = "tg-chat-item";
+      newItem.id = `chat-${slug}`;
+      newItem.setAttribute('onclick', `switchSimChat('${slug}')`);
+      newItem.innerHTML = `
+        <div class="tg-avatar ${typeVal === 'group' ? 'avatar-purple' : 'avatar-green'}">
+          <i class="fa-solid ${typeVal === 'group' ? 'fa-users' : 'fa-bullhorn'}"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="tg-chat-name">${nameVal}</div>
+          <div class="tg-chat-preview" id="preview-${slug}">Yangi chat yaratildi</div>
+        </div>
+      `;
+
+      chatList.appendChild(newItem);
+      nameInput.value = '';
+      alert(`Muvaffaqiyatli yaratildi: ${nameVal}`);
+
+      // Auto select new chat
+      switchSimChat(slug);
+    }
+
+    /* 19-Bo'lim: Checklist Progress */
+    function updateChecklistProgress() {
+      let total = 10;
+      let checked = 0;
+      for (let i = 1; i <= 10; i++) {
+        if (document.getElementById(`chk${i}`).checked) checked++;
+      }
+      const percentage = Math.round((checked / total) * 100);
+      document.getElementById('checklistPercentage').innerText = `${percentage}%`;
+      document.getElementById('checklistProgressBar').style.width = `${percentage}%`;
+    }
+
+    /* 20-Bo'lim: Tap-to-Match Game Javascript */
+    let selectedTerm = null;
+    let selectedDef = null;
+    let matchedPairs = 0;
+
+    function selectMatchItem(id, type) {
+      if (type === 'term') {
+        // If already matched, return
+        if (document.getElementById(`term-${id}`).classList.contains('matched')) return;
+
+        // Remove previous selected
+        document.querySelectorAll('.match-column:first-child .match-item').forEach(item => item.classList.remove('selected'));
+        selectedTerm = id;
+        document.getElementById(`term-${id}`).classList.add('selected');
+      } else {
+        if (document.getElementById(`def-${id}`).classList.contains('matched')) return;
+
+        document.querySelectorAll('.match-column:last-child .match-item').forEach(item => item.classList.remove('selected'));
+        selectedDef = id;
+        document.getElementById(`def-${id}`).classList.add('selected');
+      }
+
+      // Check for match
+      if (selectedTerm && selectedDef) {
+        const statusEl = document.getElementById('matchGameStatus');
+        if (selectedTerm === selectedDef) {
+          // Match success
+          document.getElementById(`term-${selectedTerm}`).classList.remove('selected');
+          document.getElementById(`def-${selectedDef}`).classList.remove('selected');
+
+          document.getElementById(`term-${selectedTerm}`).classList.add('matched');
+          document.getElementById(`def-${selectedDef}`).classList.add('matched');
+
+          matchedPairs++;
+          statusEl.innerHTML = `<span class="text-success"><i class="fa-solid fa-circle-check"></i> To'g'ri moslashtirildi! (${matchedPairs}/4)</span>`;
+
+          selectedTerm = null;
+          selectedDef = null;
+
+          if (matchedPairs === 4) {
+            statusEl.innerHTML = '<span class="text-success fw-bold"><i class="fa-solid fa-trophy"></i> Tabriklaymiz! O\'yinni to\'liq muvaffaqiyatli yakunladingiz.</span>';
+          }
+        } else {
+          // Match failed
+          statusEl.innerHTML = '<span class="text-danger"><i class="fa-solid fa-circle-xmark"></i> Noto\'g\'ri moslik! Qaytadan tanlang.</span>';
+          // Deselect visually after a short pause
+          const t = selectedTerm;
+          const d = selectedDef;
+          setTimeout(() => {
+            document.getElementById(`term-${t}`).classList.remove('selected');
+            document.getElementById(`def-${d}`).classList.remove('selected');
+          }, 300);
+          selectedTerm = null;
+          selectedDef = null;
+        }
+      }
+    }
+
+    /* 21-Bo'lim: 20-Question Quiz Javascript */
+    const quizQuestions = [
+      {
+        q: "Telegram messenjeri qaysi yili va kimlar tomonidan yaratilgan?",
+        o: [
+          "2010-yil, Mark Zuckerberg va Dustin Moskovitz",
+          "2013-yil, Pavel va Nikolay Durovlar",
+          "2015-yil, Bill Gates va Paul Allen",
+          "2012-yil, Sergey Brin va Larry Page"
+        ],
+        a: 1
+      },
+      {
+        q: "Telegramda fayllar yuborishning standart maksimal hajmi (limiti) qancha?",
+        o: ["100 MB", "500 MB", "2 GB", "4 GB"],
+        a: 2
+      },
+      {
+        q: "Ruscha interfeysda 'Saqlangan xabarlar' (shaxsiy bulut xotirasi) qanday nomlanadi?",
+        o: ["Архив", "Контакты", "Чаты", "Избранное"],
+        a: 3
+      },
+      {
+        q: "Telegram guruhlarida (Группа) a'zolar sonining maksimal chegarasi qancha?",
+        o: ["10 000 a'zo", "50 000 a'zo", "100 000 a'zo", "200 000 a'zo"],
+        a: 3
+      },
+      {
+        q: "Qidiruv (Поиск) maydoni yordamida qanday ma'lumotlarni topish mumkin?",
+        o: [
+          "Faqat kontaktlarni",
+          "Global kanallar, botlar, guruhlar va xabarlarni",
+          "Faqat telefon raqamlarini",
+          "Faqat shaxsiy rasmlarni"
+        ],
+        a: 1
+      },
+      {
+        q: "Telegram kanallari (Каналы) qanday turlarga bo'linadi?",
+        o: [
+          "Ommaviy (Публичный) va Shaxsiy (Частный)",
+          "Matnli va Grafik",
+          "Boshlang'ich va Professional",
+          "Yopiq va Maxfiy"
+        ],
+        a: 0
+      },
+      {
+        q: "Telegram botlarining (Bot) asosiy vazifasi nima?",
+        o: [
+          "Faqat boshqa odamlar suhbatlashishi",
+          "Dasturlangan avtomatlashtirilgan xizmatlar ko'rsatish (tarjima, test, qidiruv)",
+          "Banya xabarlarni yashirin o'qish",
+          "Telefon xotirasini tozalash"
+        ],
+        a: 1
+      },
+      {
+        q: "Ovozli xabar yuborish tugmasi ruscha interfeysda qanday ataladi?",
+        o: ["Аудиозвонок", "Голосовое сообщение", "Видеосообщение", "Вкладка"],
+        a: 1
+      },
+      {
+        q: "Ikki bosqichli tasdiqlash (Двухэтапная аутентификация) nimani ta'minlaydi?",
+        o: [
+          "Ilovani tezroq ochishni",
+          "SMS koddan tashqari shaxsiy qo'shimcha parol yordamida akkauntni kuchli himoyalashni",
+          "Profil rasmini o'zgartirishni",
+          "Kontaktlar ro'yxatini yashirishni"
+        ],
+        a: 1
+      },
+      {
+        q: "Telegram Web tizimidan qanday foydalaniladi?",
+        o: [
+          "Faqat planshet orqali",
+          "Brauzer orqali yuklamasdan QR-kod yoki telefon bilan kirish",
+          "Faqat telegram premium orqali",
+          "Kabel yordamida ulab"
+        ],
+        a: 1
+      },
+      {
+        q: "Kam foydalaniladigan yoki chalg'ituvchi chatlarni qayerga yashirish mumkin?",
+        o: ["Избранное", "Контакты", "Архив", "Настройки"],
+        a: 2
+      },
+      {
+        q: "Bemor tahlil natijalarini Telegram orqali yuborishda nimalarga e'tibor berish kerak?",
+        o: [
+          "Barcha ommaviy kanallarga tashlash lozim",
+          "Ma'lumotlar shifrlangan shaxsiy chat yoki yopiq shaxsiy guruhlarda maxfiy yuborilishi kerak",
+          "Uni umuman yuborib bo'lmaydi",
+          "Hech qanday qoidasi yo'q"
+        ],
+        a: 1
+      },
+      {
+        q: "Guruh administratorining (Администратор) asosiy vakolatlari qaysilar?",
+        o: [
+          "Faqat yangi xabar yozish",
+          "A'zolarni boshqarish, xabarlarni o'chirish, guruh sozlamalarini o'zgartirish",
+          "Boshqa foydalanuvchilar parolini o'g'irlash",
+          "Guruhni butunlay sotish"
+        ],
+        a: 1
+      },
+      {
+        q: "Telegramda shaxsiy profil sozlamalari ruscha interfeysning qaysi bo'limida amalga oshiriladi?",
+        o: ["Настройки", "Избранное", "Контакты", "Поиск"],
+        a: 0
+      },
+      {
+        q: "Bitta varaqqa yoki qurilmaga bir necha xil seans bilan ulanishni tekshirish qaysi bo'limda joylagan?",
+        o: ["Язык", "Устройства (Qurilmalar)", "Конфиденциальность", "Уведомления"],
+        a: 1
+      },
+      {
+        q: "Maxfiy chatda (Секретный чат) yozishmalarning asosiy xususiyati nima?",
+        o: [
+          "Xabarlar serverlarda saqlanmaydi va ma'lum muddatda avtomatik o'chadi (Самоуничтожение)",
+          "Barcha foydalanuvchilar o'qiy oladi",
+          "Uni faqat kompyuterda ochish mumkin",
+          "Faqat administratorlar yoza oladi"
+        ],
+        a: 0
+      },
+      {
+        q: "Kanal postlariga o'quvchilar javob yozishi uchun qanday qo'shimcha guruh bog'lanadi?",
+        o: ["Maxfiy guruh", "Группа обсуждения (Muhokama guruhi)", "Arxiv guruhi", "Sozlamalar guruhi"],
+        a: 1
+      },
+      {
+        q: "Qog'oz qisqich (Скрепка) belgisining vazifasi nima?",
+        o: [
+          "Profil rasmini o'chirish",
+          "Turli formatdagi fayl, rasm yoki videolarni chatga ilova qilib yuborish",
+          "Ovoz yozishni to'xtatish",
+          "Telegramni o'chirish"
+        ],
+        a: 1
+      },
+      {
+        q: "WhatsAppdan farqli o'laroq Telegramning bulutli saqlash tizimi qanday afzallik beradi?",
+        o: [
+          "Ular har doim o'chib ketadi",
+          "Fayllar telefon xotirasini band qilmaydi va istalgan yangi qurilmada darhol ochiladi",
+          "Faqat pullik foydalanish mumkin",
+          "Faqat matn saqlanadi"
+        ],
+        a: 1
+      },
+      {
+        q: "Tibbiyot talabalari Telegramdan qanday maqsadlarda foydalanadi?",
+        o: [
+          "Faqat o'yin o'ynash uchun",
+          "Guruhlarda dars ma'lumotlarini almashish, o'quv kanallarini kuzatish, tibbiy botlar bilan ishlash",
+          "Bemorlarni ruxsatsiz davolash uchun",
+          "Dasturlash tillarini o'rganish uchun"
+        ],
+        a: 1
+      }
+    ];
+
+    let currentQuestionIdx = 0;
+    const userQuizAnswers = {};
+
+    function initQuiz() {
+      const container = document.getElementById('quizQuestionsContainer');
+      container.innerHTML = "";
+
+      quizQuestions.forEach((item, idx) => {
+        const qBox = document.createElement('div');
+        qBox.className = `quiz-question-box ${idx === 0 ? 'active' : ''}`;
+        qBox.id = `qBox${idx}`;
+
+        const mappedOptions = item.o.map((opt, optIdx) => ({ text: opt, originalIdx: optIdx }));
+        mappedOptions.sort(() => Math.random() - 0.5);
+
+        let optionsHtml = '';
+        mappedOptions.forEach((option, optIdx) => {
+          optionsHtml += `
+            <button class="quiz-option-btn w-100" id="q${idx}opt${option.originalIdx}" onclick="selectQuizOption(${idx}, ${option.originalIdx})">
+              <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-secondary rounded-circle" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">${String.fromCharCode(65 + optIdx)}</span>
+                <span class="option-text text-start">${option.text}</span>
+              </div>
+            </button>
+          `;
+        });
+
+        qBox.innerHTML = `
+          <div class="quiz-question-number">Savol ${idx + 1} of 20</div>
+          <div class="quiz-question-text text-white">${item.q}</div>
+          <div class="quiz-options">
+            ${optionsHtml}
+          </div>
+        `;
+        container.appendChild(qBox);
+      });
+      updateQuizNav();
+    }
+
+    function selectQuizOption(questionIdx, optionIdx) {
+      if (userQuizAnswers[questionIdx] !== undefined) return;
+
+      userQuizAnswers[questionIdx] = optionIdx;
+      const question = quizQuestions[questionIdx];
+      const correctOpt = question.a;
+
+      const optBtn = document.getElementById(`q${questionIdx}opt${optionIdx}`);
+      if (optionIdx === correctOpt) {
+        optBtn.classList.add('correct');
+        const textSpan = optBtn.querySelector('.option-text');
+        if (textSpan) {
+          textSpan.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto text-success"></i>';
+        }
+      } else {
+        optBtn.classList.add('incorrect');
+        const textSpan = optBtn.querySelector('.option-text');
+        if (textSpan) {
+          textSpan.innerHTML += ' <i class="fa-solid fa-circle-xmark ms-auto text-danger"></i>';
+        }
+
+        const correctBtn = document.getElementById(`q${questionIdx}opt${correctOpt}`);
+        correctBtn.classList.add('correct');
+        const correctTextSpan = correctBtn.querySelector('.option-text');
+        if (correctTextSpan) {
+          correctTextSpan.innerHTML += ' <i class="fa-solid fa-circle-check ms-auto text-success"></i>';
+        }
+      }
+    }
+
+    function prevQuizQuestion() {
+      if (currentQuestionIdx > 0) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx--;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      }
+    }
+
+    function nextQuizQuestion() {
+      if (userQuizAnswers[currentQuestionIdx] === undefined) {
+        alert("Iltimos, keyingi savolga o'tishdan oldin variantlardan birini tanlang!");
+        return;
+      }
+
+      if (currentQuestionIdx < quizQuestions.length - 1) {
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.remove('active');
+        currentQuestionIdx++;
+        document.getElementById(`qBox${currentQuestionIdx}`).classList.add('active');
+        updateQuizNav();
+      } else {
+        showQuizResults();
+      }
+    }
+
+    function updateQuizNav() {
+      document.getElementById('quizPrevBtn').disabled = currentQuestionIdx === 0;
+      document.getElementById('quizProgressLabel').innerText = `Savol ${currentQuestionIdx + 1} / 20`;
+
+      const nextBtn = document.getElementById('quizNextBtn');
+      if (currentQuestionIdx === quizQuestions.length - 1) {
+        nextBtn.innerHTML = 'Yakunlash <i class="fa-solid fa-square-poll-vertical ms-2"></i>';
+      } else {
+        nextBtn.innerHTML = 'Keyingi <i class="fa-solid fa-chevron-right ms-2"></i>';
+      }
+    }
+
+    function showQuizResults() {
+      let score = 0;
+      quizQuestions.forEach((q, idx) => {
+        if (userQuizAnswers[idx] === q.a) {
+          score++;
+        }
+      });
+
+      document.getElementById('quizQuestionsContainer').style.display = 'none';
+      document.getElementById('quizNavControls').style.setProperty('display', 'none', 'important');
+
+      const resultBox = document.getElementById('quizResultBox');
+      resultBox.classList.remove('d-none');
+
+      document.getElementById('quizScoreText').innerText = `${score} / 20`;
+      const percentage = Math.round((score / quizQuestions.length) * 100);
+      document.getElementById('quizPercentageText').innerText = `Foiz ko'rsatkichi: ${percentage}%`;
+
+      const gradeBadge = document.getElementById('quizGradeBadge');
+      const gradeText = document.getElementById('quizGradeText');
+
+      let grade = "2 (Qoniqarsiz)";
+      gradeBadge.className = "badge bg-danger fs-5 p-3 px-4 rounded-pill mb-3";
+      gradeText.innerText = "Qoniqarsiz natija! Mavzuni qaytadan yaxshilab o'qib chiqing. ❌";
+
+      if (score >= 18) {
+        grade = "5 (A'lo)";
+        gradeBadge.className = "badge bg-success fs-5 p-3 px-4 rounded-pill mb-3";
+        gradeText.innerText = "A'lo! Siz Telegram messenjeri mavzusini mukammal o'zlashtirdingiz. 🌟";
+      } else if (score >= 14) {
+        grade = "4 (Yaxshi)";
+        gradeBadge.className = "badge bg-info fs-5 p-3 px-4 rounded-pill mb-3";
+        gradeText.innerText = "Yaxshi! Mavzuni yaxshi o'zlashtirdingiz, kichik xatoliklar mavjud. 👍";
+      } else if (score >= 11) {
+        grade = "3 (Qoniarli)";
+        gradeBadge.className = "badge bg-warning text-dark fs-5 p-3 px-4 rounded-pill mb-3";
+        gradeText.innerText = "Qoniqarli! Yana biroz o'qib-o'rganishingiz tavsiya etiladi. 📚";
+      }
+
+      gradeBadge.innerText = `Baho: ${grade}`;
+
+      // Update progress bar
+      document.getElementById('quizProgressBar').style.width = `${percentage}%`;
+
+      resultBox.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function restartQuiz() {
+      currentQuestionIdx = 0;
+      quizQuestions.forEach((_, idx) => {
+        delete userQuizAnswers[idx];
+      });
+
+      document.getElementById('quizQuestionsContainer').style.display = 'block';
+      document.getElementById('quizNavControls').style.setProperty('display', 'flex', 'important');
+
+      document.getElementById('quizResultBox').classList.add('d-none');
+      initQuiz();
+    }
+  </script>
+
+  <script>
+    function logout() {
+      localStorage.removeItem('darslik_login');
+      window.location.href = '../index.html';
+    }
+
+    function applyAuthorName() {
+      const loginName = localStorage.getItem('darslik_login') || 'Napasov';
+      const authorName = loginName === 'Umirov' ? 'Zafar Umirov' : 'Ozodbek Napasov';
+      
+      // Traverse text nodes to replace {{AUTHOR}}
+      function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          if (node.nodeValue.includes('{{AUTHOR}}')) {
+            node.nodeValue = node.nodeValue.replace(/{{AUTHOR}}/g, authorName);
+          }
+        } else {
+          if (node.nodeName !== 'SCRIPT' && node.nodeName !== 'STYLE') {
+            for (let child of node.childNodes) {
+              walk(child);
+            }
+          }
+        }
+      }
+      walk(document.body);
+
+      // Hide Telegram link for Umirov
+      const isUmirov = (loginName === 'Umirov');
+      const tgLinks = document.querySelectorAll('a[href*="t.me/Ozodbek_Napasov"]');
+      tgLinks.forEach(link => {
+        if (isUmirov) {
+          link.setAttribute('data-orig-href', link.getAttribute('href') || '');
+          link.removeAttribute('href');
+          link.style.pointerEvents = 'none';
+          link.style.cursor = 'default';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = 'none';
+          }
+        } else {
+          const origHref = link.getAttribute('data-orig-href') || 'https://t.me/Ozodbek_Napasov';
+          link.setAttribute('href', origHref);
+          link.style.pointerEvents = '';
+          link.style.cursor = '';
+          
+          const icon = link.querySelector('.fa-telegram, .fab.fa-telegram');
+          if (icon) {
+            icon.style.display = '';
+          }
+        }
+      });
+    }
+
+    // Initialize components
+    window.addEventListener('load', () => {
+      applyAuthorName();
+      initQuiz();
+    });
+  </script>
+
+
+</body>
+
+</html>
