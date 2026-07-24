@@ -10,32 +10,18 @@ function ScheduleContent() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
     const ts = searchParams.get('techSchool') || 'shahrisabz';
-    setTechSchool(ts);
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    const targetUrl = `/schedule/index.html?supabaseUrl=${encodeURIComponent(supabaseUrl)}&supabaseKey=${encodeURIComponent(supabaseKey)}&techSchool=${encodeURIComponent(ts)}`;
+    window.location.href = targetUrl;
   }, [searchParams]);
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-  const iframeSrc = `/schedule/index.html?supabaseUrl=${encodeURIComponent(supabaseUrl)}&supabaseKey=${encodeURIComponent(supabaseKey)}&techSchool=${encodeURIComponent(techSchool)}`;
-
-  if (!isMounted) {
-    return (
-      <LoadingScreen
-        message="Dars jadvali yuklanmoqda..."
-        subMessage="Mashg'ulotlar grafigi va xonalar ma'lumotlari tayyorlanmoqda"
-      />
-    );
-  }
-
   return (
-    <div className="w-full h-screen overflow-hidden bg-[#050a16]">
-      <iframe 
-        src={iframeSrc}
-        className="w-full h-full border-none" 
-        title="Dars Jadvali - O'qituvchi Portali"
-      />
-    </div>
+    <LoadingScreen
+      message="Dars jadvali sahifasiga o'tilmoqda..."
+      subMessage="Mashg'ulotlar grafigi va xonalar ma'lumotlari tayyorlanmoqda"
+    />
   );
 }
 

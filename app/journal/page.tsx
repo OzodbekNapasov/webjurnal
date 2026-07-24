@@ -6,7 +6,7 @@ import * as XLSX from "xlsx";
 import StudentReport from "../../components/StudentReport";
 import CustomSelect from "../../components/CustomSelect";
 import LoadingScreen from "../../components/LoadingScreen";
-import { ArrowLeft, ArrowRight, Plus, Settings, Clipboard, BookOpen, AlertTriangle, Calendar, Award, Zap, Lock, Unlock, Info, Gift, RefreshCw, Pen, Save, Download, BarChart, X, Clock, CheckCircle, XCircle, Users, UserPlus, Trash, Check, MedalGold, MedalSilver, MedalBronze, AlertCircle, FileText } from "../../components/Icon";
+import { ArrowLeft, ArrowRight, Plus, Settings, Clipboard, BookOpen, AlertTriangle, Calendar, Award, Zap, Lock, Unlock, Info, Gift, RefreshCw, Pen, Save, Download, BarChart, X, Clock, CheckCircle, XCircle, Users, UserPlus, Trash, Check, MedalGold, MedalSilver, MedalBronze, AlertCircle, FileText, Undo, Redo } from "../../components/Icon";
 
 
 const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
@@ -30,6 +30,14 @@ interface Lesson {
 interface RecordState {
     is_present: boolean;
     grade: string;
+}
+
+interface UndoHistoryItem {
+    studentId: string | number;
+    studentName?: string;
+    lessonId: number;
+    prevRecord: RecordState;
+    newRecord: RecordState;
 }
 
 const isValidDate = (dateStr: string): boolean => {
@@ -123,6 +131,78 @@ function JournalContent() {
     // === YANGI: 4. Bayram kunlari ===
     const [holidayDates, setHolidayDates] = useState<Set<string>>(new Set());
     const [holidayMap, setHolidayMap] = useState<Record<string, string>>({});
+
+    // === YANGI: 5. Undo & Redo (Ctrl+Z & Ctrl+Y) ===
+    const [undoStack, setUndoStack] = useState<UndoHistoryItem[]>([]);
+    const [redoStack, setRedoStack] = useState<UndoHistoryItem[]>([]);
+
+    const recordAction = (item: UndoHistoryItem) => {
+        setUndoStack(prev => [...prev, item]);
+        setRedoStack([]);
+    };
+
+    const handleUndo = async () => {
+        if (undoStack.length === 0) return;
+        const lastAction = undoStack[undoStack.length - 1];
+        setUndoStack(prev => prev.slice(0, -1));
+        setRedoStack(prev => [...prev, lastAction]);
+
+        const key = `${lastAction.studentId}-${lastAction.lessonId}`;
+        setJournalRecords(prev => ({
+            ...prev,
+            [key]: lastAction.prevRecord
+        }));
+
+        await handleSaveToSupabase(
+            lastAction.studentId,
+            lastAction.lessonId,
+            lastAction.prevRecord.is_present,
+            lastAction.prevRecord.grade || ""
+        );
+        showAlert(`Amal bekor qilindi! (Ctrl+Z)\n${lastAction.studentName || 'Talaba'}: ${lastAction.prevRecord.is_present ? (lastAction.prevRecord.grade || '—') : 'NB'} ga qaytarildi`, "↩️ Bekor qilindi", "info");
+    };
+
+    const handleRedo = async () => {
+        if (redoStack.length === 0) return;
+        const lastAction = redoStack[redoStack.length - 1];
+        setRedoStack(prev => prev.slice(0, -1));
+        setUndoStack(prev => [...prev, lastAction]);
+
+        const key = `${lastAction.studentId}-${lastAction.lessonId}`;
+        setJournalRecords(prev => ({
+            ...prev,
+            [key]: lastAction.newRecord
+        }));
+
+        await handleSaveToSupabase(
+            lastAction.studentId,
+            lastAction.lessonId,
+            lastAction.newRecord.is_present,
+            lastAction.newRecord.grade || ""
+        );
+        showAlert(`Bekor qilingan amal qaytarildi! (Ctrl+Y)\n${lastAction.studentName || 'Talaba'}: ${lastAction.newRecord.is_present ? (lastAction.newRecord.grade || '—') : 'NB'} o'rnatildi`, "↪️ Qaytarildi", "info");
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement;
+            const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+            if (isInput) return;
+
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                handleUndo();
+            } else if (
+                ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') ||
+                ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'z')
+            ) {
+                e.preventDefault();
+                handleRedo();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [undoStack, redoStack]);
 
     // Baholarning ranglarini aniqlash funksiyasi
     const getGradeStyle = (grade: string) => {
@@ -693,9 +773,9 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                 {/* Back Link & Mode Toggler Container */}
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4 md:mb-8 bg-slate-900/40 p-2 sm:p-3 rounded-xl sm:rounded-2xl backdrop-blur-sm border border-slate-800/60">
                     <div className="flex items-center gap-2">
-                        <a href="/" className="group inline-flex items-center gap-2 text-sm font-bold text-blue-400 hover:text-blue-300 transition-colors py-1.5 px-3 rounded-xl hover:bg-slate-800/40">
-                            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform shrink-0" />
-                            Guruhlar ro&apos;yxatiga qaytish
+                        <a href="/" className="group inline-flex items-center gap-2.5 transition-transform hover:scale-105" title="Bosh sahifaga qaytish">
+                            <img src="/images/Logo.png" alt="Logo" className="h-8 w-auto object-contain drop-shadow" />
+                            <span className="text-xs font-black text-white group-hover:text-cyan-300">Tibbiyot Texnikumi</span>
                         </a>
                         <a href="/settings" className="inline-flex items-center justify-center w-8 h-8 rounded-xl hover:bg-slate-800/40 transition-all" title="Bayram kunlari va sozlamalar">
                             <Settings className="w-4 h-4 text-slate-400 hover:text-slate-205" />
@@ -935,25 +1015,59 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                         <p className="text-[10px] text-slate-400 font-semibold">Tegishli katakchani bosish orqali amal bajariladi</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-2 w-full sm:w-auto bg-slate-900/65 p-1 rounded-xl border border-slate-800/60">
-                                    <button
-                                        onClick={() => setJournalMode("davomat")}
-                                        className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${journalMode === "davomat"
-                                            ? "bg-blue-600/20 text-blue-400 border border-blue-500/35 shadow-sm"
-                                            : "text-slate-400 hover:text-slate-200 border border-transparent"
+                                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                                    <div className="flex gap-2 flex-1 sm:flex-none bg-slate-900/65 p-1 rounded-xl border border-slate-800/60">
+                                        <button
+                                            onClick={() => setJournalMode("davomat")}
+                                            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${journalMode === "davomat"
+                                                ? "bg-blue-600/20 text-blue-400 border border-blue-500/35 shadow-sm"
+                                                : "text-slate-400 hover:text-slate-200 border border-transparent"
+                                                }`}
+                                        >
+                                            <Clock className="w-3.5 h-3.5 text-blue-400 shrink-0" /> Davomat (NB belgilash)
+                                        </button>
+                                        <button
+                                            onClick={() => setJournalMode("baholash")}
+                                            className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${journalMode === "baholash"
+                                                ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/35 shadow-sm"
+                                                : "text-slate-400 hover:text-slate-200 border border-transparent"
+                                                }`}
+                                        >
+                                            <Award className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Baholash (Baho qo'yish)
+                                        </button>
+                                    </div>
+
+                                    {/* Undo & Redo Action Buttons */}
+                                    <div className="flex items-center gap-1.5 bg-slate-900/65 p-1 rounded-xl border border-slate-800/60">
+                                        <button
+                                            type="button"
+                                            onClick={handleUndo}
+                                            disabled={undoStack.length === 0}
+                                            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
+                                                undoStack.length > 0
+                                                    ? "bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/30 cursor-pointer active:scale-95 shadow-sm"
+                                                    : "text-slate-600 border border-transparent cursor-not-allowed opacity-50"
                                             }`}
-                                    >
-                                        <Clock className="w-3.5 h-3.5 text-blue-400 shrink-0" /> Davomat (NB belgilash)
-                                    </button>
-                                    <button
-                                        onClick={() => setJournalMode("baholash")}
-                                        className={`flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${journalMode === "baholash"
-                                            ? "bg-emerald-600/20 text-emerald-400 border border-emerald-500/35 shadow-sm"
-                                            : "text-slate-400 hover:text-slate-200 border border-transparent"
+                                            title="Amalni bekor qilish (Ctrl + Z)"
+                                        >
+                                            <Undo className="w-3.5 h-3.5 shrink-0" />
+                                            <span>Orqaga <span className="hidden lg:inline text-[10px] opacity-75">(Ctrl+Z)</span></span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleRedo}
+                                            disabled={redoStack.length === 0}
+                                            className={`px-3 py-2 rounded-lg text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
+                                                redoStack.length > 0
+                                                    ? "bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-400/30 cursor-pointer active:scale-95 shadow-sm"
+                                                    : "text-slate-600 border border-transparent cursor-not-allowed opacity-50"
                                             }`}
-                                    >
-                                        <Award className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Baholash (Baho qo'yish)
-                                    </button>
+                                            title="Bekor qilingan amalni qaytarish (Ctrl + Y)"
+                                        >
+                                            <Redo className="w-3.5 h-3.5 shrink-0" />
+                                            <span>Oldinga <span className="hidden lg:inline text-[10px] opacity-75">(Ctrl+Y)</span></span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1118,12 +1232,17 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                                                             }
                                                                             if (journalMode === "davomat") {
                                                                                 const newIsPresent = !record.is_present;
+                                                                                const newRec = { is_present: newIsPresent, grade: "" };
+                                                                                recordAction({
+                                                                                    studentId: student.id,
+                                                                                    studentName: student.fullName,
+                                                                                    lessonId: lesson.id,
+                                                                                    prevRecord: { ...record },
+                                                                                    newRecord: newRec
+                                                                                });
                                                                                 setJournalRecords(prev => ({
                                                                                     ...prev,
-                                                                                    [`${student.id}-${lesson.id}`]: {
-                                                                                        is_present: newIsPresent,
-                                                                                        grade: ""
-                                                                                    }
+                                                                                    [`${student.id}-${lesson.id}`]: newRec
                                                                                 }));
                                                                                 await handleSaveToSupabase(student.id, lesson.id, newIsPresent, "");
                                                                             } else {
@@ -1642,12 +1761,19 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             key={g}
                                             type="button"
                                             onClick={async () => {
+                                                const key = `${editingCell.studentId}-${editingCell.lessonId}`;
+                                                const prevRec = journalRecords[key] || { is_present: true, grade: "" };
+                                                const newRec = { is_present: true, grade: g };
+                                                recordAction({
+                                                    studentId: editingCell.studentId,
+                                                    studentName: editingCell.studentName,
+                                                    lessonId: editingCell.lessonId,
+                                                    prevRecord: prevRec,
+                                                    newRecord: newRec
+                                                });
                                                 setJournalRecords(prev => ({
                                                     ...prev,
-                                                    [`${editingCell.studentId}-${editingCell.lessonId}`]: {
-                                                        is_present: true,
-                                                        grade: g
-                                                    }
+                                                    [key]: newRec
                                                 }));
                                                 setIsEditCellOpen(false);
                                                 await handleSaveToSupabase(editingCell.studentId, editingCell.lessonId, true, g);
@@ -1665,12 +1791,19 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                             key={g}
                                             type="button"
                                             onClick={async () => {
+                                                const key = `${editingCell.studentId}-${editingCell.lessonId}`;
+                                                const prevRec = journalRecords[key] || { is_present: true, grade: "" };
+                                                const newRec = { is_present: true, grade: g };
+                                                recordAction({
+                                                    studentId: editingCell.studentId,
+                                                    studentName: editingCell.studentName,
+                                                    lessonId: editingCell.lessonId,
+                                                    prevRecord: prevRec,
+                                                    newRecord: newRec
+                                                });
                                                 setJournalRecords(prev => ({
                                                     ...prev,
-                                                    [`${editingCell.studentId}-${editingCell.lessonId}`]: {
-                                                        is_present: true,
-                                                        grade: g
-                                                    }
+                                                    [key]: newRec
                                                 }));
                                                 setIsEditCellOpen(false);
                                                 await handleSaveToSupabase(editingCell.studentId, editingCell.lessonId, true, g);
@@ -1695,23 +1828,52 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                         placeholder="Masalan: 4/5"
                                         value={editingState.grade}
                                         onChange={(e) => setEditingState(prev => ({ ...prev, grade: e.target.value.slice(0, 5) }))}
+                                        onKeyDown={async (e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                const trimGrade = editingState.grade.trim();
+                                                const key = `${editingCell.studentId}-${editingCell.lessonId}`;
+                                                const prevRec = journalRecords[key] || { is_present: true, grade: "" };
+                                                const newRec = { is_present: true, grade: trimGrade };
+                                                recordAction({
+                                                    studentId: editingCell.studentId,
+                                                    studentName: editingCell.studentName,
+                                                    lessonId: editingCell.lessonId,
+                                                    prevRecord: prevRec,
+                                                    newRecord: newRec
+                                                });
+                                                setJournalRecords(prev => ({
+                                                    ...prev,
+                                                    [key]: newRec
+                                                }));
+                                                setIsEditCellOpen(false);
+                                                await handleSaveToSupabase(editingCell.studentId, editingCell.lessonId, true, trimGrade);
+                                            }
+                                        }}
                                         className="flex-1 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white font-bold placeholder-slate-600 focus:outline-none focus:border-blue-500 shadow-inner"
                                     />
                                     <button
                                         type="button"
                                         onClick={async () => {
                                             const trimGrade = editingState.grade.trim();
+                                            const key = `${editingCell.studentId}-${editingCell.lessonId}`;
+                                            const prevRec = journalRecords[key] || { is_present: true, grade: "" };
+                                            const newRec = { is_present: true, grade: trimGrade };
+                                            recordAction({
+                                                studentId: editingCell.studentId,
+                                                studentName: editingCell.studentName,
+                                                lessonId: editingCell.lessonId,
+                                                prevRecord: prevRec,
+                                                newRecord: newRec
+                                            });
                                             setJournalRecords(prev => ({
                                                 ...prev,
-                                                [`${editingCell.studentId}-${editingCell.lessonId}`]: {
-                                                    is_present: true,
-                                                    grade: trimGrade
-                                                }
+                                                [key]: newRec
                                             }));
                                             setIsEditCellOpen(false);
                                             await handleSaveToSupabase(editingCell.studentId, editingCell.lessonId, true, trimGrade);
                                         }}
-                                        className="px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition-colors"
+                                        className="px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
                                     >
                                         Qo'yish
                                     </button>
@@ -1723,12 +1885,19 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                             <button
                                 type="button"
                                 onClick={async () => {
+                                    const key = `${editingCell.studentId}-${editingCell.lessonId}`;
+                                    const prevRec = journalRecords[key] || { is_present: true, grade: "" };
+                                    const newRec = { is_present: true, grade: "" };
+                                    recordAction({
+                                        studentId: editingCell.studentId,
+                                        studentName: editingCell.studentName,
+                                        lessonId: editingCell.lessonId,
+                                        prevRecord: prevRec,
+                                        newRecord: newRec
+                                    });
                                     setJournalRecords(prev => ({
                                         ...prev,
-                                        [`${editingCell.studentId}-${editingCell.lessonId}`]: {
-                                            is_present: true,
-                                            grade: ""
-                                        }
+                                        [key]: newRec
                                     }));
                                     setIsEditCellOpen(false);
                                     await handleSaveToSupabase(editingCell.studentId, editingCell.lessonId, true, "");

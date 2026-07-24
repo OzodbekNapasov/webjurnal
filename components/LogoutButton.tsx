@@ -28,8 +28,8 @@ export default function LogoutButton() {
     }
   }, []);
 
-  if (pathname !== '/') return null;
-  if (!userInfo) return null;
+  // Profile and Logout are now built into DesktopSidebar and MobileBottomDock
+  return null;
 
   function handleLogout() {
     clearSession();

@@ -236,53 +236,9 @@ export default async function HomePage({ searchParams }: PageProps) {
                     <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white mb-2 drop-shadow-md">
                         {schoolTitle}
                     </h1>
-                    <p className="text-xs sm:text-sm font-bold text-cyan-200/90 uppercase tracking-widest mb-8">
+                    <p className="text-xs sm:text-sm font-bold text-cyan-200/90 uppercase tracking-widest mb-4">
                         Elektron Dars Jurnali Platformasi
                     </p>
-
-                    {/* UNIFORM Floating Glass Dock Bar */}
-                    <div className="inline-flex items-center justify-center gap-1 sm:gap-1.5 p-1.5 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_15px_35px_rgba(0,0,0,0.35)] max-w-full overflow-x-auto">
-                        
-                        {/* Item 1: Fan Nomi */}
-                        <div className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent shrink-0 cursor-default">
-                            <Laptop className="w-4 h-4 text-cyan-300 shrink-0" />
-                            <span className="whitespace-nowrap">Fan: Tibbiyotda Axborot Texnologiyalari</span>
-                        </div>
-
-                        {/* Item 2: Oylik hisobot */}
-                        <MonthlyReport techSchool={techSchool} />
-
-                        {/* Item 3: Dars Jadvali */}
-                        <Link
-                            href="/schedule"
-                            className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent active:scale-[0.98] shrink-0"
-                        >
-                            <Calendar className="w-4 h-4 text-cyan-300 shrink-0" />
-                            <span className="whitespace-nowrap">Dars Jadvali</span>
-                        </Link>
-
-                        {/* Item 4: Darsliklar */}
-                        <Link
-                            href="/darsliklar/index.html"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent active:scale-[0.98] shrink-0"
-                            title="Elektron interaktiv darsliklar portali"
-                        >
-                            <BookOpen className="w-4 h-4 text-cyan-300 shrink-0" />
-                            <span className="whitespace-nowrap">Darsliklar</span>
-                        </Link>
-
-                        {/* Item 5: Sozlamalar */}
-                        <Link
-                            href="/settings"
-                            className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent active:scale-[0.98] shrink-0"
-                            title="Bayram kunlari va sozlamalar"
-                        >
-                            <Settings className="w-4 h-4 text-cyan-300 shrink-0" />
-                            <span className="whitespace-nowrap">Sozlamalar</span>
-                        </Link>
-                    </div>
 
                     {/* Custom PWA Install Button */}
                     <div id="pwa-install-container" className="hidden mt-5">

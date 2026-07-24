@@ -94,14 +94,15 @@ export default function SettingsPage() {
             <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
 
             <div className="max-w-3xl mx-auto relative z-10">
-                {/* Back Link */}
+                {/* Logo Back Link */}
                 <div className="flex items-center gap-4 mb-8">
                     <Link 
                         href="/" 
-                        className="inline-flex items-center gap-2 text-xs sm:text-sm font-extrabold text-cyan-300 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl px-4 py-2 backdrop-blur-xl shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer"
+                        className="inline-flex items-center gap-3 p-2 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 group cursor-pointer"
+                        title="Bosh sahifaga qaytish"
                     >
-                        <ArrowLeft className="w-4 h-4 text-cyan-300" />
-                        Bosh sahifaga qaytish
+                        <img src="/images/Logo.png" alt="Logo" className="h-9 w-auto object-contain drop-shadow-[0_2px_8px_rgba(56,189,248,0.4)]" />
+                        <span className="text-xs font-black text-white group-hover:text-cyan-300 pr-2">Tibbiyot Texnikumi</span>
                     </Link>
                 </div>
 

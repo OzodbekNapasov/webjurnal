@@ -1,15 +1,16 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import LogoutButton from '../components/LogoutButton';
+import NavigationLayout from '../components/NavigationLayout';
 
 export const metadata: Metadata = {
   title: 'Tibbiyot Texnikumlari — Elektron Dars Jurnali',
   description: 'Shahrisabz va Ibn Sino Tibbiyot Texnikumlari elektron dars jurnali platformasi',
   manifest: '/manifest.json',
   icons: {
-    icon: '/icon.svg',
-    shortcut: '/icon.svg',
-    apple: '/icon.svg',
+    icon: '/images/Logo.png',
+    shortcut: '/images/Logo.png',
+    apple: '/images/Logo.png',
   },
 };
 
@@ -39,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body style={{ fontFamily: "'Inter', sans-serif" }}>
         <LogoutButton />
-        {children}
+        <NavigationLayout>{children}</NavigationLayout>
       </body>
     </html>
   );

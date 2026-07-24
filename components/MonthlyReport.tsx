@@ -13,6 +13,7 @@ const envKey = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.
 
 interface MonthlyReportProps {
     techSchool: string;
+    isCollapsed?: boolean;
 }
 
 interface ReportRow {
@@ -36,7 +37,7 @@ interface GroupRow {
     totalHours: number;
 }
 
-export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
+export default function MonthlyReport({ techSchool, isCollapsed }: MonthlyReportProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
 
@@ -66,10 +67,40 @@ export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
         { code: '07', name: 'IYUL' },
         { code: '08', name: 'AVGUST' },
         { code: '09', name: 'SENTYABR' },
-        { code: '10', name: 'OKTYABR' },
+        { code: '10', name: 'OKTABR' },
         { code: '11', name: 'NOYABR' },
         { code: '12', name: 'DEKABR' }
     ];
+
+    const triggerButton = (
+        <div className="relative group w-full">
+            <button
+                onClick={() => {
+                    setIsOpen(true);
+                    setHasLoaded(false);
+                    setReportData([]);
+                    setSummaryData([]);
+                    setGroupRows([]);
+                    setActiveSubTab('details');
+                }}
+                className={`relative flex items-center h-12 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-300 ${
+                    isCollapsed ? 'justify-center w-12 mx-auto' : 'px-3.5 gap-3 w-full'
+                } text-cyan-100/75 hover:text-white hover:bg-white/15 hover:border-white/25 border border-transparent cursor-pointer`}
+                title="Oylik hisobot"
+            >
+                <BarChart className="w-5 h-5 text-cyan-300 shrink-0" />
+                {!isCollapsed && <span className="whitespace-nowrap truncate tracking-wide">Oylik hisobot</span>}
+            </button>
+
+            {/* Collapsed Tooltip */}
+            {isCollapsed && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-2 transition-all duration-200 pointer-events-none whitespace-nowrap bg-[#073059]/95 backdrop-blur-xl text-white text-xs font-extrabold px-3.5 py-2 rounded-xl border border-cyan-400/40 shadow-2xl z-50 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                    <span>Oylik hisobot</span>
+                </div>
+            )}
+        </div>
+    );
 
     const handleGenerateReport = async () => {
         if (!envUrl || !envKey) {
@@ -459,20 +490,33 @@ export default function MonthlyReport({ techSchool }: MonthlyReportProps) {
 
     return (
         <>
-            <button
-                onClick={() => {
-                    setIsOpen(true);
-                    setHasLoaded(false);
-                    setReportData([]);
-                    setSummaryData([]);
-                    setGroupRows([]);
-                    setActiveSubTab('details');
-                }}
-                className="inline-flex items-center gap-2 h-[42px] px-4 rounded-full font-extrabold text-xs sm:text-sm text-cyan-100/90 hover:text-white hover:bg-white/20 hover:border-white/30 transition-all duration-300 border border-transparent cursor-pointer active:scale-[0.98] shrink-0"
-            >
-                <BarChart className="w-4 h-4 text-cyan-300 shrink-0" />
-                <span className="whitespace-nowrap">Oylik hisobot</span>
-            </button>
+            <div className="relative group w-full">
+                <button
+                    onClick={() => {
+                        setIsOpen(true);
+                        setHasLoaded(false);
+                        setReportData([]);
+                        setSummaryData([]);
+                        setGroupRows([]);
+                        setActiveSubTab('details');
+                    }}
+                    className={`relative flex items-center h-12 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-300 ${
+                        isCollapsed ? 'justify-center w-12 mx-auto' : 'px-3.5 gap-3.5 w-full'
+                    } text-cyan-100/75 hover:text-white hover:bg-white/15 hover:border-white/25 border border-transparent cursor-pointer`}
+                    title="Oylik hisobot"
+                >
+                    <BarChart className="w-5 h-5 text-cyan-300 shrink-0" />
+                    {!isCollapsed && <span className="whitespace-nowrap truncate tracking-wide">Oylik hisobot</span>}
+                </button>
+
+                {/* Collapsed Tooltip */}
+                {isCollapsed && (
+                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-2 transition-all duration-200 pointer-events-none whitespace-nowrap bg-[#073059]/95 backdrop-blur-xl text-white text-xs font-extrabold px-3.5 py-2 rounded-xl border border-cyan-400/40 shadow-2xl z-50 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        <span>Oylik hisobot</span>
+                    </div>
+                )}
+            </div>
 
             {isOpen && mounted && createPortal(
                 <div 

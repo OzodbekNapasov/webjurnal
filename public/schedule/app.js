@@ -653,6 +653,7 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () 
 
 function navigateToTab(tabName) {
     state.activeTab = tabName;
+    try { localStorage.setItem("dars_active_tab", tabName); } catch(e) {}
 
     document.querySelectorAll(".tab-content").forEach(el => {
         el.classList.add("hidden");
@@ -2267,7 +2268,8 @@ function startApp() {
         });
 
         registerFormListeners();
-        navigateToTab("home");
+        const savedTab = localStorage.getItem("dars_active_tab") || "home";
+        navigateToTab(savedTab);
     }).catch(err => {
         console.error("Initialization error:", err);
         navigateToTab("home");
