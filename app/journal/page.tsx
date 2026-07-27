@@ -100,6 +100,8 @@ function JournalContent() {
     const [journalRecords, setJournalRecords] = useState<Record<string, RecordState>>({});
     const [loading, setLoading] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
+    const [isOffline, setIsOffline] = useState(false);
+    const [pendingSyncCount, setPendingSyncCount] = useState(0);
 
     // Semestr boshqaruvi
     const [semesters, setSemesters] = useState<{ id: number; name: string; status: string }[]>([]);
@@ -419,6 +421,40 @@ function JournalContent() {
             return;
         }
 
+        // Stale-While-Revalidate pattern: load from localStorage cache first
+        let cachedStudents: any[] = [];
+        let cachedLessons: any[] = [];
+        let cachedRecords: any[] = [];
+
+        try {
+            const cs = localStorage.getItem(`journal_students_${groupId}`);
+            const cl = localStorage.getItem(`journal_lessons_${groupId}_${selectedSemesterId}`);
+            const cr = localStorage.getItem(`journal_records_${groupId}_${selectedSemesterId}`);
+            if (cs) cachedStudents = JSON.parse(cs);
+            if (cl) cachedLessons = JSON.parse(cl);
+            if (cr) cachedRecords = JSON.parse(cr);
+
+            if (cachedStudents.length > 0) {
+                setStudents(cachedStudents);
+            }
+            if (cachedLessons.length > 0) {
+                setLessons(cachedLessons);
+            }
+            if (cachedRecords.length > 0) {
+                const recordsMap: Record<string, RecordState> = {};
+                cachedRecords.forEach((rec) => {
+                    const key = `${rec.student_id}-${rec.lesson_id}`;
+                    recordsMap[key] = {
+                        is_present: rec.is_present,
+                        grade: rec.grade || "",
+                    };
+                });
+                setJournalRecords(recordsMap);
+            }
+        } catch (e) {
+            console.warn("Error reading local journal cache:", e);
+        }
+
         try {
             // 1. Talabalar ro'yxatini yuklash
             const { data: studentsData, error: studentsError } = await supabase
@@ -426,11 +462,7 @@ function JournalContent() {
                 .select("id, fullName")
                 .eq("group_id", groupId);
 
-            if (studentsError) {
-                setFetchError(`Talabalarni yuklashda xatolik: ${studentsError.message}`);
-                setLoading(false);
-                return;
-            }
+            if (studentsError) throw studentsError;
 
             // 2. Darslar ro'yxatini yuklash (semestr bo'yicha filtrlash)
             let lessonsQuery = supabase
@@ -439,22 +471,12 @@ function JournalContent() {
                 .eq("group_id", groupId)
                 .order("id", { ascending: true });
 
-            // Agar semestr tanlangan bo'lsa, filter qo'shamiz
             if (selectedSemesterId !== null) {
                 lessonsQuery = lessonsQuery.eq("semester_id", selectedSemesterId);
             }
 
             const { data: lessonsData, error: lessonsError } = await lessonsQuery;
-
-            if (lessonsError) {
-                if (lessonsError.message.includes('relation "lessons" does not exist') || lessonsError.message.includes('public.lessons') || lessonsError.message.includes('schema cache')) {
-                    setFetchError('lessons_table_missing');
-                } else {
-                    setFetchError(`Darslarni yuklashda xatolik: ${lessonsError.message}`);
-                }
-                setLoading(false);
-                return;
-            }
+            if (lessonsError) throw lessonsError;
 
             // 3. Jurnal yozuvlarini yuklash
             const lessonIds = lessonsData?.map(l => l.id) || [];
@@ -465,17 +487,14 @@ function JournalContent() {
                     .select("id, student_id, lesson_id, is_present, grade")
                     .in("lesson_id", lessonIds);
 
-                if (recordsError) {
-                    if (recordsError.message.includes("lesson_id")) {
-                        setFetchError('journal_records_schema_outdated');
-                    } else {
-                        setFetchError(`Jurnal yozuvlarini yuklashda xatolik: ${recordsError.message}`);
-                    }
-                    setLoading(false);
-                    return;
-                }
+                if (recordsError) throw recordsError;
                 recordsData = data || [];
             }
+
+            // Save to cache
+            if (studentsData) localStorage.setItem(`journal_students_${groupId}`, JSON.stringify(studentsData));
+            if (lessonsData) localStorage.setItem(`journal_lessons_${groupId}_${selectedSemesterId}`, JSON.stringify(lessonsData));
+            if (recordsData) localStorage.setItem(`journal_records_${groupId}_${selectedSemesterId}`, JSON.stringify(recordsData));
 
             if (studentsData) {
                 const sortedStudents = [...studentsData].sort((a, b) =>
@@ -506,8 +525,16 @@ function JournalContent() {
                 };
             });
             setJournalRecords(recordsMap);
+            setFetchError(null);
+            setIsOffline(false);
         } catch (err: any) {
-            setFetchError(`Tarmoq yoki tizim xatoligi: ${err.message || String(err)}`);
+            console.warn("Fetch failed, using cache if available:", err);
+            setIsOffline(true);
+            
+            // Check if we actually have cached data to show
+            if (cachedStudents.length === 0) {
+                setFetchError(`Tarmoqqa ulanish muvaffaqiyatsiz tugadi va mahalliy kesh topilmadi: ${err.message || String(err)}`);
+            }
         } finally {
             setLoading(false);
         }
@@ -519,23 +546,36 @@ function JournalContent() {
         const fetchSemesters = async () => {
             setSemestersLoading(true);
 
-            const { data, error } = await supabase
-                .from('semesters')
-                .select('id, name, status')
-                .eq('group_id', groupId)
-                .order('id', { ascending: true });
+            // Read from cache first
+            let cachedSemesters = [];
+            try {
+                const cs = localStorage.getItem(`journal_semesters_${groupId}`);
+                if (cs) {
+                    cachedSemesters = JSON.parse(cs);
+                    setSemesters(cachedSemesters);
+                    const active = cachedSemesters.find((s: any) => s.status === 'active');
+                    setSelectedSemesterId(active ? active.id : cachedSemesters[0].id);
+                }
+            } catch {}
 
-            if (!error && data && data.length > 0) {
-                setSemesters(data);
-                // Active semestrni avtomatik tanlash
-                const active = data.find((s: any) => s.status === 'active');
-                setSelectedSemesterId(active ? active.id : data[0].id);
-            } else {
-                // Semestrlar yo'q — filter ishlamaydi (barcha darslar ko'rinadi)
-                setSemesters([]);
-                setSelectedSemesterId(null);
+            try {
+                const { data, error } = await supabase
+                    .from('semesters')
+                    .select('id, name, status')
+                    .eq('group_id', groupId)
+                    .order('id', { ascending: true });
+
+                if (!error && data && data.length > 0) {
+                    setSemesters(data);
+                    localStorage.setItem(`journal_semesters_${groupId}`, JSON.stringify(data));
+                    const active = data.find((s: any) => s.status === 'active');
+                    setSelectedSemesterId(active ? active.id : data[0].id);
+                }
+            } catch (err) {
+                console.warn("Failed to fetch semesters from server:", err);
+            } finally {
+                setSemestersLoading(false);
             }
-            setSemestersLoading(false);
         };
         fetchSemesters();
     }, [groupId]);
@@ -543,6 +583,98 @@ function JournalContent() {
     useEffect(() => {
         loadData();
     }, [groupId, selectedSemesterId]);
+
+    const syncOfflineData = async () => {
+        const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+        if (!isOnline || !supabase) {
+            showAlert("Internet aloqasi yo'q yoki Supabase ulanishi mavjud emas. Offline ma'lumotlarni sinxronlash imkonsiz.", "Tarmoq xatoligi", "warning");
+            return;
+        }
+
+        try {
+            const queueRaw = localStorage.getItem('offline_sync_queue');
+            if (!queueRaw) return;
+
+            const queue = JSON.parse(queueRaw);
+            if (queue.length === 0) return;
+
+            console.log(`Syncing ${queue.length} offline changes to Supabase...`);
+            let successCount = 0;
+            const remainingQueue = [];
+
+            for (const task of queue) {
+                try {
+                    const { error } = await supabase.from("journal_records").upsert(
+                        {
+                            student_id: task.studentId.toString(),
+                            lesson_id: task.lessonId,
+                            is_present: task.is_present,
+                            grade: task.grade || null,
+                        },
+                        { onConflict: "student_id,lesson_id" }
+                    );
+                    if (error) throw error;
+                    successCount++;
+                } catch (err) {
+                    console.error("Failed to sync task, keeping in queue:", task, err);
+                    remainingQueue.push(task);
+                }
+            }
+
+            localStorage.setItem('offline_sync_queue', JSON.stringify(remainingQueue));
+            setPendingSyncCount(remainingQueue.length);
+
+            if (successCount > 0) {
+                showAlert(
+                    `${successCount} ta dars yozuvi muvaffaqiyatli sinxronlandi!`, 
+                    "🔄 Avtomat Sinxronizatsiya", 
+                    "success"
+                );
+                loadData();
+            }
+        } catch (e) {
+            console.error("Error during offline sync process:", e);
+        }
+    };
+
+    // Background Sync Effect
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const checkQueueSize = () => {
+            try {
+                const queueRaw = localStorage.getItem('offline_sync_queue');
+                if (queueRaw) {
+                    const queue = JSON.parse(queueRaw);
+                    setPendingSyncCount(queue.length);
+                }
+            } catch {}
+        };
+        checkQueueSize();
+
+        const handleOnlineStatus = () => {
+            setIsOffline(!navigator.onLine);
+            if (navigator.onLine) {
+                syncOfflineData();
+            }
+        };
+
+        setIsOffline(!navigator.onLine);
+        window.addEventListener('online', handleOnlineStatus);
+        window.addEventListener('offline', handleOnlineStatus);
+        
+        const interval = setInterval(() => {
+            if (navigator.onLine) {
+                syncOfflineData();
+            }
+        }, 10000); // Poll sync every 10 seconds if online
+
+        return () => {
+            window.removeEventListener('online', handleOnlineStatus);
+            window.removeEventListener('offline', handleOnlineStatus);
+            clearInterval(interval);
+        };
+    }, [supabase, groupId, selectedSemesterId]);
 
     useEffect(() => {
         if (isTransferModalOpen) {
@@ -564,21 +696,74 @@ function JournalContent() {
         }
     }, [isTransferModalOpen]);
 
-    // Ma'lumotlarni Supabase-ga saqlash (Upsert)
+    // Ma'lumotlarni saqlash va sinxronizatsiya qilish
     async function handleSaveToSupabase(studentId: string | number, lessonId: number, isPresent: boolean, gradeValue: string) {
-        if (!supabase) return;
+        // 1. Update local storage cache of journal records immediately
         try {
-            await supabase.from("journal_records").upsert(
-                {
-                    student_id: studentId.toString(),
-                    lesson_id: lessonId,
-                    is_present: isPresent,
-                    grade: gradeValue || null,
-                },
-                { onConflict: "student_id,lesson_id" }
-            );
-        } catch (error) {
-            console.error("Supabase-ga yozishda xatolik:", error);
+            const cacheKey = `journal_records_${groupId}_${selectedSemesterId}`;
+            const cached = localStorage.getItem(cacheKey);
+            let cachedRecords = cached ? JSON.parse(cached) : [];
+            // Remove existing record for this student and lesson if any
+            cachedRecords = cachedRecords.filter((r: any) => !(r.student_id.toString() === studentId.toString() && r.lesson_id === lessonId));
+            // Add new record
+            cachedRecords.push({
+                student_id: studentId.toString(),
+                lesson_id: lessonId,
+                is_present: isPresent,
+                grade: gradeValue || null
+            });
+            localStorage.setItem(cacheKey, JSON.stringify(cachedRecords));
+        } catch (e) {
+            console.error("Cache update error:", e);
+        }
+
+        // 2. Try to save to Supabase if online
+        const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+        if (isOnline && supabase) {
+            try {
+                const { error } = await supabase.from("journal_records").upsert(
+                    {
+                        student_id: studentId.toString(),
+                        lesson_id: lessonId,
+                        is_present: isPresent,
+                        grade: gradeValue || null,
+                    },
+                    { onConflict: "student_id,lesson_id" }
+                );
+                if (!error) {
+                    console.log("Supabase synced successfully");
+                    return;
+                }
+                throw error;
+            } catch (err) {
+                console.warn("Supabase upsert failed, queuing task:", err);
+            }
+        }
+
+        // 3. If offline or Supabase fails, add to the sync queue
+        try {
+            const queueKey = 'offline_sync_queue';
+            const queueRaw = localStorage.getItem(queueKey);
+            const queue = queueRaw ? JSON.parse(queueRaw) : [];
+            
+            // Remove any pending task for the same student and lesson to avoid duplicates
+            const cleanQueue = queue.filter((t: any) => !(t.studentId.toString() === studentId.toString() && t.lessonId === lessonId));
+            
+            cleanQueue.push({
+                id: `${Date.now()}-${Math.random()}`,
+                groupId,
+                semesterId: selectedSemesterId,
+                studentId,
+                lessonId,
+                is_present: isPresent,
+                grade: gradeValue || "",
+                timestamp: Date.now()
+            });
+            
+            localStorage.setItem(queueKey, JSON.stringify(cleanQueue));
+            setPendingSyncCount(cleanQueue.length);
+        } catch (e) {
+            console.error("Error queuing offline task:", e);
         }
     }
 
@@ -827,9 +1012,26 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                                 Shahrisabz Tibbiyot Texnikumi
                             </span>
                             <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-white mt-1.5">{groupName}</h1>
-                            <p className="text-[11px] sm:text-xs text-slate-400 font-semibold mt-1 flex items-center gap-1.5">
-                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                Fan: Tibbiyotda Axborot Texnologiyalari
+                            <p className="text-[11px] sm:text-xs text-slate-400 font-semibold mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2.5">
+                                <span className="inline-flex items-center gap-1.5">
+                                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    Fan: Tibbiyotda Axborot Texnologiyalari
+                                </span>
+                                {isOffline && (
+                                    <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 text-[10px] px-2.5 py-0.5 rounded-full border border-amber-500/20 font-black uppercase tracking-wider animate-pulse">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                        Offline Rejim
+                                    </span>
+                                )}
+                                {pendingSyncCount > 0 && (
+                                    <button 
+                                        onClick={syncOfflineData}
+                                        className="inline-flex items-center gap-1.5 bg-violet-500/20 hover:bg-violet-500/30 text-violet-300 hover:text-white text-[10px] px-2.5 py-0.5 rounded-full border border-violet-500/30 font-black uppercase tracking-wider transition-all cursor-pointer animate-pulse"
+                                    >
+                                        <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                                        Sinxronlash: {pendingSyncCount}
+                                    </button>
+                                )}
                             </p>
                         </div>
 
@@ -2463,19 +2665,26 @@ ALTER TABLE lessons DISABLE ROW LEVEL SECURITY;`}
                             <button
                                 disabled={quickAttendSaving || !quickAttendLessonId}
                                 onClick={async () => {
-                                    if (!supabase || !quickAttendLessonId) return;
+                                    if (!quickAttendLessonId) return;
                                     setQuickAttendSaving(true);
                                     try {
                                         const upserts = students.map(s => ({
                                             student_id: s.id.toString(),
                                             lesson_id: quickAttendLessonId,
                                             is_present: quickAttendMap[s.id] !== false,
-                                            grade: null
+                                            grade: ""
                                         }));
-                                        await supabase.from("journal_records").upsert(upserts, { onConflict: "student_id,lesson_id" });
-                                        await loadData();
+                                        // Save each attendance record using our offline-aware save handler
+                                        for (const item of upserts) {
+                                            const key = `${item.student_id}-${item.lesson_id}`;
+                                            setJournalRecords(prev => ({
+                                                ...prev,
+                                                [key]: { is_present: item.is_present, grade: "" }
+                                            }));
+                                            await handleSaveToSupabase(item.student_id, item.lesson_id, item.is_present, "");
+                                        }
                                         setIsQuickAttendOpen(false);
-                                        showAlert(`Yo'qlama muvaffaqiyatli saqlandi! ${students.filter(s => quickAttendMap[s.id] !== false).length}/${students.length} keldi.`, "✅ Yo'qlama Saqlandi", "success");
+                                        showAlert(`Yo'qlama saqlandi! ${students.filter(s => quickAttendMap[s.id] !== false).length}/${students.length} keldi.`, "✅ Yo'qlama Saqlandi", "success");
                                     } catch (err: any) {
                                         showAlert(`Saqlashda xatolik: ${err.message}`, "❌ Xatolik", "error");
                                     } finally {

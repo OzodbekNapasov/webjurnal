@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                  if (${process.env.NODE_ENV === 'development'}) {
                     // Unregister in development to prevent caching conflicts with Next.js dev server
                     navigator.serviceWorker.getRegistrations().then(function(regs) {
                       for (let reg of regs) {
