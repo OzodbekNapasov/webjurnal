@@ -27,11 +27,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').then(function(reg) {
-                    console.log('ServiceWorker registered successfully');
-                  }).catch(function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
-                  });
+                  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    // Unregister in development to prevent caching conflicts with Next.js dev server
+                    navigator.serviceWorker.getRegistrations().then(function(regs) {
+                      for (let reg of regs) {
+                        reg.unregister().then(function() {
+                          console.log('ServiceWorker unregistered in development');
+                        });
+                      }
+                    });
+                  } else {
+                    navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                      console.log('ServiceWorker registered successfully');
+                    }).catch(function(err) {
+                      console.log('ServiceWorker registration failed: ', err);
+                    });
+                  }
                 });
               }
             `

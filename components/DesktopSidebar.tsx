@@ -228,9 +228,9 @@ export default function DesktopSidebar({ isCollapsed, onToggleCollapse }: Deskto
 
           {/* Fan Nomi Info Badge */}
           {!isCollapsed && (
-            <div className="mt-2 w-full px-3 py-2 rounded-xl bg-cyan-500/10 border border-cyan-400/25 flex items-center gap-2 text-cyan-200 text-xs font-extrabold shadow-sm">
-              <Laptop className="w-4 h-4 text-cyan-300 shrink-0" />
-              <span className="truncate">Fan: Tibbiyotda AT</span>
+            <div className="mt-2 w-full px-3.5 py-2.5 rounded-xl bg-slate-950/45 border border-slate-700/40 flex items-center gap-2 text-cyan-200 text-xs font-extrabold shadow-inner">
+              <Laptop className="w-4 h-4 text-cyan-400 shrink-0" />
+              <span className="truncate tracking-wide">Fan: Tibbiyotda AT</span>
             </div>
           )}
         </div>
@@ -249,17 +249,17 @@ export default function DesktopSidebar({ isCollapsed, onToggleCollapse }: Deskto
                   href={item.href}
                   target={item.target}
                   rel={item.target ? 'noopener noreferrer' : undefined}
-                  className={`relative flex items-center h-12 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-300 ${
-                    isCollapsed ? 'justify-center w-12 mx-auto' : 'px-3.5 gap-3 w-full'
+                  className={`relative flex items-center h-12 rounded-xl font-bold text-xs sm:text-sm transition-all duration-300 ${
+                    isCollapsed ? 'justify-center w-12 mx-auto' : 'pl-5 pr-3.5 gap-3 w-full'
                   } ${
                     active
-                      ? 'bg-gradient-to-r from-cyan-400/35 via-blue-500/25 to-cyan-400/15 border border-cyan-300/60 text-white shadow-[0_0_20px_rgba(56,189,248,0.4)]'
-                      : 'text-cyan-100/75 hover:text-white hover:bg-white/15 hover:border-white/25 border border-transparent'
+                      ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/15 border border-cyan-500/30 text-white shadow-[0_4px_20px_rgba(34,211,238,0.12)]'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5 hover:border-white/10 border border-transparent'
                   }`}
                 >
                   {/* Active Pill Glow Indicator */}
                   {active && !isCollapsed && (
-                    <span className="absolute top-1/2 -translate-y-1/2 w-1.5 h-6 bg-cyan-300 rounded-r-full shadow-[0_0_10px_#38bdf8] left-0"></span>
+                    <span className="absolute left-1.5 top-3 bottom-3 w-1 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-full shadow-[0_0_8px_#38bdf8]"></span>
                   )}
 
                   <IconComp
@@ -300,8 +300,8 @@ export default function DesktopSidebar({ isCollapsed, onToggleCollapse }: Deskto
             <div className="relative group w-full flex justify-center">
               <button
                 onClick={() => setIsProfileOpen(true)}
-                className={`flex items-center h-12 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-cyan-400/40 transition-all text-left cursor-pointer ${
-                  isCollapsed ? 'justify-center w-12 mx-auto' : 'px-3 gap-2.5 w-full'
+                className={`flex items-center h-12 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/30 transition-all text-left cursor-pointer ${
+                  isCollapsed ? 'justify-center w-12 mx-auto' : 'pl-4 pr-3 gap-2.5 w-full'
                 }`}
                 title="Profil va parolni tahrirlash"
               >
@@ -348,8 +348,8 @@ export default function DesktopSidebar({ isCollapsed, onToggleCollapse }: Deskto
           <div className="relative group w-full flex justify-center">
             <button
               onClick={onToggleCollapse}
-              className={`flex items-center h-12 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-slate-200 hover:text-white transition-all duration-300 cursor-pointer ${
-                isCollapsed ? 'justify-center w-12 mx-auto' : 'px-3 gap-2.5 w-full'
+              className={`flex items-center h-12 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all duration-300 cursor-pointer ${
+                isCollapsed ? 'justify-center w-12 mx-auto' : 'pl-4 pr-3 gap-2.5 w-full'
               }`}
               title={isCollapsed ? 'Kengaytirish' : 'Minimallashtirish'}
             >

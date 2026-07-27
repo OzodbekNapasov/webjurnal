@@ -9,6 +9,7 @@ import MonthlyReport from '../components/MonthlyReport';
 import fs from 'fs';
 import path from 'path';
 import DashboardClient from '../components/DashboardClient';
+import SchedulePanel from '../components/SchedulePanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,32 +49,9 @@ export default async function HomePage({ searchParams }: PageProps) {
         return Math.min(20, Math.max(1, diffWeeks));
     }
 
-    const todayDate = new Date();
-    let dayOfWeek = todayDate.getDay();
-    if (dayOfWeek === 0) dayOfWeek = 7;
-
     const currentWeek = scheduleData?.settings?.semesterStartDate
         ? getAcademicWeek(scheduleData.settings.semesterStartDate)
         : (scheduleData?.settings?.currentWeek || 1);
-
-    const todayLessons: any[] = [];
-    if (scheduleData && Array.isArray(scheduleData.lessons)) {
-        scheduleData.lessons.forEach((l: any) => {
-            if (Number(l.dayOfWeek) === dayOfWeek) {
-                const weeks = (l.weeks || '').split(',').map(Number);
-                if (weeks.includes(currentWeek)) {
-                    todayLessons.push(l);
-                }
-            }
-        });
-    }
-
-    const periodTimes: { [key: number]: { start: string, end: string } } = {
-        1: { start: "08:30", end: "09:50" },
-        2: { start: "10:00", end: "11:20" },
-        3: { start: "11:30", end: "12:50" },
-        4: { start: "13:00", end: "14:20" }
-    };
 
     const hasUrl = !!envUrl;
     const hasKey = !!envKey;
@@ -108,17 +86,7 @@ export default async function HomePage({ searchParams }: PageProps) {
         fetchError = "Supabase sozlamalari (.env/Vercel) topilmadi. Iltimos, NEXT_PUBLIC_SUPABASE_URL va NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY kalitlarini tekshiring.";
     }
 
-    const todayLessonsWithGroup = todayLessons.map((l: any) => {
-        const group = groups.find((g: any) => g.id === l.groupId);
-        const section = scheduleData?.sections?.find((s: any) => s.id === l.sectionId);
-        return {
-            ...l,
-            groupName: group ? group.name : null,
-            groupTechSchool: group ? (group.tech_school || 'shahrisabz') : null,
-            sectionName: section ? section.name : 'Tibbiyotda Axborot Texnologiyalari'
-        };
-    }).filter(l => l.groupName !== null)
-      .sort((a, b) => Number(a.period) - Number(b.period));
+
 
     function isSpecial(g: any) {
         const id = Number(g.id);
@@ -253,63 +221,15 @@ export default async function HomePage({ searchParams }: PageProps) {
                 </div>
 
                 {/* Bugungi Darslar Paneli (Liquid Glass Card) */}
-                {techSchool && (
-                    <div className="mb-10 bg-white/10 backdrop-blur-2xl p-6 sm:p-8 rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
-                        <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-6">
-                            <div className="flex items-center gap-2.5">
-                                <span className="p-2 rounded-xl bg-white/15 border border-white/20"><Calendar className="w-5 h-5 text-cyan-300" /></span>
-                                <h3 className="font-extrabold text-base sm:text-lg text-white">Bugungi darslaringiz ({currentWeek}-hafta)</h3>
-                            </div>
-                            <span className="text-[10px] sm:text-xs bg-white/20 text-white font-extrabold px-3 py-1 rounded-full border border-white/30 uppercase tracking-wider backdrop-blur-md">
-                                {dayOfWeek === 1 ? "Dushanba" : dayOfWeek === 2 ? "Seshanba" : dayOfWeek === 3 ? "Chorshanba" : dayOfWeek === 4 ? "Payshanba" : dayOfWeek === 5 ? "Juma" : dayOfWeek === 6 ? "Shanba" : "Yakshanba"}
-                            </span>
-                        </div>
-
-                        {todayLessonsWithGroup.length === 0 ? (
-                            <div className="text-center py-8 text-cyan-100/70 text-xs sm:text-sm font-semibold italic flex items-center justify-center gap-2">
-                                <Info className="w-4 h-4 text-cyan-300 shrink-0" /> Bugun siz uchun rejalashtirilgan faol darslar yo'q. Hordiq oling!
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                {todayLessonsWithGroup.map((l: any, idx: number) => {
-                                    const bell = scheduleData?.settings?.bellSchedule?.[l.shift.toString()]?.[l.period] || 
-                                                 scheduleData?.settings?.bellSchedule?.["1"]?.[l.period] || 
-                                                 periodTimes[l.period] || 
-                                                 { start: "08:30", end: "09:50" };
-                                    
-                                    const romanNumerals = ["I", "II", "III", "IV", "V", "VI"];
-                                    const roman = romanNumerals[l.period - 1] || l.period;
-
-                                    return (
-                                        <Link
-                                            key={idx}
-                                            href={`/journal?groupId=${l.groupId}&groupName=${encodeURIComponent(l.groupName)}`}
-                                            className="group relative bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-2xl p-4 shadow-md backdrop-blur-xl transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]"
-                                        >
-                                            <div className="flex justify-between items-start mb-2">
-                                                <span className="inline-block px-2.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-wider border border-cyan-400/30">
-                                                    {roman}-para
-                                                </span>
-                                                <span className="text-[10px] text-cyan-100/70 font-bold">
-                                                    {bell.start} - {bell.end}
-                                                </span>
-                                            </div>
-                                            <h4 className="font-extrabold text-sm sm:text-base text-white group-hover:text-cyan-300 transition-colors truncate">
-                                                {l.groupName}
-                                            </h4>
-                                            <p className="text-[11px] text-cyan-100/70 font-semibold mt-1 truncate">
-                                                {l.sectionName}
-                                            </p>
-                                            <div className="mt-3 flex items-center justify-between text-[11px] text-cyan-300 font-extrabold border-t border-white/15 pt-2.5">
-                                                <span>Jurnalni ochish</span>
-                                                <span className="group-hover:translate-x-1 transition-transform">→</span>
-                                            </div>
-                                        </Link>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
+                {techSchool && scheduleData && (
+                    <SchedulePanel
+                        lessons={scheduleData.lessons || []}
+                        groups={groups}
+                        sections={scheduleData.sections || []}
+                        currentWeek={currentWeek}
+                        techSchool={techSchool}
+                        bellSchedule={scheduleData.settings?.bellSchedule}
+                    />
                 )}
 
                 {/* Error Banner */}

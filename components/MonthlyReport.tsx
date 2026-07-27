@@ -73,7 +73,7 @@ export default function MonthlyReport({ techSchool, isCollapsed }: MonthlyReport
     ];
 
     const triggerButton = (
-        <div className="relative group w-full">
+        <div className="relative group shrink-0 w-full flex justify-center">
             <button
                 onClick={() => {
                     setIsOpen(true);
@@ -83,9 +83,9 @@ export default function MonthlyReport({ techSchool, isCollapsed }: MonthlyReport
                     setGroupRows([]);
                     setActiveSubTab('details');
                 }}
-                className={`relative flex items-center h-12 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-300 ${
-                    isCollapsed ? 'justify-center w-12 mx-auto' : 'px-3.5 gap-3 w-full'
-                } text-cyan-100/75 hover:text-white hover:bg-white/15 hover:border-white/25 border border-transparent cursor-pointer`}
+                className={`relative flex items-center h-12 rounded-xl font-bold text-xs sm:text-sm transition-all duration-300 ${
+                    isCollapsed ? 'justify-center w-12 mx-auto' : 'pl-5 pr-3.5 gap-3 w-full'
+                } text-slate-300 hover:text-white hover:bg-white/5 hover:border-white/10 border border-transparent cursor-pointer`}
                 title="Oylik hisobot"
             >
                 <BarChart className="w-5 h-5 text-cyan-300 shrink-0" />
