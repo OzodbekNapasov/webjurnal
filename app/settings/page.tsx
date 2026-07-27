@@ -33,6 +33,55 @@ export default function SettingsPage() {
     const [newDate, setNewDate] = useState("");
     const [newName, setNewName] = useState("");
     const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [permissionStatus, setPermissionStatus] = useState<string>("default");
+
+    useEffect(() => {
+        if (typeof window !== "undefined" && "Notification" in window) {
+            setPermissionStatus(Notification.permission);
+        }
+    }, []);
+
+    const handleRequestPermission = async () => {
+        if (typeof window === "undefined") return;
+        if (!("Notification" in window)) {
+            setMsg({ type: "error", text: "Brauzeringiz bildirishnomalarni qo'llab-quvvatlamaydi." });
+            setTimeout(() => setMsg(null), 3000);
+            return;
+        }
+        const permission = await Notification.requestPermission();
+        setPermissionStatus(permission);
+        if (permission === "granted") {
+            setMsg({ type: "success", text: "Bildirishnomalarga muvaffaqiyatli ruxsat berildi!" });
+            setTimeout(() => setMsg(null), 3000);
+        } else {
+            setMsg({ type: "error", text: "Ruxsat rad etildi. Brauzer sozlamalaridan ruxsat berishingiz mumkin." });
+            setTimeout(() => setMsg(null), 3000);
+        }
+    };
+
+    const handleSendTestNotification = () => {
+        if (permissionStatus !== "granted") return;
+        try {
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.showNotification("Tibbiyot Texnikumi jurnali", {
+                        body: "Test bildirishnoma! Dars boshlanishiga 5 daqiqa qoldi.",
+                        icon: "/images/Logo.png",
+                        vibrate: [200, 100, 200],
+                        tag: "class-start-notification"
+                    });
+                });
+            } else {
+                new Notification("Tibbiyot Texnikumi jurnali", {
+                    body: "Test bildirishnoma! Dars boshlanishiga 5 daqiqa qoldi.",
+                    icon: "/images/Logo.png"
+                });
+            }
+        } catch (e) {
+            console.error("Test notification error:", e);
+        }
+    };
+
 
     useEffect(() => {
         fetch("/holidays.json").then(r => r.json()).then((data: any) => {
@@ -169,6 +218,46 @@ export default function SettingsPage() {
                                 <span>Qo'shish</span>
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                {/* Dars Bildirishnomalari Sozlamalari Card */}
+                <div className="bg-white/10 backdrop-blur-2xl p-6 rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] mb-8">
+                    <h2 className="text-base font-extrabold text-white mb-4 flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-xl bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 flex items-center justify-center shrink-0">
+                            <Sparkles className="w-4 h-4 text-cyan-350" />
+                        </span>
+                        <span>Dars boshlanishi haqida bildirishnomalar</span>
+                    </h2>
+                    <p className="text-xs text-slate-300 mb-4 leading-relaxed font-semibold">
+                        Kunlik paralar boshlanishidan 5 daqiqa oldin guruh va dars vaqtini ko'rsatuvchi eslatma (Notification) olish uchun ruxsat bering.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <button
+                            onClick={handleRequestPermission}
+                            className={`px-5 py-2.5 rounded-xl font-extrabold text-sm transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2 ${
+                                permissionStatus === "granted"
+                                    ? "bg-emerald-600 border border-emerald-500 text-white"
+                                    : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500"
+                            }`}
+                        >
+                            {permissionStatus === "granted" ? (
+                                <>
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span>Ruxsat berilgan</span>
+                                </>
+                            ) : (
+                                <span>Bildirishnomalarni yoqish</span>
+                            )}
+                        </button>
+                        {permissionStatus === "granted" && (
+                            <button
+                                onClick={handleSendTestNotification}
+                                className="px-5 py-2.5 rounded-xl font-extrabold text-sm bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-all cursor-pointer flex items-center gap-2"
+                            >
+                                <span>Test yuborib ko'rish</span>
+                            </button>
+                        )}
                     </div>
                 </div>
 

@@ -95,6 +95,76 @@ export default function SchedulePanel({
     .filter((l) => l.groupName !== null && l.groupTechSchool === techSchool)
     .sort((a, b) => Number(a.period) - Number(b.period));
 
+  const showClassNotification = (groupName: string, period: number, startTime: string) => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission !== "granted") return;
+
+    const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+    const roman = romanNumerals[period - 1] || period;
+
+    try {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification(`${groupName} guruhida dars boshlanmoqda!`, {
+            body: `5 daqiqadan so'ng ${roman}-para darsi boshlanadi (Boshlanish vaqti: ${startTime}). Jurnalni to'ldirishni unutmang!`,
+            icon: "/images/Logo.png",
+            vibrate: [300, 100, 300],
+            tag: `lesson-${period}-${startTime}`,
+            requireInteraction: true
+          });
+        });
+      } else {
+        new Notification(`${groupName} guruhida dars boshlanmoqda!`, {
+          body: `5 daqiqadan so'ng ${roman}-para darsi boshlanadi (Boshlanish vaqti: ${startTime}). Jurnalni to'ldirishni unutmang!`,
+          icon: "/images/Logo.png"
+        });
+      }
+    } catch (e) {
+      console.error("Error showing class notification:", e);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("Notification" in window)) return;
+    if (Notification.permission !== "granted") return;
+
+    // Only schedule if selectedDay is today
+    const today = new Date().getDay();
+    const dayVal = today === 0 ? 7 : today;
+    if (selectedDay !== dayVal) return;
+
+    const timers: NodeJS.Timeout[] = [];
+
+    resolvedLessons.forEach((l) => {
+      const bell =
+        bellSchedule?.[l.shift.toString()]?.[l.period] ||
+        bellSchedule?.['1']?.[l.period] ||
+        periodTimes[l.period] ||
+        { start: '08:30', end: '09:50' };
+
+      const [startHour, startMin] = bell.start.split(':').map(Number);
+      const targetTime = new Date();
+      targetTime.setHours(startHour);
+      targetTime.setMinutes(startMin - 5); // 5 minutes before start
+      targetTime.setSeconds(0);
+      targetTime.setMilliseconds(0);
+
+      const delayMs = targetTime.getTime() - Date.now();
+
+      if (delayMs > 0) {
+        console.log(`Scheduling notification for ${l.groupName} in ${Math.round(delayMs / 60000)} minutes`);
+        const timer = setTimeout(() => {
+          showClassNotification(l.groupName, l.period, bell.start);
+        }, delayMs);
+        timers.push(timer);
+      }
+    });
+
+    return () => {
+      timers.forEach(t => clearTimeout(t));
+    };
+  }, [selectedDay, currentDayOfWeek, resolvedLessons, bellSchedule]);
+
   const isTodaySelected = selectedDay === currentDayOfWeek;
 
   if (!isMounted) {
