@@ -69,7 +69,7 @@ export default function SettingsPage() {
                         icon: "/images/Logo.png",
                         vibrate: [200, 100, 200],
                         tag: "class-start-notification"
-                    });
+                    } as any);
                 });
             } else {
                 new Notification("Tibbiyot Texnikumi jurnali", {

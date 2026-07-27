@@ -111,7 +111,7 @@ export default function SchedulePanel({
             vibrate: [300, 100, 300],
             tag: `lesson-${period}-${startTime}`,
             requireInteraction: true
-          });
+          } as any);
         });
       } else {
         new Notification(`${groupName} guruhida dars boshlanmoqda!`, {
