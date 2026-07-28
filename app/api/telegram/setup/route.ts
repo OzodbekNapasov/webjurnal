@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     // Yangi webhook o'rnatamiz
     const body: any = {
       url: webhookUrl,
-      allowed_updates: ['message'],
+      allowed_updates: ['message', 'callback_query'],
       drop_pending_updates: true,
     };
     if (secretToken) body.secret_token = secretToken;
