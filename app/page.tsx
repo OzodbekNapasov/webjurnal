@@ -1,7 +1,7 @@
 import React from 'react';
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
-import { GraduationCap, Activity, Download, Calendar, Info, AlertTriangle, Stethoscope, Laptop, Users, Ban, BookOpen, Settings } from '../components/Icon';
+import { GraduationCap, Activity, Calendar, Info, AlertTriangle, Stethoscope, Laptop, Users, Ban, BookOpen, Settings } from '../components/Icon';
 import CreateGroup from '../components/CreateGroup';
 import EditGroup from '../components/EditGroup';
 import SemesterManager from '../components/SemesterManager';
@@ -208,16 +208,8 @@ export default async function HomePage({ searchParams }: PageProps) {
                         Elektron Dars Jurnali Platformasi
                     </p>
 
-                    {/* Custom PWA Install Button */}
-                    <div id="pwa-install-container" className="hidden mt-5">
-                        <button 
-                            id="pwa-install-btn"
-                            className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white border border-white/30 px-6 py-3 rounded-full font-extrabold text-xs sm:text-sm transition-all shadow-xl backdrop-blur-xl active:scale-95 cursor-pointer"
-                        >
-                            <Download className="w-4 h-4 text-cyan-300" />
-                            <span>Dastur sifatda o'rnatish</span>
-                        </button>
-                    </div>
+
+
                 </div>
 
                 {/* Bugungi Darslar Paneli (Liquid Glass Card) */}
@@ -465,45 +457,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
             </div>
             
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  (function() {
-                    let deferredPrompt;
-                    const installContainer = document.getElementById('pwa-install-container');
-                    const installBtn = document.getElementById('pwa-install-btn');
 
-                    window.addEventListener('beforeinstallprompt', (e) => {
-                      e.preventDefault();
-                      deferredPrompt = e;
-                      if (installContainer) {
-                        installContainer.classList.remove('hidden');
-                      }
-                    });
-
-                    if (installBtn) {
-                      installBtn.addEventListener('click', async () => {
-                        if (!deferredPrompt) return;
-                        deferredPrompt.prompt();
-                        const { outcome } = await deferredPrompt.userChoice;
-                        console.log('PWA installation outcome:', outcome);
-                        deferredPrompt = null;
-                        if (installContainer) {
-                          installContainer.classList.add('hidden');
-                        }
-                      });
-                    }
-
-                    window.addEventListener('appinstalled', () => {
-                      console.log('App was successfully installed');
-                      if (installContainer) {
-                        installContainer.classList.add('hidden');
-                      }
-                    });
-                  })();
-                `
-              }}
-            />
         </div>
     );
 }
