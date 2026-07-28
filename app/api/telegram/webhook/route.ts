@@ -521,11 +521,15 @@ async function handleIncomingNote(chatId: number, rawText: string, voice: any) {
   }
 
   // 3. Supabase orqali guruh ID sini aniqlash
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
-  );
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 
+                      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+                      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!supabaseKey) {
+    await sendMessage(chatId, "❌ <b>Xatolik:</b> Supabase API kaliti (SUPABASE_SERVICE_ROLE_KEY) topilmadi.");
+    return;
+  }
+  const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
 
   let data;
   try {
@@ -842,11 +846,15 @@ async function handleCallbackForm2Report(chatId: number, callbackQueryId: string
     const monthName = months[monthCode] || monthCode;
 
     // 3. Initialize Supabase client
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { persistSession: false } }
-    );
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 
+                        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+                        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    if (!supabaseKey) {
+      await sendMessage(chatId, "❌ <b>Xatolik:</b> Supabase API kaliti topilmadi.");
+      return;
+    }
+    const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
 
     // 4. Query groups with tech_school filter
     const { data: allGroups, error: groupsError } = await supabase
