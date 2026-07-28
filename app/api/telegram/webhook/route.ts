@@ -200,14 +200,19 @@ async function buildTodayMessage(targetDay?: number): Promise<string> {
 async function handleStart(chatId: number, firstName: string) {
   const msg = `👋 Salom, <b>${firstName}</b>!\n\n`
     + `Men <b>Dars Jadvali</b> botiman 🎓\n\n`
-    + `📋 <b>Buyruqlar:</b>\n`
-    + `/today — Bugungi darslar\n`
-    + `/tomorrow — Ertangi darslar\n`
-    + `/week — Haftalik jadval\n`
-    + `/journals — Barcha jurnallar\n`
-    + `/help — Yordam\n\n`
-    + `Har kuni ertalab <b>07:00</b> da bugungi darslarni avtomatik yuboraman! ✅`;
-  await sendMessage(chatId, msg);
+    + `Quyidagi tugmalardan foydalanib darslar jadvali va elektron jurnallarni tezkor boshqarishingiz mumkin:`;
+
+  const keyboard = {
+    keyboard: [
+      [{ text: "📅 Bugungi darslar" }, { text: "⏰ Ertangi darslar" }],
+      [{ text: "🗓 Haftalik jadval" }, { text: "📘 Jurnallar ro'yxati" }],
+      [{ text: "🗑 Dars o'chirish" }, { text: "ℹ️ Yordam" }]
+    ],
+    resize_keyboard: true,
+    one_time_keyboard: false
+  };
+
+  await sendMessage(chatId, msg, keyboard);
 }
 
 async function handleHelp(chatId: number) {
@@ -328,25 +333,33 @@ export async function POST(req: NextRequest) {
 
     // Ovozli xabar yoki oddiy izoh matni kelganda
     const isCommand = text.startsWith('/');
+    const isKeyboardButton = [
+      "📅 bugungi darslar",
+      "⏰ ertangi darslar",
+      "🗓 haftalik jadval",
+      "📘 jurnallar ro'yxati",
+      "🗑 dars o'chirish",
+      "ℹ️ yordam"
+    ].includes(text);
     const voice = message.voice;
 
-    if (!isCommand && (text || voice)) {
+    if (!isCommand && !isKeyboardButton && (text || voice)) {
       await handleIncomingNote(chatId, text, voice);
     } else if (text === '/start' || text.startsWith('/start ')) {
       await handleStart(chatId, firstName);
-    } else if (text === '/today') {
+    } else if (text === '/today' || text === "📅 bugungi darslar") {
       await handleToday(chatId);
-    } else if (text === '/tomorrow') {
+    } else if (text === '/tomorrow' || text === "⏰ ertangi darslar") {
       await handleTomorrow(chatId);
-    } else if (text === '/week') {
+    } else if (text === '/week' || text === "🗓 haftalik jadval") {
       await handleWeek(chatId);
-    } else if (text === '/journals') {
+    } else if (text === '/journals' || text === "📘 jurnallar ro'yxati") {
       await handleJournals(chatId);
     } else if (text.startsWith('/add_lesson')) {
       await handleAddLesson(chatId, message.text || '');
-    } else if (text === '/delete_lesson') {
+    } else if (text === '/delete_lesson' || text === "🗑 dars o'chirish") {
       await handleDeleteLessonList(chatId);
-    } else if (text === '/help') {
+    } else if (text === '/help' || text === "ℹ️ yordam") {
       await handleHelp(chatId);
     } else {
       await sendMessage(chatId, `❓ Buyruq topilmadi.\n\n/help — yordam olish uchun`);
