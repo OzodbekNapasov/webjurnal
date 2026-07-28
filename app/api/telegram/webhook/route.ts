@@ -126,11 +126,6 @@ interface ScheduleLesson {
 }
 
 async function buildTodayMessage(targetDay?: number): Promise<string> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
-  );
 
   let data;
   try {
@@ -363,7 +358,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     console.error('Telegram webhook error:', err);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    try {
+      const allowedChatId = process.env.TELEGRAM_CHAT_ID;
+      if (allowedChatId) {
+        await sendMessage(
+          allowedChatId,
+          `❌ <b>Server Xatoligi (500):</b>\n\n<code>${err.message || String(err)}</code>\n\n<pre>${(err.stack || '').slice(0, 300)}</pre>`
+        );
+      }
+    } catch (sendErr) {
+      console.error('Failed to send error notification:', sendErr);
+    }
+    return NextResponse.json({ ok: true, error: err.message });
   }
 }
 
