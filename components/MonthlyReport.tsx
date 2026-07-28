@@ -136,10 +136,12 @@ export default function MonthlyReport({ techSchool, isCollapsed }: MonthlyReport
 
             if (groupsError) throw groupsError;
 
-            const groups = (allGroups || []).filter((g: any) => {
-                const school = g.tech_school || 'shahrisabz';
-                return school === techSchool;
-            });
+            const groups = (allGroups || [])
+                .filter((g: any) => {
+                    const school = g.tech_school || 'shahrisabz';
+                    return school === techSchool;
+                })
+                .sort((a: any, b: any) => (a.name || '').localeCompare(b.name || '', 'uz', { sensitivity: 'base' }));
 
             if (!groups || groups.length === 0) {
                 setReportData([]);

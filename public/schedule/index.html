@@ -294,9 +294,12 @@
                     </div>
                     <div class="mt-2 flex items-center justify-between text-on-surface-variant dark:text-outline-variant">
                         <span id="schedule-week-label" class="font-label-md text-label-md">1-hafta</span>
-                        <span class="font-label-md text-label-md text-primary dark:text-primary-fixed font-bold">Bugun</span>
+                        <span id="schedule-day-date-label" class="font-label-md text-label-md text-primary dark:text-primary-fixed font-bold">Bugun</span>
                     </div>
                 </div>
+
+                <!-- Conflicts Warning Container -->
+                <div id="schedule-conflicts-warning" class="hidden"></div>
 
                 <!-- Lessons list container -->
                 <div id="schedule-lessons-list" class="space-y-stack-md">
@@ -560,12 +563,15 @@
                             <h3 class="font-title-lg text-title-lg text-on-surface dark:text-white font-bold">O'quv rejasining ishchi grafigi (Kalendar)</h3>
                             <p class="text-xs text-slate-400 mt-1">Sentyabr - May oylaridagi barcha dars va ta'til haftalari jadvali.</p>
                         </div>
-                        <div class="flex gap-2 w-full md:w-auto">
+                        <div class="flex gap-2 w-full md:w-auto items-center">
                             <input type="text" id="new_graph_name_input" placeholder="Grafik nomi (masalan: 201)" 
                                    class="px-4 py-2 text-sm rounded-xl border border-outline bg-transparent text-on-surface dark:text-white outline-none flex-grow md:flex-grow-0" />
-                            <button onclick="handleAddAcademicGraph()" class="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1 active:scale-95 transition-all shadow-sm shrink-0">
-                                <span class="material-symbols-outlined text-sm">add</span>
-                                Yangi Grafik
+                            <button id="add-graph-btn" onclick="handleAddAcademicGraph()" class="bg-primary hover:bg-primary-container text-on-primary hover:text-on-primary-container px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1 active:scale-95 transition-all shadow-sm shrink-0 cursor-pointer">
+                                <span id="add-graph-btn-icon" class="material-symbols-outlined text-sm">add</span>
+                                <span id="add-graph-btn-text">Yangi Grafik</span>
+                            </button>
+                            <button id="cancel-graph-btn" onclick="cancelAcademicGraphEdit()" class="hidden border border-outline text-on-surface-variant dark:text-outline-variant px-4 py-2 rounded-xl text-sm active:scale-95 transition-all cursor-pointer">
+                                Bekor qilish
                             </button>
                         </div>
                     </div>

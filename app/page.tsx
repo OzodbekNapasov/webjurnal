@@ -229,6 +229,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                         currentWeek={currentWeek}
                         techSchool={techSchool}
                         bellSchedule={scheduleData.settings?.bellSchedule}
+                        semesterStartDate={scheduleData.settings?.semesterStartDate}
                     />
                 )}
 

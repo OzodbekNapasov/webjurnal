@@ -82,9 +82,7 @@ export default function MobileBottomDock() {
 
           {/* Right Item 1: Darsliklar */}
           <Link
-            href="/darsliklar/index.html"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/darsliklar"
             className={`flex flex-col items-center justify-center w-16 h-12 transition-all ${
               isDarsliklarActive ? 'text-cyan-300 scale-105 font-bold' : 'text-slate-400 hover:text-slate-200'
             }`}

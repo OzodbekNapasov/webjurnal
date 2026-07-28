@@ -31,6 +31,7 @@ interface SchedulePanelProps {
   currentWeek: number;
   techSchool: string;
   bellSchedule?: any;
+  semesterStartDate?: string;
 }
 
 export default function SchedulePanel({
@@ -39,7 +40,8 @@ export default function SchedulePanel({
   sections,
   currentWeek,
   techSchool,
-  bellSchedule
+  bellSchedule,
+  semesterStartDate
 }: SchedulePanelProps) {
   const [currentDayOfWeek, setCurrentDayOfWeek] = useState<number>(1);
   const [selectedDay, setSelectedDay] = useState<number>(1);
@@ -73,11 +75,130 @@ export default function SchedulePanel({
     return days[day - 1] || 'Dushanba';
   };
 
+  // Helper to format date in Uzbek
+  const formatUzDate = (date: Date) => {
+    const monthsUz = [
+      'Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun',
+      'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'
+    ];
+    return `${date.getDate()}-${monthsUz[date.getMonth()]}`;
+  };
+
+  // Helper to calculate days remaining
+  const getDaysRemainingText = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(date);
+    target.setHours(0, 0, 0, 0);
+    
+    const diff = target.getTime() - today.getTime();
+    const diffDays = Math.round(diff / (24 * 60 * 60 * 1000));
+    
+    if (diffDays === 0) return 'Bugun';
+    if (diffDays === 1) return 'Ertaga (1 kun qoldi)';
+    if (diffDays > 1) return `${diffDays} kun qoldi`;
+    if (diffDays === -1) return "Kecha (o'tib ketdi)";
+    return `${Math.abs(diffDays)} kun oldin o'tib ketgan`;
+  };
+
+  // Get selected day calendar info
+  const getSelectedDayDateInfo = () => {
+    if (!semesterStartDate) return null;
+    try {
+      const start = new Date(semesterStartDate);
+      const day = start.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      start.setDate(start.getDate() + diffToMonday); // Monday of week 1
+      
+      const targetMon = new Date(start);
+      targetMon.setDate(targetMon.getDate() + (currentWeek - 1) * 7);
+      
+      const targetSun = new Date(targetMon);
+      targetSun.setDate(targetSun.getDate() + 6);
+      
+      const targetDayDate = new Date(targetMon);
+      targetDayDate.setDate(targetDayDate.getDate() + (selectedDay - 1));
+      
+      return {
+        weekStart: targetMon,
+        weekEnd: targetSun,
+        selectedDate: targetDayDate
+      };
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const dateInfo = getSelectedDayDateInfo();
+
+  // Helper to compress weeks (e.g. 1,2,3 -> 1-3)
+  const compressWeeksList = (weeksStr: string) => {
+    if (!weeksStr) return '';
+    const weeks = weeksStr.split(',').map(Number).sort((a, b) => a - b);
+    if (weeks.length === 0) return '';
+    
+    const ranges: string[] = [];
+    let start = weeks[0];
+    let prev = weeks[0];
+    
+    for (let i = 1; i < weeks.length; i++) {
+      if (weeks[i] === prev + 1) {
+        prev = weeks[i];
+      } else {
+        ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+        start = weeks[i];
+        prev = weeks[i];
+      }
+    }
+    ranges.push(start === prev ? `${start}` : `${start}-${prev}`);
+    return ranges.join(', ');
+  };
+
+  // Find parallel conflicts for this techSchool
+  const findConflicts = () => {
+    const conflictsList: { l1: any; l2: any; commonWeeks: number[] }[] = [];
+    
+    const schoolLessons = lessons.map(l => {
+      const group = groups.find(g => g.id === l.groupId);
+      return {
+        ...l,
+        groupName: group ? group.name : 'Noma\'lum',
+        school: group ? group.tech_school || 'shahrisabz' : 'shahrisabz'
+      };
+    }).filter(l => l.school === techSchool);
+
+    for (let i = 0; i < schoolLessons.length; i++) {
+      for (let j = i + 1; j < schoolLessons.length; j++) {
+        const l1 = schoolLessons[i];
+        const l2 = schoolLessons[j];
+
+        if (
+          l1.dayOfWeek === l2.dayOfWeek &&
+          l1.period === l2.period &&
+          l1.shift === l2.shift
+        ) {
+          const w1 = (l1.weeks || '').split(',').map(Number);
+          const w2 = (l2.weeks || '').split(',').map(Number);
+          const commonWeeks = w1.filter(w => w2.includes(w));
+
+          if (commonWeeks.length > 0) {
+            conflictsList.push({ l1, l2, commonWeeks });
+          }
+        }
+      }
+    }
+    return conflictsList;
+  };
+
+  const conflicts = findConflicts();
+
   // Filter lessons for the selected day of the academic week
   const filteredLessons = lessons.filter((l) => {
     if (Number(l.dayOfWeek) !== selectedDay) return false;
     const weeks = (l.weeks || '').split(',').map(Number);
-    return weeks.includes(currentWeek);
+    const isCurrent = weeks.includes(currentWeek);
+    const isFuture = Math.min(...weeks) > currentWeek;
+    return isCurrent || isFuture;
   });
 
   // Resolve group and section details
@@ -180,16 +301,61 @@ export default function SchedulePanel({
   return (
     <div className="mb-10 bg-white/10 backdrop-blur-2xl p-6 sm:p-8 rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
       {/* Header with Title and Week info */}
-      <div className="flex items-center gap-2.5 border-b border-white/15 pb-4 mb-4">
-        <span className="p-2 rounded-xl bg-white/15 border border-white/20">
-          <Calendar className="w-5 h-5 text-cyan-300" />
-        </span>
-        <h3 className="font-extrabold text-base sm:text-lg text-white">
-          {isTodaySelected
-            ? `Bugungi darslaringiz (${currentWeek}-hafta)`
-            : `${getDayName(selectedDay)} kungi darslar (${currentWeek}-hafta)`}
-        </h3>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-white/15 pb-4 mb-4 gap-2">
+        <div className="flex items-center gap-2.5">
+          <span className="p-2 rounded-xl bg-white/15 border border-white/20">
+            <Calendar className="w-5 h-5 text-cyan-300" />
+          </span>
+          <div>
+            <h3 className="font-extrabold text-base sm:text-lg text-white">
+              {isTodaySelected
+                ? `Bugungi darslaringiz (${currentWeek}-hafta)`
+                : `${getDayName(selectedDay)} kungi darslar (${currentWeek}-hafta)`}
+            </h3>
+            {dateInfo && (
+              <p className="text-xs text-cyan-200/70 font-semibold mt-0.5">
+                Oraliq: {formatUzDate(dateInfo.weekStart)} - {formatUzDate(dateInfo.weekEnd)}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {dateInfo && (
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-bold text-cyan-300">
+            <span>Sana: {formatUzDate(dateInfo.selectedDate)}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-450 animate-pulse"></span>
+            <span className="text-white bg-cyan-600/35 px-2 py-0.5 rounded-md">{getDaysRemainingText(dateInfo.selectedDate)}</span>
+          </div>
+        )}
       </div>
+
+      {/* Conflicts warning alert */}
+      {conflicts.length > 0 && (
+        <div className="mb-6 p-4 bg-rose-950/40 border border-rose-500/50 rounded-2xl text-rose-100 text-xs shadow-xl backdrop-blur-xl">
+          <h4 className="font-extrabold text-rose-300 text-sm mb-1.5 flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+            Diqqat: Parallel darslar aniqlandi!
+          </h4>
+          <p className="text-[11px] text-rose-200/90 mb-2 font-semibold">
+            Dars jadvalida bir vaqtda parallel kelib qolgan darslar mavjud. Iltimos, o'quv bo'limiga murojaat qiling:
+          </p>
+          <ul className="list-disc pl-5 space-y-1 font-bold text-[11px] text-rose-300">
+            {conflicts.map((c, i) => {
+              const dayName = getDayName(c.l1.dayOfWeek);
+              const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI'];
+              const roman = romanNumerals[c.l1.period - 1] || c.l1.period;
+              return (
+                <li key={i}>
+                  {dayName}, {roman}-para ({c.l1.shift}-smena):{' '}
+                  <span className="text-white">{c.l1.groupName}</span> va{' '}
+                  <span className="text-white">{c.l2.groupName}</span>{' '}
+                  (Haftalar: <span className="text-cyan-300">{compressWeeksList(c.commonWeeks.join(','))}</span>)
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       {/* Horizontal Full-Width Day Selector Tabs */}
       <div className="mb-6">
@@ -211,6 +377,8 @@ export default function SchedulePanel({
                 className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all duration-250 flex items-center justify-center gap-1.5 cursor-pointer ${
                   isSel
                     ? 'bg-gradient-to-tr from-cyan-400 to-blue-500 text-slate-950 shadow-md font-black'
+                    : isToday
+                    ? 'border border-cyan-400/50 bg-cyan-950/20 text-cyan-300 hover:bg-cyan-950/40'
                     : 'text-slate-300 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -231,8 +399,8 @@ export default function SchedulePanel({
 
       {/* Lessons Cards */}
       {resolvedLessons.length === 0 ? (
-        <div className="text-center py-10 text-cyan-100/70 text-xs sm:text-sm font-semibold italic flex items-center justify-center gap-2">
-          <Info className="w-4 h-4 text-cyan-300 shrink-0" />
+        <div className="text-center py-10 text-cyan-100/70 text-xs sm:text-sm font-semibold italic flex items-center justify-center gap-2 border border-slate-700/60 dark:border-slate-600/50 bg-[#0e172a]/70 dark:bg-slate-900/40 rounded-2xl shadow-[inset_0_1px_3px_rgba(255,255,255,0.05)]">
+          <Info className="w-4 h-4 text-cyan-350 shrink-0" />
           {getDayName(selectedDay)} kuni uchun rejalashtirilgan faol darslar yo'q. Hordiq oling!
         </div>
       ) : (
@@ -247,29 +415,91 @@ export default function SchedulePanel({
             const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI'];
             const roman = romanNumerals[l.period - 1] || l.period;
 
+            const weeks = (l.weeks || '').split(',').map(Number);
+            const minWeek = Math.min(...weeks);
+            const isFuture = minWeek > currentWeek;
+
+            let cardClass = "group relative bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-2xl p-4 shadow-md backdrop-blur-xl transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]";
+            let futureLabel = "";
+
+            if (isFuture) {
+              cardClass = "group relative bg-slate-900/60 hover:bg-slate-900/75 border border-dashed border-indigo-500/45 hover:border-indigo-400/60 rounded-2xl p-4 shadow-md transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]";
+              
+              const weeksRemaining = minWeek - currentWeek;
+              let remainingText = `${weeksRemaining}-haftadan keyin`;
+              
+              if (semesterStartDate) {
+                try {
+                  const start = new Date(semesterStartDate);
+                  const day = start.getDay();
+                  const diffToMonday = day === 0 ? -6 : 1 - day;
+                  start.setDate(start.getDate() + diffToMonday); // Monday of week 1
+                  
+                  const targetMon = new Date(start);
+                  targetMon.setDate(targetMon.getDate() + (minWeek - 1) * 7);
+                  
+                  const targetDayDate = new Date(targetMon);
+                  targetDayDate.setDate(targetDayDate.getDate() + (l.dayOfWeek - 1));
+                  
+                  const today = new Date();
+                  today.setHours(0,0,0,0);
+                  const target = new Date(targetDayDate);
+                  target.setHours(0,0,0,0);
+                  const diffDays = Math.round((target.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+                  remainingText += ` (${diffDays} kun qoldi)`;
+                } catch (e) {}
+              }
+              
+              futureLabel = remainingText;
+            }
+
             return (
               <Link
                 key={idx}
                 href={`/journal?groupId=${l.groupId}&groupName=${encodeURIComponent(
                   l.groupName
                 )}`}
-                className="group relative bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-2xl p-4 shadow-md backdrop-blur-xl transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]"
+                className={cardClass}
               >
                 <div className="flex justify-between items-start mb-2">
-                  <span className="inline-block px-2.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 text-[10px] font-black uppercase tracking-wider border border-cyan-400/30">
+                  <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${
+                    isFuture
+                      ? 'bg-indigo-950/40 text-indigo-300 border-indigo-400/30'
+                      : 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30'
+                  }`}>
                     {roman}-para
                   </span>
                   <span className="text-[10px] text-cyan-100/70 font-bold">
                     {bell.start} - {bell.end}
                   </span>
                 </div>
-                <h4 className="font-extrabold text-sm sm:text-base text-white group-hover:text-cyan-300 transition-colors truncate">
+                <h4 className={`font-extrabold text-sm sm:text-base transition-colors truncate ${
+                  isFuture ? 'text-slate-350 group-hover:text-indigo-300' : 'text-white group-hover:text-cyan-300'
+                }`}>
                   {l.groupName}
                 </h4>
                 <p className="text-[11px] text-cyan-100/70 font-semibold mt-1 truncate">
                   {l.sectionName}
                 </p>
-                <div className="mt-3 flex items-center justify-between text-[11px] text-cyan-300 font-extrabold border-t border-white/15 pt-2.5">
+                
+                {isFuture ? (
+                  <div className="mt-2.5 flex flex-col gap-1">
+                    <p className="text-[10px] text-indigo-300 font-bold">
+                      Boshlanishi: {futureLabel}
+                    </p>
+                    <p className="text-[10px] text-slate-400 font-medium">
+                      Haftalar: {compressWeeksList(l.weeks)}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-cyan-300/80 font-bold mt-1.5">
+                    Haftalar: {compressWeeksList(l.weeks)}
+                  </p>
+                )}
+
+                <div className={`mt-3 flex items-center justify-between text-[11px] font-extrabold border-t pt-2.5 ${
+                  isFuture ? 'text-indigo-405 border-indigo-500/20' : 'text-cyan-300 border-white/15'
+                }`}>
                   <span>Jurnalni ochish</span>
                   <span className="group-hover:translate-x-1 transition-transform">
                     →

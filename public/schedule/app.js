@@ -299,10 +299,25 @@ async function initDb() {
         state.academicGraphs = defaultGphs;
     }
 
+    // Load local groups first to preserve local graphId assignments
+    let localGroupsMap = {};
+    if (localGrpsRaw) {
+        try {
+            const parsedGrps = JSON.parse(localGrpsRaw);
+            parsedGrps.forEach(g => {
+                localGroupsMap[g.id] = g.graphId || 1;
+            });
+        } catch(e) {}
+    }
+
     // Groups (Guruhlar)
     let baseGroups = defaultGrps;
     if (supabaseGroups && supabaseGroups.length > 0) {
-        baseGroups = supabaseGroups;
+        // Merge Supabase groups with local graphId
+        baseGroups = supabaseGroups.map(g => ({
+            ...g,
+            graphId: localGroupsMap[g.id] || g.graphId || 1
+        }));
     } else if (localGrpsRaw) {
         try { baseGroups = JSON.parse(localGrpsRaw); } catch(e) {}
     }
@@ -885,20 +900,120 @@ function setScheduleViewMode(mode) {
     }
 }
 
+function detectAndDisplayConflicts() {
+    const conflictsList = [];
+    const schoolLessons = state.lessons;
+
+    for (let i = 0; i < schoolLessons.length; i++) {
+        for (let j = i + 1; j < schoolLessons.length; j++) {
+            const l1 = schoolLessons[i];
+            const l2 = schoolLessons[j];
+
+            if (
+                l1.dayOfWeek === l2.dayOfWeek &&
+                l1.period === l2.period &&
+                l1.shift === l2.shift
+            ) {
+                const w1 = l1.weeks.split(",").map(Number);
+                const w2 = l2.weeks.split(",").map(Number);
+                const commonWeeks = w1.filter(w => w2.includes(w));
+
+                if (commonWeeks.length > 0) {
+                    conflictsList.push({ l1, l2, commonWeeks });
+                }
+            }
+        }
+    }
+
+    const warningContainer = document.getElementById("schedule-conflicts-warning");
+    if (!warningContainer) return;
+
+    if (conflictsList.length === 0) {
+        warningContainer.classList.add("hidden");
+        warningContainer.innerHTML = "";
+        return;
+    }
+
+    warningContainer.classList.remove("hidden");
+    let html = `
+        <div class="p-4 bg-error-container/20 border border-error/45 rounded-2xl text-error text-xs font-semibold space-y-2 mb-4 animate-pulse">
+            <div class="flex items-center gap-2 font-bold text-sm">
+                <span class="material-symbols-outlined text-lg">warning</span>
+                <span>Diqqat: Parallel darslar aniqlandi!</span>
+            </div>
+            <p class="text-[11px] text-slate-300">Quyidagi darslar bir vaqtda parallel kelib qolgan. Iltimos, o'quv bo'limiga murojaat qiling:</p>
+            <ul class="list-disc pl-5 space-y-1 text-[11px]">
+    `;
+
+    conflictsList.forEach(c => {
+        const dayName = getDayName(c.l1.dayOfWeek);
+        const group1 = getGroupName(c.l1.groupId);
+        const group2 = getGroupName(c.l2.groupId);
+        const roman = { 1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI" }[c.l1.period] || c.l1.period;
+        const compWeeks = compressWeeks(c.commonWeeks.join(","));
+        html += `
+            <li>
+                <strong>${dayName}</strong> kuni, <strong>${roman}-para</strong> (${c.l1.shift}-smena): 
+                <span class="text-white font-bold">${group1}</span> va <span class="text-white font-bold">${group2}</span> 
+                (Haftalar: <span class="text-primary">${compWeeks}</span>)
+            </li>
+        `;
+    });
+
+    html += `
+            </ul>
+        </div>
+    `;
+    warningContainer.innerHTML = html;
+}
+
+function getFutureLessonDate(lesson) {
+    if (!state.settings.semesterStartDate) return null;
+    const start = new Date(state.settings.semesterStartDate);
+    const day = start.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    start.setDate(start.getDate() + diffToMonday); // Monday of week 1
+    
+    const weeks = lesson.weeks.split(",").map(Number);
+    const minWeek = Math.min(...weeks);
+    
+    const targetMon = new Date(start);
+    targetMon.setDate(targetMon.getDate() + (minWeek - 1) * 7);
+    
+    const targetDayDate = new Date(targetMon);
+    targetDayDate.setDate(targetDayDate.getDate() + (lesson.dayOfWeek - 1));
+    return targetDayDate;
+}
+
 function renderScheduleScreen() {
     setScheduleViewMode(state.scheduleViewMode);
+
+    detectAndDisplayConflicts();
 
     const daySelector = document.getElementById("schedule-day-selector");
     daySelector.innerHTML = "";
 
     const currentDay = state.scheduleSelectedDay;
+    const todayDayNum = new Date().getDay() || 7; // Monday = 1, ..., Sunday = 7
 
     for (let day = 1; day <= 6; day++) {
         const isSelected = day === currentDay;
+        const isToday = day === todayDayNum;
         const btn = document.createElement("button");
-        btn.className = isSelected 
-            ? "flex-1 py-2.5 rounded-full text-xs font-bold bg-[#0088ff] text-white shadow-[0_0_12px_rgba(0,136,255,0.45)] transition-all duration-300 scale-105 cursor-pointer"
-            : "flex-1 py-2.5 rounded-full text-xs font-semibold bg-[#0a1122]/60 text-slate-400 border border-white/10 hover:text-white transition-all duration-300 cursor-pointer";
+        
+        if (isSelected) {
+            if (isToday) {
+                btn.className = "flex-1 py-2.5 rounded-full text-xs font-black bg-gradient-to-tr from-cyan-400 to-[#0088ff] text-white shadow-[0_0_15px_rgba(0,136,255,0.6)] scale-105 cursor-pointer border border-cyan-300";
+            } else {
+                btn.className = "flex-1 py-2.5 rounded-full text-xs font-bold bg-[#0088ff] text-white shadow-[0_0_12px_rgba(0,136,255,0.45)] transition-all duration-300 scale-105 cursor-pointer";
+            }
+        } else {
+            if (isToday) {
+                btn.className = "flex-1 py-2.5 rounded-full text-xs font-bold border border-cyan-400 bg-cyan-950/20 text-cyan-300 hover:bg-cyan-950/40 transition-all duration-300 cursor-pointer";
+            } else {
+                btn.className = "flex-1 py-2.5 rounded-full text-xs font-semibold bg-[#0a1122]/60 text-slate-400 border border-white/10 hover:text-white transition-all duration-300 cursor-pointer";
+            }
+        }
         
         let label = "";
         switch (day) {
@@ -918,7 +1033,49 @@ function renderScheduleScreen() {
         daySelector.appendChild(btn);
     }
 
-    document.getElementById("schedule-week-label").textContent = `${state.settings.currentWeek}-hafta`;
+    if (state.settings.semesterStartDate) {
+        try {
+            const start = new Date(state.settings.semesterStartDate);
+            const day = start.getDay();
+            const diffToMonday = day === 0 ? -6 : 1 - day;
+            start.setDate(start.getDate() + diffToMonday); // Monday of week 1
+            
+            const targetMon = new Date(start);
+            targetMon.setDate(targetMon.getDate() + (state.settings.currentWeek - 1) * 7);
+            
+            const targetSun = new Date(targetMon);
+            targetSun.setDate(targetSun.getDate() + 6);
+            
+            const targetDayDate = new Date(targetMon);
+            targetDayDate.setDate(targetDayDate.getDate() + (currentDay - 1));
+            
+            const weekRangeStr = `${targetMon.getDate()}-${getMonthNameUz(targetMon.getMonth()+1)} - ${targetSun.getDate()}-${getMonthNameUz(targetSun.getMonth()+1)}`;
+            document.getElementById("schedule-week-label").textContent = `${state.settings.currentWeek}-hafta (${weekRangeStr})`;
+            
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const target = new Date(targetDayDate);
+            target.setHours(0,0,0,0);
+            const diffDays = Math.round((target - today) / (24 * 60 * 60 * 1000));
+            
+            let dateInfoText = `${targetDayDate.getDate()}-${getMonthNameUz(targetDayDate.getMonth()+1)}`;
+            let remainingText = "";
+            if (diffDays === 0) remainingText = "Bugun";
+            else if (diffDays === 1) remainingText = "Ertaga (1 kun qoldi)";
+            else if (diffDays > 1) remainingText = `${diffDays} kun qoldi`;
+            else if (diffDays === -1) remainingText = "Kecha";
+            else remainingText = `${Math.abs(diffDays)} kun oldin`;
+            
+            document.getElementById("schedule-day-date-label").textContent = `${dateInfoText} (${remainingText})`;
+        } catch(e) {
+            console.error("Error formatting date labels:", e);
+            document.getElementById("schedule-week-label").textContent = `${state.settings.currentWeek}-hafta`;
+            document.getElementById("schedule-day-date-label").textContent = "Bugun";
+        }
+    } else {
+        document.getElementById("schedule-week-label").textContent = `${state.settings.currentWeek}-hafta`;
+        document.getElementById("schedule-day-date-label").textContent = "Bugun";
+    }
     
     const lessonsList = document.getElementById("schedule-lessons-list");
     lessonsList.innerHTML = "";
@@ -943,9 +1100,38 @@ function renderScheduleScreen() {
         if (periodLessons.length > 0) {
             // Render active lessons for this period
             periodLessons.forEach((lesson) => {
-                const gradientClass = CARD_GRADIENTS[lesson.sectionId % CARD_GRADIENTS.length];
+                const weeks = lesson.weeks.split(",").map(Number);
+                const minWeek = Math.min(...weeks);
+                const isFuture = minWeek > state.settings.currentWeek;
+                
+                let gradientClass = CARD_GRADIENTS[lesson.sectionId % CARD_GRADIENTS.length];
+                let remainingHtml = "";
+                let opacityClass = "";
+                
+                if (isFuture) {
+                    gradientClass = "bg-gradient-to-tr from-[#1e293b] via-[#2d3748] to-[#1a202c] border border-dashed border-indigo-500/40 text-slate-350";
+                    opacityClass = "opacity-90";
+                    
+                    const weeksRemaining = minWeek - state.settings.currentWeek;
+                    let remainingText = `${weeksRemaining}-haftadan keyin`;
+                    
+                    if (state.settings.semesterStartDate) {
+                        const targetDate = getFutureLessonDate(lesson);
+                        if (targetDate) {
+                            const today = new Date();
+                            today.setHours(0,0,0,0);
+                            const target = new Date(targetDate);
+                            target.setHours(0,0,0,0);
+                            const diffDays = Math.round((target - today) / (24 * 60 * 60 * 1000));
+                            remainingText += ` (${diffDays} kun qoldi)`;
+                        }
+                    }
+                    
+                    remainingHtml = `<span class="inline-block px-2.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] font-bold uppercase tracking-wider">${remainingText}</span>`;
+                }
+
                 const card = document.createElement("article");
-                card.className = `${gradientClass} rounded-2xl p-5 flex relative overflow-hidden group hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 animate-fade-in`;
+                card.className = `${gradientClass} rounded-2xl p-5 flex relative overflow-hidden group hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 animate-fade-in ${opacityClass}`;
                 card.innerHTML = `
                     <div class="flex-grow flex flex-col justify-between z-10">
                         <div class="flex justify-between items-start">
@@ -953,9 +1139,11 @@ function renderScheduleScreen() {
                                 <div class="flex items-center gap-2 mb-2">
                                     <span class="inline-block px-2.5 py-0.5 rounded bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">${roman}-para</span>
                                     <span class="inline-block px-2.5 py-0.5 rounded bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">${lesson.groupName}</span>
+                                    ${remainingHtml}
                                 </div>
                                 <h2 class="font-headline-sm text-lg text-white font-bold leading-tight">${lesson.sectionName}</h2>
                                 <p class="text-xs text-white/90 mt-1">${lesson.shift}-smena</p>
+                                <p class="text-xs text-white/85 mt-1 font-semibold">Haftalar: ${compressWeeks(lesson.weeks)}</p>
                                 ${lesson.note ? `<p class="text-xs text-white/80 italic mt-1.5">Izoh: ${lesson.note}</p>` : ''}
                             </div>
                             <div class="text-right flex flex-col items-end">
@@ -982,29 +1170,28 @@ function renderScheduleScreen() {
             const t2 = shift2[para] || { start: "13:30", end: "14:50" };
 
             const card = document.createElement("article");
-            card.className = "border border-outline/20 bg-[#0a1122]/30 backdrop-blur-md rounded-2xl p-5 flex relative overflow-hidden group transition-all duration-300 animate-fade-in";
+            card.className = "border border-slate-700/60 dark:border-slate-650/50 bg-[#0e172a]/70 dark:bg-slate-900/40 rounded-2xl p-5 flex relative overflow-hidden group transition-all duration-300 animate-fade-in shadow-[inset_0_1px_3px_rgba(255,255,255,0.05)]";
             card.innerHTML = `
-                <div class="flex-grow flex flex-col justify-between z-10 opacity-60">
+                <div class="flex-grow flex flex-col justify-between z-10 opacity-75">
                     <div class="flex justify-between items-center w-full">
                         <div>
                             <div class="flex flex-wrap items-center gap-2">
                                 <span class="inline-block px-2.5 py-0.5 rounded bg-white/5 text-slate-400 text-[10px] font-bold uppercase tracking-wider">${roman}-para</span>
-                                <span class="text-slate-500 text-[10px] font-medium">1-sm: ${t1.start}-${t1.end} | 2-sm: ${t2.start}-${t2.end}</span>
+                                <span class="text-slate-400 text-[10px] font-semibold">1-sm: ${t1.start}-${t1.end} | 2-sm: ${t2.start}-${t2.end}</span>
                             </div>
                             <h2 class="font-headline-sm text-sm text-slate-400 font-bold leading-tight mt-2 flex items-center gap-1.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
                                 Dars yo'q
                             </h2>
                         </div>
                         <div class="text-right flex items-center justify-end">
-                            <svg class="w-5 h-5 text-slate-400 opacity-40 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
+                            <svg class="w-5 h-5 text-slate-400 opacity-60 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
                         </div>
                     </div>
                 </div>
             `;
             lessonsList.appendChild(card);
-        }
-    });
+        }     });
 }
 
 // Renders the weekly table without the Xona column
@@ -1137,9 +1324,11 @@ function handleDeleteLesson(id) {
 // --- EDITOR SCREEN ---
 let editorActiveSubTab = "lessons"; 
 let selectedWeeks = new Set();
+let expandedEditorGroups = new Set();
 let editingLessonId = null;
 let editingSectionId = null;
 let editingGroupId = null;
+let editingGraphId = null;
 
 function renderEditorScreen() {
     document.querySelectorAll(".editor-tab-btn").forEach(btn => {
@@ -1248,7 +1437,9 @@ function renderEditorGrafik() {
         let trHtml = `<tr class="hover:bg-primary/5 transition-colors">`;
         
         // Find associated groups for this academic graph to display them
-        const associatedGroups = state.groups.filter(group => parseInt(group.graphId || 1) === graph.id);
+        const associatedGroups = state.groups
+            .filter(group => parseInt(group.graphId || 1) === graph.id)
+            .sort((a, b) => a.name.localeCompare(b.name, 'uz', { sensitivity: 'base' }));
 
         // Row Header showing graph name and its groups
         trHtml += `<td class="px-2 py-2 border border-outline-variant/30 bg-primary/10 text-primary dark:text-primary-fixed font-bold text-center">
@@ -1258,9 +1449,14 @@ function renderEditorGrafik() {
                     const parts = g.name.split(",");
                     return parts.map(p => `<span class="text-[10px] text-slate-400 font-normal block leading-tight mt-0.5">${p.trim()}</span>`).join("");
                 }).join("")}
-                <button onclick="handleDeleteAcademicGraph(${graph.id})" class="text-error hover:text-error/80 shrink-0 p-0.5 rounded hover:bg-error-container/20 transition-colors mt-1" title="Grafikni o'chirish">
-                    <span class="material-symbols-outlined text-xs">delete</span>
-                </button>
+                <div class="flex gap-1.5 justify-center mt-1">
+                    <button onclick="handleEditAcademicGraph(${graph.id})" class="text-primary hover:text-primary/80 shrink-0 p-0.5 rounded hover:bg-primary-container/20 transition-colors cursor-pointer" title="Grafik nomini tahrirlash">
+                        <span class="material-symbols-outlined text-xs">edit</span>
+                    </button>
+                    <button onclick="handleDeleteAcademicGraph(${graph.id})" class="text-error hover:text-error/80 shrink-0 p-0.5 rounded hover:bg-error-container/20 transition-colors cursor-pointer" title="Grafikni o'chirish">
+                        <span class="material-symbols-outlined text-xs">delete</span>
+                    </button>
+                </div>
             </div>
         </td>`;
         
@@ -1304,6 +1500,25 @@ function updateGrafikCellValue(graphId, dateStr, value) {
     }
 }
 
+function handleEditAcademicGraph(id) {
+    editingGraphId = id;
+    const graph = state.academicGraphs.find(g => g.id === id);
+    if (!graph) return;
+    
+    document.getElementById("new_graph_name_input").value = graph.name;
+    document.getElementById("add-graph-btn-icon").textContent = "save";
+    document.getElementById("add-graph-btn-text").textContent = "Yangilash";
+    document.getElementById("cancel-graph-btn").classList.remove("hidden");
+}
+
+function cancelAcademicGraphEdit() {
+    editingGraphId = null;
+    document.getElementById("new_graph_name_input").value = "";
+    document.getElementById("add-graph-btn-icon").textContent = "add";
+    document.getElementById("add-graph-btn-text").textContent = "Yangi Grafik";
+    document.getElementById("cancel-graph-btn").classList.add("hidden");
+}
+
 function handleAddAcademicGraph() {
     const input = document.getElementById("new_graph_name_input");
     if (!input) return;
@@ -1313,43 +1528,59 @@ function handleAddAcademicGraph() {
         return;
     }
     
-    // Check for duplicates
-    if (state.academicGraphs.some(g => g.name.toLowerCase() === name.toLowerCase())) {
-        showCustomAlert("Ushbu nomli grafik allaqachon mavjud!");
-        return;
+    if (editingGraphId !== null) {
+        // Edit mode
+        const duplicate = state.academicGraphs.some(g => g.id !== editingGraphId && g.name.toLowerCase() === name.toLowerCase());
+        if (duplicate) {
+            showCustomAlert("Ushbu nomli grafik allaqachon mavjud!");
+            return;
+        }
+        const graph = state.academicGraphs.find(g => g.id === editingGraphId);
+        if (graph) {
+            graph.name = name;
+            showNotification("O'quv grafigi yangilandi!");
+        }
+        cancelAcademicGraphEdit();
+    } else {
+        // Add mode
+        if (state.academicGraphs.some(g => g.name.toLowerCase() === name.toLowerCase())) {
+            showCustomAlert("Ushbu nomli grafik allaqachon mavjud!");
+            return;
+        }
+        
+        const newId = state.academicGraphs.length > 0 ? Math.max(...state.academicGraphs.map(g => g.id)) + 1 : 1;
+        
+        // Populate weeks with defaults
+        const weeks = {};
+        let weekCounter = 1;
+        CALENDAR_MON_LIST.forEach(monStr => {
+            const d = new Date(monStr);
+            const dateISO = formatDateISO(d);
+            
+            // Dec 28, Jan 4 are T
+            // Feb 8, Feb 15 are T
+            if (dateISO === "2026-12-28" || dateISO === "2027-01-04" || dateISO === "2027-02-08" || dateISO === "2027-02-15") {
+                weeks[dateISO] = "T";
+            } else {
+                weeks[dateISO] = weekCounter.toString();
+                weekCounter++;
+                if (weekCounter > 20) weekCounter = 1;
+            }
+        });
+        
+        state.academicGraphs.push({
+            id: newId,
+            name: name,
+            weeks: weeks
+        });
+        
+        input.value = "";
+        showNotification("Yangi o'quv grafigi yaratildi!");
     }
     
-    const newId = state.academicGraphs.length > 0 ? Math.max(...state.academicGraphs.map(g => g.id)) + 1 : 1;
-    
-    // Populate weeks with defaults
-    const weeks = {};
-    let weekCounter = 1;
-    CALENDAR_MON_LIST.forEach(monStr => {
-        const d = new Date(monStr);
-        const dateISO = formatDateISO(d);
-        
-        // Dec 28, Jan 4 are T
-        // Feb 8, Feb 15 are T
-        if (dateISO === "2026-12-28" || dateISO === "2027-01-04" || dateISO === "2027-02-08" || dateISO === "2027-02-15") {
-            weeks[dateISO] = "T";
-        } else {
-            weeks[dateISO] = weekCounter.toString();
-            weekCounter++;
-            if (weekCounter > 20) weekCounter = 1;
-        }
-    });
-    
-    state.academicGraphs.push({
-        id: newId,
-        name: name,
-        weeks: weeks
-    });
-    
-    input.value = "";
     saveStateToStorage();
     renderEditorGrafik();
     renderEditorGroups(); // Refresh group dropdown
-    showNotification("Yangi o'quv grafigi yaratildi!");
 }
 
 function handleDeleteAcademicGraph(id) {
@@ -1448,7 +1679,8 @@ function renderEditorGroups() {
         });
     }
 
-    state.groups.forEach(g => {
+    const sortedGroups = [...state.groups].sort((a, b) => a.name.localeCompare(b.name, 'uz', { sensitivity: 'base' }));
+    sortedGroups.forEach(g => {
         const graph = state.academicGraphs.find(x => x.id === parseInt(g.graphId || 1));
         const graphName = graph ? graph.name : "201";
 
@@ -1536,7 +1768,8 @@ function renderEditorLessons() {
     });
 
     groupSelect.innerHTML = '<option value="">Guruhni tanlang</option>';
-    state.groups.forEach(g => {
+    const sortedGroups = [...state.groups].sort((a, b) => a.name.localeCompare(b.name, 'uz', { sensitivity: 'base' }));
+    sortedGroups.forEach(g => {
         groupSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`;
     });
 
@@ -1596,7 +1829,7 @@ function renderEditorLessons() {
         weekGrid.appendChild(item);
     }
 
-    // Render list of lessons below form
+    // Render list of lessons below form grouped by groups (accordion style)
     const list = document.getElementById("editor-lessons-list");
     list.innerHTML = "";
 
@@ -1616,34 +1849,71 @@ function renderEditorLessons() {
         return a.period - b.period;
     });
 
-    sortedLessons.forEach(lesson => {
-        const gradientClass = CARD_GRADIENTS[lesson.sectionId % CARD_GRADIENTS.length];
-        const compressedWeeksStr = compressWeeks(lesson.weeks);
-        
-        const item = document.createElement("div");
-        item.className = `${gradientClass} rounded-2xl p-5 shadow-sm flex relative overflow-hidden animate-fade-in hover:scale-[1.01] transition-all`;
-        item.innerHTML = `
-            <div class="flex-grow pl-1 z-10">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <span class="inline-block px-2.5 py-0.5 rounded bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider mb-2">${getDayName(lesson.dayOfWeek)}</span>
-                        <h4 class="font-title-md text-title-md text-white font-bold leading-tight">${lesson.sectionName}</h4>
-                        <p class="text-xs text-white/90 mt-1.5">Guruh: ${lesson.groupName} • ${lesson.shift}-smena, ${lesson.period}-para</p>
-                        <p class="text-[11px] text-white/80 mt-1">Haftalar: ${compressedWeeksStr}</p>
-                        ${lesson.note ? `<p class="text-[10px] text-white/70 italic mt-1.5">Izoh: ${lesson.note}</p>` : ''}
-                    </div>
-                    <div class="flex gap-1.5 ml-2">
-                        <button onclick="loadLessonIntoForm(${lesson.id}); window.scrollTo({top: 0, behavior: 'smooth'});" class="p-1.5 rounded-full hover:bg-white/20 text-white transition-colors" title="Tahrirlash">
-                            <span class="material-symbols-outlined text-lg">edit</span>
-                        </button>
-                        <button onclick="handleDeleteLesson(${lesson.id}); renderEditorLessons();" class="p-1.5 rounded-full hover:bg-white/20 text-white transition-colors" title="O'chirish">
-                            <span class="material-symbols-outlined text-lg">delete</span>
-                        </button>
-                    </div>
-                </div>
+    const sortedGroupsList = [...state.groups].sort((a, b) => a.name.localeCompare(b.name, 'uz', { sensitivity: 'base' }));
+    sortedGroupsList.forEach(group => {
+        const groupLessons = sortedLessons.filter(l => l.groupId === group.id);
+        if (groupLessons.length === 0) return; // Hide groups with no lessons
+
+        const isExpanded = expandedEditorGroups.has(group.id);
+        const groupDiv = document.createElement("div");
+        groupDiv.className = "flex flex-col gap-2 bg-[#0c1122]/60 border border-white/10 rounded-2xl p-4 mb-3 animate-fade-in";
+
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "flex items-center justify-between cursor-pointer select-none pb-1";
+        headerDiv.addEventListener("click", () => {
+            if (expandedEditorGroups.has(group.id)) {
+                expandedEditorGroups.delete(group.id);
+            } else {
+                expandedEditorGroups.add(group.id);
+            }
+            renderEditorLessons();
+        });
+
+        headerDiv.innerHTML = `
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-cyan-400 text-xl transition-transform duration-250 ${isExpanded ? 'rotate-90' : ''}">chevron_right</span>
+                <span class="font-extrabold text-sm text-white">${group.name}</span>
+                <span class="bg-cyan-500/20 text-cyan-300 px-3 py-0.5 rounded-full text-[10px] font-black">${groupLessons.length} ta dars</span>
             </div>
         `;
-        list.appendChild(item);
+        groupDiv.appendChild(headerDiv);
+
+        if (isExpanded) {
+            const lessonsContainer = document.createElement("div");
+            lessonsContainer.className = "flex flex-col gap-3 mt-3 animate-fade-in pl-4 border-l border-white/10";
+
+            groupLessons.forEach(lesson => {
+                const gradientClass = CARD_GRADIENTS[lesson.sectionId % CARD_GRADIENTS.length];
+                const compressedWeeksStr = compressWeeks(lesson.weeks);
+
+                const item = document.createElement("div");
+                item.className = `${gradientClass} rounded-2xl p-5 shadow-sm flex relative overflow-hidden group hover:scale-[1.01] transition-all`;
+                item.innerHTML = `
+                    <div class="flex-grow pl-1 z-10">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="inline-block px-2.5 py-0.5 rounded bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider mb-2">${getDayName(lesson.dayOfWeek)}</span>
+                                <h4 class="font-title-md text-title-md text-white font-bold leading-tight">${lesson.sectionName}</h4>
+                                <p class="text-xs text-white/90 mt-1.5">${lesson.shift}-smena, ${lesson.period}-para</p>
+                                <p class="text-[11px] text-white/80 mt-1">Haftalar: ${compressedWeeksStr}</p>
+                                ${lesson.note ? `<p class="text-[10px] text-white/70 italic mt-1.5">Izoh: ${lesson.note}</p>` : ''}
+                            </div>
+                            <div class="flex gap-1.5 ml-2">
+                                <button onclick="loadLessonIntoForm(${lesson.id}); window.scrollTo({top: 0, behavior: 'smooth'});" class="p-1.5 rounded-full hover:bg-white/20 text-white transition-colors" title="Tahrirlash">
+                                    <span class="material-symbols-outlined text-lg">edit</span>
+                                </button>
+                                <button onclick="handleDeleteLesson(${lesson.id}); renderEditorLessons();" class="p-1.5 rounded-full hover:bg-white/20 text-white transition-colors" title="O'chirish">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                lessonsContainer.appendChild(item);
+            });
+            groupDiv.appendChild(lessonsContainer);
+        }
+        list.appendChild(groupDiv);
     });
 }
 
@@ -2158,7 +2428,7 @@ function registerFormListeners() {
     });
 
     // Save Lesson Button
-    document.getElementById("save-lesson-btn").addEventListener("click", function() {
+    document.getElementById("save-lesson-btn").addEventListener("click", async function() {
         const sectionId = parseInt(document.getElementById("lesson_section_select").value);
         const groupId = parseInt(document.getElementById("lesson_group_select").value);
         const dayOfWeek = parseInt(document.getElementById("lesson_day_select").value);
@@ -2184,6 +2454,30 @@ function registerFormListeners() {
         }
 
         const weeksStr = Array.from(selectedWeeks).sort((a,b) => a-b).join(",");
+
+        // Check for parallel lesson conflict
+        const conflict = state.lessons.find(l => {
+            if (l.id === editingLessonId) return false;
+            if (l.dayOfWeek === dayOfWeek && l.period === period && l.shift === shift) {
+                const w1 = l.weeks.split(",").map(Number);
+                const w2 = weeksStr.split(",").map(Number);
+                return w1.some(w => w2.includes(w));
+            }
+            return false;
+        });
+
+        if (conflict) {
+            const confGroup = getGroupName(conflict.groupId);
+            const confSec = getSectionName(conflict.sectionId);
+            const confirmed = await showCustomConfirm(
+                `Diqqat! Bu vaqtda parallel dars mavjud:\n` +
+                `- Guruh: ${confGroup}\n` +
+                `- Fan: ${confSec}\n\n` +
+                `Shunda ham saqlashni davom ettirasizmi?`,
+                "Parallel Dars To'qnashuvi!"
+            );
+            if (!confirmed) return;
+        }
 
         if (editingLessonId !== null) {
             const index = state.lessons.findIndex(l => l.id === editingLessonId);

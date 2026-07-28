@@ -26,7 +26,14 @@ export default function MobileTopHeader() {
     return `${path}?techSchool=${encodeURIComponent(techSchool)}`;
   };
 
-  const navItems = [
+  const navItems: {
+    id: string;
+    name: string;
+    href: string;
+    icon: any;
+    isActive: boolean;
+    target?: string;
+  }[] = [
     {
       id: 'home',
       name: 'Bosh sahifa',
@@ -44,8 +51,7 @@ export default function MobileTopHeader() {
     {
       id: 'darsliklar',
       name: 'Elektron Darsliklar',
-      href: '/darsliklar/index.html',
-      target: '_blank',
+      href: '/darsliklar',
       icon: BookOpen,
       isActive: pathname.startsWith('/darsliklar')
     },
