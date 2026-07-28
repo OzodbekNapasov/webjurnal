@@ -3,10 +3,6 @@
         {
             "id": 1,
             "name": "Tibbiyotda Axborot texnalogiyalari"
-        },
-        {
-            "id": 2,
-            "name": "Yangi fan"
         }
     ],
     "groups": [
@@ -23,42 +19,42 @@
         {
             "id": 1,
             "name": "25-16 (3 yillik)",
-            "graphId": 1
+            "graphId": 4
         },
         {
             "id": 3,
             "name": "25-18 (3 yillik)",
-            "graphId": 1
+            "graphId": 4
         },
         {
             "id": 2,
             "name": "25-17 (3 yillik)",
-            "graphId": 1
+            "graphId": 4
         },
         {
             "id": 11,
             "name": "25-23 (3 yillik)",
-            "graphId": 1
+            "graphId": 6
         },
         {
             "id": 4,
             "name": "25-22 (2 yillik)",
-            "graphId": 1
+            "graphId": 5
         },
         {
             "id": 14,
             "name": "25-19 (2 yillik)",
-            "graphId": 1
+            "graphId": 5
         },
         {
             "id": 15,
             "name": "25-20 (2 yillik)",
-            "graphId": 1
+            "graphId": 5
         },
         {
             "id": 16,
             "name": "25-21 (2 yillik)",
-            "graphId": 1
+            "graphId": 5
         },
         {
             "id": 5,
@@ -167,7 +163,7 @@
             "weeks": "14,15,16",
             "dayOfWeek": 2,
             "shift": 1,
-            "period": 2,
+            "period": 3,
             "teacher": "Napasov O.",
             "note": ""
         },
