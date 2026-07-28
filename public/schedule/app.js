@@ -1105,99 +1105,76 @@ function renderScheduleScreen() {
             periodLessons.forEach((lesson) => {
                 const weeks = lesson.weeks.split(",").map(Number);
                 const minWeek = Math.min(...weeks);
-                const isFuture = minWeek > state.settings.currentWeek;
+                const maxWeek = Math.max(...weeks);
+                const isPast = maxWeek < state.settings.currentWeek;     // o'tib bo'lgan
+                const isFuture = minWeek > state.settings.currentWeek;   // hali boshlanmagan
                 const weeksRemaining = isFuture ? minWeek - state.settings.currentWeek : 0;
-                const isAlmostHere = isFuture && weeksRemaining <= 1; // 1 hafta yoki kamroq qolgan
+                const isAlmostHere = isFuture && weeksRemaining <= 1;
 
-                let gradientClass = CARD_GRADIENTS[lesson.sectionId % CARD_GRADIENTS.length];
+                // Badge for almost-here lessons
                 let remainingHtml = "";
-                let opacityClass = "";
-                let cardExtraClass = "";
-
-                if (isFuture) {
-                    if (isAlmostHere) {
-                        // 1 hafta qolgan → hirar ko'rinsin
-                        gradientClass = "bg-gradient-to-tr from-[#1e293b] via-[#2d3748] to-[#1a202c] border border-dashed border-amber-500/40";
-                        opacityClass = "opacity-50";
-                        const diffDaysText = state.settings.semesterStartDate ? (() => {
-                            const targetDate = getFutureLessonDate(lesson);
-                            if (targetDate) {
-                                const today2 = new Date(); today2.setHours(0,0,0,0);
-                                const t2 = new Date(targetDate); t2.setHours(0,0,0,0);
-                                const d = Math.round((t2 - today2) / (24*60*60*1000));
-                                return `${d} kun qoldi`;
-                            }
-                            return `${weeksRemaining}-hafta`;
-                        })() : `${weeksRemaining}-hafta`;
-                        remainingHtml = `<span class="inline-block px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold uppercase tracking-wider">⏰ ${diffDaysText}</span>`;
-                    } else {
-                        // 1 haftadan ko'p qolgan → odatiy rang, lekin badge bor
-                        // gradientClass same as normal lesson (already set above)
-                        opacityClass = "";
-                        const diffDaysText = state.settings.semesterStartDate ? (() => {
-                            const targetDate = getFutureLessonDate(lesson);
-                            if (targetDate) {
-                                const today2 = new Date(); today2.setHours(0,0,0,0);
-                                const t2 = new Date(targetDate); t2.setHours(0,0,0,0);
-                                const d = Math.round((t2 - today2) / (24*60*60*1000));
-                                return `${d} kun qoldi`;
-                            }
-                            return `${weeksRemaining}-haftadan keyin`;
-                        })() : `${weeksRemaining}-haftadan keyin`;
-                        remainingHtml = `<span class="inline-block px-2.5 py-0.5 rounded bg-white/15 text-white/70 text-[10px] font-bold uppercase tracking-wider">${diffDaysText}</span>`;
-                    }
+                if (isAlmostHere) {
+                    const diffDaysText = state.settings.semesterStartDate ? (() => {
+                        const targetDate = getFutureLessonDate(lesson);
+                        if (targetDate) {
+                            const today2 = new Date(); today2.setHours(0,0,0,0);
+                            const t2 = new Date(targetDate); t2.setHours(0,0,0,0);
+                            const d = Math.round((t2 - today2) / (24*60*60*1000));
+                            return `${d} kun qoldi`;
+                        }
+                        return `${weeksRemaining}-hafta`;
+                    })() : `${weeksRemaining}-hafta`;
+                    remainingHtml = `<span class="inline-block px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold tracking-wider">⏰ ${diffDaysText}</span>`;
                 }
 
-                // Bugungi dars uchun alohida dizayn
-                const isTodayLesson = isViewingToday && !isFuture;
-                if (isTodayLesson) {
-                    gradientClass = "bg-gradient-to-br from-[#0f2b4a] via-[#0a3d6b] to-[#051d36] border border-cyan-400/50 shadow-[0_0_20px_rgba(0,200,255,0.15)]";
-                    cardExtraClass = "ring-1 ring-cyan-400/30";
-                }
+                // ALL cards: cyan design
+                const opacityClass = isPast ? "opacity-35" : isAlmostHere ? "opacity-65" : "";
+                const glowClass = (!isPast && !isAlmostHere && !isFuture) ? "shadow-[0_0_18px_rgba(0,200,255,0.12)]" : "";
 
-                const card = document.createElement("article");
-                card.className = `${gradientClass} rounded-2xl p-5 flex relative overflow-hidden group hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 animate-fade-in ${opacityClass} ${cardExtraClass}`;
+                // Checkmark overlay for completed lessons
+                const checkmarkHtml = isPast ? `
+                    <div class="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                        <div class="w-14 h-14 rounded-full bg-green-400/15 border-2 border-green-400/50 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                    </div>` : '';
 
-                // Para badge color
-                const paraBadgeCls = isTodayLesson
-                    ? "bg-cyan-400/25 text-cyan-300 border border-cyan-400/40"
-                    : (isAlmostHere ? "bg-amber-500/20 text-amber-300" : "bg-white/20 text-white");
-                const groupBadgeCls = isTodayLesson
-                    ? "bg-cyan-400/15 text-cyan-200 border border-cyan-400/30"
-                    : (isAlmostHere ? "bg-white/10 text-slate-300" : "bg-white/20 text-white");
-                const timeBoxCls = isTodayLesson
-                    ? "bg-cyan-900/60 border border-cyan-400/30 text-cyan-100"
-                    : "bg-black/15 text-white";
-                const titleCls = isTodayLesson ? "text-cyan-50" : (isAlmostHere ? "text-slate-300" : "text-white");
-                const subTextCls = isTodayLesson ? "text-cyan-200/80" : (isAlmostHere ? "text-slate-400" : "text-white/90");
-
-                // Today indicator dot
+                // Today dot
+                const isTodayLesson = isViewingToday && !isFuture && !isPast;
                 const todayDot = isTodayLesson
-                    ? `<span class="absolute top-3 right-3 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,220,255,0.8)] animate-pulse"></span>`
+                    ? `<span class="absolute top-3 right-12 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,220,255,0.8)] animate-pulse"></span>`
+                    : isAlmostHere
+                    ? `<span class="absolute top-3 right-12 w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>`
                     : '';
 
+                const card = document.createElement("article");
+                card.className = `bg-gradient-to-br from-[#0f2b4a] via-[#0a3d6b] to-[#051d36] border border-cyan-400/50 ring-1 ring-cyan-400/25 hover:border-cyan-400/70 rounded-2xl p-5 flex relative overflow-hidden group hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 animate-fade-in ${glowClass} ${opacityClass}`;
+
                 card.innerHTML = `
+                    ${checkmarkHtml}
                     ${todayDot}
                     <div class="flex-grow flex flex-col justify-between z-10">
                         <div class="flex justify-between items-start">
                             <div>
                                 <div class="flex items-center gap-2 mb-2">
-                                    <span class="inline-block px-2.5 py-0.5 rounded ${paraBadgeCls} text-[10px] font-bold uppercase tracking-wider">${roman}-para</span>
-                                    <span class="inline-block px-2.5 py-0.5 rounded ${groupBadgeCls} text-[10px] font-bold uppercase tracking-wider">${lesson.groupName}</span>
+                                    <span class="inline-block px-2.5 py-0.5 rounded bg-cyan-400/20 text-cyan-300 border border-cyan-400/35 text-[10px] font-bold uppercase tracking-wider">${roman}-para</span>
+                                    <span class="inline-block px-2.5 py-0.5 rounded bg-cyan-400/15 text-cyan-200 border border-cyan-400/25 text-[10px] font-bold uppercase tracking-wider">${lesson.groupName}</span>
                                     ${remainingHtml}
                                 </div>
-                                <h2 class="font-headline-sm text-lg ${titleCls} font-bold leading-tight">${lesson.sectionName}</h2>
-                                <p class="text-xs ${subTextCls} mt-1">${lesson.shift}-smena</p>
-                                <p class="text-xs ${subTextCls} mt-1 font-semibold">Haftalar: ${compressWeeks(lesson.weeks)}</p>
-                                ${lesson.note ? `<p class="text-xs ${subTextCls} italic mt-1.5">Izoh: ${lesson.note}</p>` : ''}
+                                <h2 class="font-headline-sm text-lg text-cyan-50 font-bold leading-tight">${lesson.sectionName}</h2>
+                                <p class="text-xs text-cyan-200/70 mt-1">${lesson.shift}-smena</p>
+                                <p class="text-xs text-cyan-200/70 mt-1 font-semibold">Haftalar: ${compressWeeks(lesson.weeks)}</p>
+                                ${lesson.note ? `<p class="text-xs text-cyan-200/60 italic mt-1.5">Izoh: ${lesson.note}</p>` : ''}
                             </div>
                             <div class="text-right flex flex-col items-end">
-                                <p class="font-title-md text-sm font-bold ${timeBoxCls} px-2.5 py-1 rounded-lg">${lesson.startTime} - ${lesson.endTime}</p>
+                                <p class="font-title-md text-sm font-bold bg-cyan-900/60 border border-cyan-400/30 text-cyan-100 px-2.5 py-1 rounded-lg">${lesson.startTime} - ${lesson.endTime}</p>
                                 <div class="flex gap-2 mt-6">
-                                    <button onclick="handleEditLesson(${lesson.id})" class="p-1.5 rounded-full hover:bg-white/20 text-white transition-colors" title="Tahrirlash">
+                                    <button onclick="handleEditLesson(${lesson.id})" class="p-1.5 rounded-full hover:bg-white/20 text-cyan-200 transition-colors" title="Tahrirlash">
                                         <span class="material-symbols-outlined text-lg">edit</span>
                                     </button>
-                                    <button onclick="handleDeleteLesson(${lesson.id})" class="p-1.5 rounded-full hover:bg-white/20 text-white transition-colors" title="O'chirish">
+                                    <button onclick="handleDeleteLesson(${lesson.id})" class="p-1.5 rounded-full hover:bg-white/20 text-cyan-200 transition-colors" title="O'chirish">
                                         <span class="material-symbols-outlined text-lg">delete</span>
                                     </button>
                                 </div>
@@ -1207,6 +1184,7 @@ function renderScheduleScreen() {
                 `;
                 lessonsList.appendChild(card);
             });
+
         } else {
             // Render "No Lesson" placeholder for this period
             const shift1 = state.settings.bellSchedule["1"] || {};

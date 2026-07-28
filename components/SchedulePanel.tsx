@@ -198,10 +198,11 @@ export default function SchedulePanel({
     const weeks = (l.weeks || '').split(',').map(Number);
     const isCurrent = weeks.includes(currentWeek);
     const minWeek = Math.min(...weeks);
+    const maxWeek = Math.max(...weeks);
     const weeksRemaining = minWeek - currentWeek;
-    // Faqat joriy hafta YOKI 1 hafta qolgan darslarni ko'rsat
-    const isAlmostHere = weeksRemaining === 1;
-    return isCurrent || isAlmostHere;
+    const isAlmostHere = weeksRemaining === 1; // keyingi hafta
+    const isJustCompleted = maxWeek === currentWeek - 1; // o'tgan hafta tamom bo'lgan
+    return isCurrent || isAlmostHere || isJustCompleted;
   });
 
   // Resolve group and section details
@@ -420,15 +421,17 @@ export default function SchedulePanel({
 
             const weeks = (l.weeks || '').split(',').map(Number);
             const minWeek = Math.min(...weeks);
-            const isFuture = minWeek > currentWeek;
+            const maxWeek = Math.max(...weeks);
+            const isPast = maxWeek < currentWeek;         // o'tib bo'lgan
+            const isFuture = minWeek > currentWeek;       // hali boshlanmagan
             const weeksRemaining = isFuture ? minWeek - currentWeek : 0;
             const isAlmostHere = isFuture && weeksRemaining <= 1;
             const isViewingToday = selectedDay === currentDayOfWeek;
-            const isTodayLesson = isViewingToday && !isFuture;
+            const isTodayLesson = isViewingToday && !isFuture && !isPast;
 
-            // Compute remaining days text for future lessons
+            // Compute remaining days text
             let futureLabel = '';
-            if (isFuture && semesterStartDate) {
+            if (isAlmostHere && semesterStartDate) {
               try {
                 const start = new Date(semesterStartDate);
                 const day = start.getDay();
@@ -447,45 +450,14 @@ export default function SchedulePanel({
               } catch (e) {
                 futureLabel = `${weeksRemaining}-haftadan keyin`;
               }
-            } else if (isFuture) {
+            } else if (isAlmostHere) {
               futureLabel = `${weeksRemaining}-haftadan keyin`;
             }
 
-            // Card class based on state
-            let cardClass = '';
-            if (isTodayLesson) {
-              cardClass = 'group relative bg-gradient-to-br from-[#0f2b4a] via-[#0a3d6b] to-[#051d36] border border-cyan-400/50 ring-1 ring-cyan-400/30 shadow-[0_0_20px_rgba(0,200,255,0.15)] hover:border-cyan-400/70 rounded-2xl p-4 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]';
-            } else if (isAlmostHere) {
-              // 1 hafta qolgan — hirar
-              cardClass = 'group relative bg-slate-900/60 border border-dashed border-amber-500/40 rounded-2xl p-4 shadow-md transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98] opacity-50';
-            } else if (isFuture) {
-              // Ko'p hafta qolgan — odatiy ko'rinish, badge bilan
-              cardClass = 'group relative bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-2xl p-4 shadow-md backdrop-blur-xl transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]';
-            } else {
-              cardClass = 'group relative bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-2xl p-4 shadow-md backdrop-blur-xl transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]';
-            }
-
-            const paraBadgeCls = isTodayLesson
-              ? 'bg-cyan-400/25 text-cyan-300 border-cyan-400/40'
-              : isAlmostHere
-              ? 'bg-amber-500/20 text-amber-300 border-amber-400/30'
-              : 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30';
-
-            const titleCls = isTodayLesson
-              ? 'text-cyan-50 group-hover:text-white'
-              : isAlmostHere
-              ? 'text-slate-400 group-hover:text-amber-300'
-              : isFuture
-              ? 'text-white group-hover:text-cyan-300'
-              : 'text-white group-hover:text-cyan-300';
-
-            const bottomBarCls = isTodayLesson
-              ? 'text-cyan-300 border-cyan-400/30'
-              : isAlmostHere
-              ? 'text-amber-400/70 border-amber-500/20'
-              : isFuture
-              ? 'text-cyan-300/60 border-white/15'
-              : 'text-cyan-300 border-white/15';
+            // ALL cards use cyan design, opacity changes per state
+            const opacityCls = isPast ? 'opacity-35' : isAlmostHere ? 'opacity-65' : '';
+            const glowCls = (!isPast && !isAlmostHere) ? 'shadow-[0_0_18px_rgba(0,200,255,0.12)]' : '';
+            const cardClass = `group relative bg-gradient-to-br from-[#0f2b4a] via-[#0a3d6b] to-[#051d36] border border-cyan-400/50 ring-1 ring-cyan-400/25 hover:border-cyan-400/70 rounded-2xl p-4 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98] ${glowCls} ${opacityCls} overflow-hidden`;
 
             return (
               <Link
@@ -493,43 +465,55 @@ export default function SchedulePanel({
                 href={`/journal?groupId=${l.groupId}&groupName=${encodeURIComponent(l.groupName)}`}
                 className={cardClass}
               >
-                {/* Today indicator dot */}
+                {/* Completed checkmark overlay */}
+                {isPast && (
+                  <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                    <div className="w-14 h-14 rounded-full bg-green-400/15 border-2 border-green-400/50 flex items-center justify-center">
+                      <svg className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+
+                {/* Today glowing dot */}
                 {isTodayLesson && (
                   <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,220,255,0.8)] animate-pulse" />
                 )}
 
+                {/* Almost-here warning dot */}
+                {isAlmostHere && (
+                  <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                )}
+
                 <div className="flex justify-between items-start mb-2">
-                  <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${paraBadgeCls}`}>
+                  <span className="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border bg-cyan-400/20 text-cyan-300 border-cyan-400/35">
                     {roman}-para
                   </span>
-                  <span className="text-[10px] text-cyan-100/70 font-bold">
+                  <span className="text-[10px] text-cyan-100/70 font-bold pr-5">
                     {bell.start} - {bell.end}
                   </span>
                 </div>
 
-                <h4 className={`font-extrabold text-sm sm:text-base transition-colors truncate ${titleCls}`}>
+                <h4 className="font-extrabold text-sm sm:text-base text-cyan-50 group-hover:text-white transition-colors truncate">
                   {l.groupName}
                 </h4>
-                <p className="text-[11px] text-cyan-100/70 font-semibold mt-1 truncate">
+                <p className="text-[11px] text-cyan-200/60 font-semibold mt-1 truncate">
                   {l.sectionName}
                 </p>
 
-                {isFuture ? (
+                {isAlmostHere ? (
                   <div className="mt-2.5 flex flex-col gap-1">
-                    <p className={`text-[10px] font-bold ${isAlmostHere ? 'text-amber-300' : 'text-cyan-300/70'}`}>
-                      {isAlmostHere ? '⏰ ' : ''}{futureLabel}
-                    </p>
-                    <p className="text-[10px] text-slate-400 font-medium">
-                      Haftalar: {compressWeeksList(l.weeks)}
-                    </p>
+                    <p className="text-[10px] font-bold text-amber-300">⏰ {futureLabel}</p>
+                    <p className="text-[10px] text-cyan-300/50 font-medium">Haftalar: {compressWeeksList(l.weeks)}</p>
                   </div>
                 ) : (
-                  <p className="text-[10px] text-cyan-300/80 font-bold mt-1.5">
+                  <p className="text-[10px] text-cyan-300/70 font-bold mt-1.5">
                     Haftalar: {compressWeeksList(l.weeks)}
                   </p>
                 )}
 
-                <div className={`mt-3 flex items-center justify-between text-[11px] font-extrabold border-t pt-2.5 ${bottomBarCls}`}>
+                <div className="mt-3 flex items-center justify-between text-[11px] font-extrabold border-t border-cyan-400/20 pt-2.5 text-cyan-300">
                   <span>Jurnalni ochish</span>
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </div>
@@ -537,6 +521,7 @@ export default function SchedulePanel({
             );
           })}
         </div>
+
 
       )}
     </div>
