@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,15 +53,17 @@ async function buildTodayMessage(targetDay?: number): Promise<string> {
     { auth: { persistSession: false } }
   );
 
-  // Load schedule from data.json via Supabase or filesystem
-  // We read it from the public/schedule/data.json via fetch since it's a static file
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
 
-  const dataRes = await fetch(`${baseUrl}/schedule/data.json`, { cache: 'no-store' });
-  if (!dataRes.ok) return '❌ Ma\'lumotlar topilmadi.';
-  const data = await dataRes.json();
+
+  let data;
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    data = JSON.parse(fileContent);
+  } catch (err) {
+    console.error('Failed to read data.json:', err);
+    return '❌ Jadval ma\'lumotlari topilmadi.';
+  }
 
   const { settings, lessons, groups, sections, bellSchedule } = data;
 

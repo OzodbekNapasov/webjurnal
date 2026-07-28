@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,17 +60,16 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
-
-    const dataRes = await fetch(`${baseUrl}/schedule/data.json`, { cache: 'no-store' });
-    if (!dataRes.ok) {
-      await sendMessage(chatId, '❌ Jadval ma\'lumotlari yuklanmadi.');
-      return NextResponse.json({ error: 'data.json not found' }, { status: 500 });
+    let data;
+    try {
+      const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+      const fileContent = fs.readFileSync(filePath, 'utf-8');
+      data = JSON.parse(fileContent);
+    } catch (err) {
+      console.error('Failed to read data.json:', err);
+      await sendMessage(chatId, '❌ Jadval ma\'lumotlari yuklanmadi (fayl topilmadi).');
+      return NextResponse.json({ error: 'data.json file not found' }, { status: 500 });
     }
-
-    const data = await dataRes.json();
     const { settings, lessons, groups, sections, bellSchedule } = data;
 
     const semStart = settings?.semesterStartDate || '';

@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
 
     if (!result.ok) {
       return NextResponse.json(
-        { error: 'Telegram API error', details: result },
+        { error: `Telegram API error: ${result.description || 'Unknown error'} (Webhook URL: ${webhookUrl})`, details: result },
         { status: 400 }
       );
     }
