@@ -226,13 +226,11 @@ async function handleHelp(chatId: number) {
 }
 
 async function handleToday(chatId: number) {
-  await sendMessage(chatId, '⏳ Yuklanmoqda...');
   const msg = await buildTodayMessage();
   await sendMessage(chatId, msg);
 }
 
 async function handleTomorrow(chatId: number) {
-  await sendMessage(chatId, '⏳ Yuklanmoqda...');
   const now = new Date();
   const jsDay = now.getDay();
   let tomorrowDay = (jsDay === 0 ? 7 : jsDay) + 1;
@@ -242,19 +240,16 @@ async function handleTomorrow(chatId: number) {
 }
 
 async function handleWeek(chatId: number) {
-  await sendMessage(chatId, '⏳ Haftalik jadval yuklanmoqda...');
-  const msgs: string[] = [];
+  const days = [];
   for (let day = 1; day <= 6; day++) {
     const msg = await buildTodayMessage(day);
-    msgs.push(msg);
+    days.push(msg);
   }
-  for (const m of msgs) {
-    await sendMessage(chatId, m);
-  }
+  const combinedMsg = days.join('\n\n====================\n\n');
+  await sendMessage(chatId, combinedMsg);
 }
 
 async function handleJournals(chatId: number) {
-  await sendMessage(chatId, '⏳ Jurnallar ro\'yxati yuklanmoqda...');
   
   let data;
   try {
