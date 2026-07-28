@@ -936,6 +936,20 @@ async function handleCallbackForm2Report(chatId: number, callbackQueryId: string
       views: [{ showGridLines: true }]
     });
 
+    // Set page print settings (Landscape, A4, Narrow Margins, Fit to 1 Page wide/tall)
+    worksheet.pageSetup = {
+      orientation: 'landscape',
+      paperSize: 9, // A4
+      fitToPage: true,
+      fitToWidth: 1,
+      fitToHeight: 1,
+      margins: {
+        left: 0.25, right: 0.25,
+        top: 0.75, bottom: 0.75,
+        header: 0.3, footer: 0.3
+      }
+    };
+
     // Title Row 1
     worksheet.addRow([`"${schoolLabel}"ning Tibbiyotda axborot texnologiyalari fani o'qituvchisi`]);
     // Title Row 2
@@ -950,14 +964,14 @@ async function handleCallbackForm2Report(chatId: number, callbackQueryId: string
 
     // Format Title Row 1 & 2
     const titleRow1 = worksheet.getRow(1);
-    titleRow1.getCell(1).font = { name: 'Times New Roman', size: 12, bold: true };
+    titleRow1.getCell(1).font = { name: 'Times New Roman', size: 14, bold: true };
     titleRow1.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
-    titleRow1.height = 24;
+    titleRow1.height = 28;
 
     const titleRow2 = worksheet.getRow(2);
-    titleRow2.getCell(1).font = { name: 'Times New Roman', size: 12, bold: true };
+    titleRow2.getCell(1).font = { name: 'Times New Roman', size: 14, bold: true };
     titleRow2.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
-    titleRow2.height = 24;
+    titleRow2.height = 28;
 
     // Headers: Row 4 & 5
     const row4Values: any[] = ["№", "O'tilgan fan", "Guruh"];
@@ -991,10 +1005,10 @@ async function handleCallbackForm2Report(chatId: number, callbackQueryId: string
     };
 
     headerRows.forEach(row => {
-      row.height = 20;
+      row.height = 24;
       for (let c = 1; c <= lastColIndex; c++) {
         const cell = row.getCell(c);
-        cell.font = { name: 'Times New Roman', size: 10, bold: true };
+        cell.font = { name: 'Times New Roman', size: 14, bold: true };
         cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
         cell.border = thinBorder;
       }
@@ -1028,10 +1042,10 @@ async function handleCallbackForm2Report(chatId: number, callbackQueryId: string
       worksheet.addRow(rValues);
 
       const excelRow = worksheet.getRow(rNum);
-      excelRow.height = 25;
+      excelRow.height = 28;
       for (let c = 1; c <= lastColIndex; c++) {
         const cell = excelRow.getCell(c);
-        cell.font = { name: 'Times New Roman', size: 10, bold: c === 1 || c === 3 || c === lastColIndex };
+        cell.font = { name: 'Times New Roman', size: 14, bold: c === 1 || c === 3 || c === lastColIndex };
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
         cell.border = thinBorder;
 
@@ -1053,7 +1067,7 @@ async function handleCallbackForm2Report(chatId: number, callbackQueryId: string
     if (groupRows.length > 0) {
       worksheet.mergeCells(bodyStartRow, 2, bodyStartRow + groupRows.length - 1, 2);
       const mergedCell = worksheet.getRow(bodyStartRow).getCell(2);
-      mergedCell.font = { name: 'Times New Roman', size: 10, bold: true };
+      mergedCell.font = { name: 'Times New Roman', size: 14, bold: true };
       mergedCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
     }
 
@@ -1075,10 +1089,10 @@ async function handleCallbackForm2Report(chatId: number, callbackQueryId: string
 
     worksheet.mergeCells(totalRowNum, 2, totalRowNum, 3);
     const totalRow = worksheet.getRow(totalRowNum);
-    totalRow.height = 25;
+    totalRow.height = 28;
     for (let c = 1; c <= lastColIndex; c++) {
       const cell = totalRow.getCell(c);
-      cell.font = { name: 'Times New Roman', size: 10, bold: true };
+      cell.font = { name: 'Times New Roman', size: 14, bold: true };
       cell.alignment = { horizontal: 'center', vertical: 'middle' };
       cell.border = thinBorder;
 
@@ -1101,19 +1115,19 @@ async function handleCallbackForm2Report(chatId: number, callbackQueryId: string
     const sig2Row = totalRowNum + 4;
 
     worksheet.getRow(sig1Row).getCell(2).value = "O'qituvchi: ____________________ O.Z.Napasov";
-    worksheet.getRow(sig1Row).getCell(2).font = { name: 'Times New Roman', size: 11, bold: true };
+    worksheet.getRow(sig1Row).getCell(2).font = { name: 'Times New Roman', size: 14, bold: true };
     
     worksheet.getRow(sig2Row).getCell(2).value = "O'TBDO': ____________________ B.B.Eshnayev";
-    worksheet.getRow(sig2Row).getCell(2).font = { name: 'Times New Roman', size: 11, bold: true };
+    worksheet.getRow(sig2Row).getCell(2).font = { name: 'Times New Roman', size: 14, bold: true };
 
     // Set custom column widths
-    worksheet.getColumn(1).width = 5;   // №
-    worksheet.getColumn(2).width = 30;  // O'tilgan fan
-    worksheet.getColumn(3).width = 12;  // Guruh
+    worksheet.getColumn(1).width = 6;   // №
+    worksheet.getColumn(2).width = 38;  // O'tilgan fan
+    worksheet.getColumn(3).width = 16;  // Guruh
     for (let d = 1; d <= totalDays; d++) {
-      worksheet.getColumn(3 + d).width = 4; // Kunlar
+      worksheet.getColumn(3 + d).width = 6; // Kunlar (font 14 uchun 6 kenglik kerak)
     }
-    worksheet.getColumn(4 + totalDays).width = 12; // Jami soat
+    worksheet.getColumn(4 + totalDays).width = 15; // Jami soat
 
     // 9. Write Workbook to Buffer
     const buffer = await workbook.xlsx.writeBuffer();
