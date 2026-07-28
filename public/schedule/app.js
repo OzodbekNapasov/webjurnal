@@ -394,7 +394,7 @@ function saveStateToStorage() {
         academicGraphs: state.academicGraphs
     };
     
-    fetch("api/save", {
+    fetch("/schedule/api/save", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
