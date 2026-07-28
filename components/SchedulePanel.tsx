@@ -197,8 +197,11 @@ export default function SchedulePanel({
     if (Number(l.dayOfWeek) !== selectedDay) return false;
     const weeks = (l.weeks || '').split(',').map(Number);
     const isCurrent = weeks.includes(currentWeek);
-    const isFuture = Math.min(...weeks) > currentWeek;
-    return isCurrent || isFuture;
+    const minWeek = Math.min(...weeks);
+    const weeksRemaining = minWeek - currentWeek;
+    // Faqat joriy hafta YOKI 1 hafta qolgan darslarni ko'rsat
+    const isAlmostHere = weeksRemaining === 1;
+    return isCurrent || isAlmostHere;
   });
 
   // Resolve group and section details
