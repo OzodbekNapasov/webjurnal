@@ -418,74 +418,103 @@ export default function SchedulePanel({
             const weeks = (l.weeks || '').split(',').map(Number);
             const minWeek = Math.min(...weeks);
             const isFuture = minWeek > currentWeek;
+            const weeksRemaining = isFuture ? minWeek - currentWeek : 0;
+            const isAlmostHere = isFuture && weeksRemaining <= 1;
+            const isViewingToday = selectedDay === currentDayOfWeek;
+            const isTodayLesson = isViewingToday && !isFuture;
 
-            let cardClass = "group relative bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-2xl p-4 shadow-md backdrop-blur-xl transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]";
-            let futureLabel = "";
-
-            if (isFuture) {
-              cardClass = "group relative bg-slate-900/60 hover:bg-slate-900/75 border border-dashed border-indigo-500/45 hover:border-indigo-400/60 rounded-2xl p-4 shadow-md transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]";
-              
-              const weeksRemaining = minWeek - currentWeek;
-              let remainingText = `${weeksRemaining}-haftadan keyin`;
-              
-              if (semesterStartDate) {
-                try {
-                  const start = new Date(semesterStartDate);
-                  const day = start.getDay();
-                  const diffToMonday = day === 0 ? -6 : 1 - day;
-                  start.setDate(start.getDate() + diffToMonday); // Monday of week 1
-                  
-                  const targetMon = new Date(start);
-                  targetMon.setDate(targetMon.getDate() + (minWeek - 1) * 7);
-                  
-                  const targetDayDate = new Date(targetMon);
-                  targetDayDate.setDate(targetDayDate.getDate() + (l.dayOfWeek - 1));
-                  
-                  const today = new Date();
-                  today.setHours(0,0,0,0);
-                  const target = new Date(targetDayDate);
-                  target.setHours(0,0,0,0);
-                  const diffDays = Math.round((target.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
-                  remainingText += ` (${diffDays} kun qoldi)`;
-                } catch (e) {}
+            // Compute remaining days text for future lessons
+            let futureLabel = '';
+            if (isFuture && semesterStartDate) {
+              try {
+                const start = new Date(semesterStartDate);
+                const day = start.getDay();
+                const diffToMonday = day === 0 ? -6 : 1 - day;
+                start.setDate(start.getDate() + diffToMonday);
+                const targetMon = new Date(start);
+                targetMon.setDate(targetMon.getDate() + (minWeek - 1) * 7);
+                const targetDayDate = new Date(targetMon);
+                targetDayDate.setDate(targetDayDate.getDate() + (l.dayOfWeek - 1));
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const target = new Date(targetDayDate);
+                target.setHours(0, 0, 0, 0);
+                const diffDays = Math.round((target.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+                futureLabel = `${diffDays} kun qoldi`;
+              } catch (e) {
+                futureLabel = `${weeksRemaining}-haftadan keyin`;
               }
-              
-              futureLabel = remainingText;
+            } else if (isFuture) {
+              futureLabel = `${weeksRemaining}-haftadan keyin`;
             }
+
+            // Card class based on state
+            let cardClass = '';
+            if (isTodayLesson) {
+              cardClass = 'group relative bg-gradient-to-br from-[#0f2b4a] via-[#0a3d6b] to-[#051d36] border border-cyan-400/50 ring-1 ring-cyan-400/30 shadow-[0_0_20px_rgba(0,200,255,0.15)] hover:border-cyan-400/70 rounded-2xl p-4 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]';
+            } else if (isAlmostHere) {
+              // 1 hafta qolgan — hirar
+              cardClass = 'group relative bg-slate-900/60 border border-dashed border-amber-500/40 rounded-2xl p-4 shadow-md transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98] opacity-50';
+            } else if (isFuture) {
+              // Ko'p hafta qolgan — odatiy ko'rinish, badge bilan
+              cardClass = 'group relative bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-2xl p-4 shadow-md backdrop-blur-xl transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]';
+            } else {
+              cardClass = 'group relative bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-2xl p-4 shadow-md backdrop-blur-xl transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]';
+            }
+
+            const paraBadgeCls = isTodayLesson
+              ? 'bg-cyan-400/25 text-cyan-300 border-cyan-400/40'
+              : isAlmostHere
+              ? 'bg-amber-500/20 text-amber-300 border-amber-400/30'
+              : 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30';
+
+            const titleCls = isTodayLesson
+              ? 'text-cyan-50 group-hover:text-white'
+              : isAlmostHere
+              ? 'text-slate-400 group-hover:text-amber-300'
+              : isFuture
+              ? 'text-white group-hover:text-cyan-300'
+              : 'text-white group-hover:text-cyan-300';
+
+            const bottomBarCls = isTodayLesson
+              ? 'text-cyan-300 border-cyan-400/30'
+              : isAlmostHere
+              ? 'text-amber-400/70 border-amber-500/20'
+              : isFuture
+              ? 'text-cyan-300/60 border-white/15'
+              : 'text-cyan-300 border-white/15';
 
             return (
               <Link
                 key={idx}
-                href={`/journal?groupId=${l.groupId}&groupName=${encodeURIComponent(
-                  l.groupName
-                )}`}
+                href={`/journal?groupId=${l.groupId}&groupName=${encodeURIComponent(l.groupName)}`}
                 className={cardClass}
               >
+                {/* Today indicator dot */}
+                {isTodayLesson && (
+                  <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,220,255,0.8)] animate-pulse" />
+                )}
+
                 <div className="flex justify-between items-start mb-2">
-                  <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${
-                    isFuture
-                      ? 'bg-indigo-950/40 text-indigo-300 border-indigo-400/30'
-                      : 'bg-cyan-500/20 text-cyan-300 border-cyan-400/30'
-                  }`}>
+                  <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border ${paraBadgeCls}`}>
                     {roman}-para
                   </span>
                   <span className="text-[10px] text-cyan-100/70 font-bold">
                     {bell.start} - {bell.end}
                   </span>
                 </div>
-                <h4 className={`font-extrabold text-sm sm:text-base transition-colors truncate ${
-                  isFuture ? 'text-slate-350 group-hover:text-indigo-300' : 'text-white group-hover:text-cyan-300'
-                }`}>
+
+                <h4 className={`font-extrabold text-sm sm:text-base transition-colors truncate ${titleCls}`}>
                   {l.groupName}
                 </h4>
                 <p className="text-[11px] text-cyan-100/70 font-semibold mt-1 truncate">
                   {l.sectionName}
                 </p>
-                
+
                 {isFuture ? (
                   <div className="mt-2.5 flex flex-col gap-1">
-                    <p className="text-[10px] text-indigo-300 font-bold">
-                      Boshlanishi: {futureLabel}
+                    <p className={`text-[10px] font-bold ${isAlmostHere ? 'text-amber-300' : 'text-cyan-300/70'}`}>
+                      {isAlmostHere ? '⏰ ' : ''}{futureLabel}
                     </p>
                     <p className="text-[10px] text-slate-400 font-medium">
                       Haftalar: {compressWeeksList(l.weeks)}
@@ -497,18 +526,15 @@ export default function SchedulePanel({
                   </p>
                 )}
 
-                <div className={`mt-3 flex items-center justify-between text-[11px] font-extrabold border-t pt-2.5 ${
-                  isFuture ? 'text-indigo-405 border-indigo-500/20' : 'text-cyan-300 border-white/15'
-                }`}>
+                <div className={`mt-3 flex items-center justify-between text-[11px] font-extrabold border-t pt-2.5 ${bottomBarCls}`}>
                   <span>Jurnalni ochish</span>
-                  <span className="group-hover:translate-x-1 transition-transform">
-                    →
-                  </span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </div>
               </Link>
             );
           })}
         </div>
+
       )}
     </div>
   );
