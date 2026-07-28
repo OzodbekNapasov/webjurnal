@@ -2281,7 +2281,8 @@ function exportDataBackup() {
         groups: state.groups,
         lessons: state.lessons,
         settings: state.settings,
-        version: "6.0.0",
+        academicGraphs: state.academicGraphs,
+        version: "7.0.0",
         timestamp: new Date().toISOString()
     };
 
@@ -2294,7 +2295,7 @@ function exportDataBackup() {
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
-    showNotification("Zaxira nusxasi yuklab olindi");
+    showNotification("Zaxira nusxasi yuklab olindi (o'quv grafiklar bilan)");
 }
 
 function triggerImportFileInput() {
@@ -2315,13 +2316,19 @@ function handleImportFile(event) {
                 state.lessons = data.lessons;
                 state.settings = { ...state.settings, ...data.settings };
                 
+                // O'quv grafiklarini ham yuklash (eski zaxiralar uchun ham ishlaydi)
+                if (data.academicGraphs && Array.isArray(data.academicGraphs) && data.academicGraphs.length > 0) {
+                    state.academicGraphs = data.academicGraphs;
+                }
+                
                 saveStateToStorage();
                 loadStateFromStorage();
                 
                 applyTheme(state.settings.themeMode);
                 navigateToTab(state.activeTab);
                 
-                showNotification("Ma'lumotlar qayta tiklandi!");
+                const graphMsg = data.academicGraphs ? ` (${data.academicGraphs.length} ta o'quv grafik bilan)` : '';
+                showNotification("Ma'lumotlar qayta tiklandi" + graphMsg + "!");
             } else {
                 showCustomAlert("Xato zaxira nusxa fayli. Kerakli ma'lumotlar topilmadi.");
             }
