@@ -8,12 +8,80 @@ export const dynamic = 'force-dynamic';
 // ─── Telegram API helper ──────────────────────────────────────────────────────
 const TG_API = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 
-async function sendMessage(chatId: string | number, text: string, parseMode = 'HTML') {
+async function sendMessage(chatId: string | number, text: string, replyMarkup?: any, parseMode = 'HTML') {
+  const body: any = { chat_id: chatId, text, parse_mode: parseMode, disable_web_page_preview: true };
+  if (replyMarkup) body.reply_markup = replyMarkup;
   await fetch(`${TG_API}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: parseMode, disable_web_page_preview: true }),
+    body: JSON.stringify(body),
   });
+}
+
+// GitHub & local sync helper
+async function saveScheduleData(data: any): Promise<{ success: boolean; error?: string }> {
+  const jsonString = JSON.stringify(data, null, 4);
+
+  // 1. Local filesystem save
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+    fs.writeFileSync(filePath, jsonString, 'utf-8');
+  } catch (fsErr) {
+    console.warn('Local fs write skipped:', fsErr);
+  }
+
+  // 2. Direct GitHub API commit
+  const githubToken = (process.env.GITHUB_TOKEN || '').trim();
+  const githubRepo = (process.env.GITHUB_REPO || 'OzodbekNapasov/webjurnal').trim();
+
+  if (githubToken) {
+    try {
+      const fileUrl = `https://api.github.com/repos/${githubRepo}/contents/public/schedule/data.json`;
+      
+      const getRes = await fetch(fileUrl, {
+        headers: {
+          'Authorization': `Bearer ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'WebJurnal-Bot'
+        },
+        cache: 'no-store'
+      });
+
+      let sha: string | undefined = undefined;
+      if (getRes.ok) {
+        const fileInfo = await getRes.json();
+        sha = fileInfo.sha;
+      }
+
+      const base64Content = Buffer.from(jsonString).toString('base64');
+
+      const putRes = await fetch(fileUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${githubToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'WebJurnal-Bot'
+        },
+        body: JSON.stringify({
+          message: "chore(schedule): update schedule data.json from telegram bot",
+          content: base64Content,
+          sha: sha,
+          branch: "main"
+        })
+      });
+
+      if (!putRes.ok) {
+        const errText = await putRes.text();
+        return { success: false, error: `GitHub API status ${putRes.status}: ${errText}` };
+      }
+      return { success: true };
+    } catch (ghErr: any) {
+      return { success: false, error: ghErr?.message || String(ghErr) };
+    }
+  }
+
+  return { success: true }; // Local only
 }
 
 // ─── Schedule helpers ─────────────────────────────────────────────────────────
@@ -224,7 +292,28 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
+    const allowedChatId = process.env.TELEGRAM_CHAT_ID;
     const message = body?.message || body?.edited_message;
+
+    // Callback query kelganda (masalan, darsni o'chirish)
+    const callbackQuery = body?.callback_query;
+    if (callbackQuery) {
+      const cChatId = callbackQuery.message.chat.id;
+      const cData = callbackQuery.data;
+      const cQueryId = callbackQuery.id;
+
+      // Access control
+      if (allowedChatId && String(cChatId) !== String(allowedChatId)) {
+        return NextResponse.json({ ok: true });
+      }
+
+      if (cData.startsWith('del_sch_')) {
+        const lessonId = parseInt(cData.replace('del_sch_', ''));
+        await handleCallbackDeleteLesson(cChatId, cQueryId, lessonId);
+      }
+      return NextResponse.json({ ok: true });
+    }
+
     if (!message) return NextResponse.json({ ok: true });
 
     const chatId: number = message.chat.id;
@@ -232,12 +321,10 @@ export async function POST(req: NextRequest) {
     const firstName: string = message.from?.first_name || 'Do\'stim';
 
     // Ruxsat etilgan foydalanuvchini tekshirish
-    const allowedChatId = process.env.TELEGRAM_CHAT_ID;
     if (allowedChatId && String(chatId) !== String(allowedChatId)) {
       await sendMessage(chatId, "⚠️ <b>Ruxsat berilmagan!</b>\nSiz ushbu botdan foydalana olmaysiz.");
       return NextResponse.json({ ok: true, ignored: true });
     }
-
 
     // Ovozli xabar yoki oddiy izoh matni kelganda
     const isCommand = text.startsWith('/');
@@ -255,6 +342,10 @@ export async function POST(req: NextRequest) {
       await handleWeek(chatId);
     } else if (text === '/journals') {
       await handleJournals(chatId);
+    } else if (text.startsWith('/add_lesson')) {
+      await handleAddLesson(chatId, message.text || '');
+    } else if (text === '/delete_lesson') {
+      await handleDeleteLessonList(chatId);
     } else if (text === '/help') {
       await handleHelp(chatId);
     } else {
@@ -441,5 +532,174 @@ async function handleIncomingNote(chatId: number, rawText: string, voice: any) {
     await sendMessage(chatId, successMsg);
   } else {
     await sendMessage(chatId, `❌ <b>${group.name}</b> guruhi uchun hech qanday dars mavzulari topilmadi. Avval platformadan dars kiriting.`);
+  }
+}
+
+// ─── Add/Delete Schedule Functions ───────────────────────────────────────────
+async function handleAddLesson(chatId: number, text: string) {
+  const parts = text.split(/\s+/).slice(1);
+  if (parts.length < 4) {
+    await sendMessage(chatId, "⚠️ <b>Noto'g'ri format!</b>\n\nBuyruq formati:\n<code>/add_lesson [Guruh] [Para] [Kun] [Haftalar]</code>\n\n<i>Misol: /add_lesson 25-16 1 Dushanba 1-20</i>");
+    return;
+  }
+
+  const [groupInput, paraInput, dayInput, weeksInput] = parts;
+
+  let data;
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+    data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch (err) {
+    await sendMessage(chatId, "❌ Ma'lumotlarni o'qib bo'lmadi.");
+    return;
+  }
+
+  const group = (data.groups || []).find((g: any) => g.name.toLowerCase().includes(groupInput.toLowerCase()));
+  if (!group) {
+    await sendMessage(chatId, `❌ Tizimda <b>${groupInput}</b> guruhi topilmadi.`);
+    return;
+  }
+
+  const period = parseInt(paraInput);
+  if (isNaN(period) || period < 1 || period > 6) {
+    await sendMessage(chatId, "❌ Paralar 1 dan 6 gacha raqam bo'lishi kerak.");
+    return;
+  }
+
+  const daysMap: Record<string, number> = {
+    'dushanba': 1, '1': 1, 'mon': 1,
+    'seshanba': 2, '2': 2, 'tue': 2,
+    'chorshanba': 3, '3': 3, 'wed': 3,
+    'payshanba': 4, '4': 4, 'thu': 4,
+    'juma': 5, '5': 5, 'fri': 5,
+    'shanba': 6, '6': 6, 'sat': 6,
+  };
+  const dayOfWeek = daysMap[dayInput.toLowerCase()];
+  if (!dayOfWeek) {
+    await sendMessage(chatId, "❌ Kun nomi noto'g'ri (Dushanba-Shanba oralig'ida yozing).");
+    return;
+  }
+
+  let weeksStr = '';
+  if (weeksInput.includes('-')) {
+    const [start, end] = weeksInput.split('-').map(Number);
+    if (isNaN(start) || isNaN(end) || start > end || start < 1 || end > 20) {
+      await sendMessage(chatId, "❌ Haftalar oralig'i noto'g'ri (Masalan: 1-20).");
+      return;
+    }
+    const wArr = [];
+    for (let w = start; w <= end; w++) wArr.push(w);
+    weeksStr = wArr.join(',');
+  } else {
+    weeksStr = weeksInput;
+  }
+
+  const newId = (data.lessons || []).length > 0
+    ? Math.max(...data.lessons.map((l: any) => l.id || 0)) + 1
+    : 1;
+
+  const newLesson = {
+    id: newId,
+    sectionId: 1,
+    groupId: group.id,
+    weeks: weeksStr,
+    dayOfWeek: dayOfWeek,
+    shift: 1,
+    period: period,
+    teacher: "Napasov O.",
+    note: ""
+  };
+
+  data.lessons.push(newLesson);
+
+  await sendMessage(chatId, "⏳ Jadval saqlanmoqda va GitHub-ga yuklanmoqda...");
+
+  const res = await saveScheduleData(data);
+  if (res.success) {
+    await sendMessage(chatId, `✅ <b>Dars jadvalga muvaffaqiyatli qo'shildi!</b>\n\n👥 Guruh: <b>${group.name}</b>\n📅 Kun: <b>${DAY_NAMES_UZ[dayOfWeek]}</b>\n🕒 Para: <b>${period}-para</b>\n📅 Haftalar: <b>${weeksInput}</b>\n\n🔄 <i>Saytda yangilanishi uchun Vercel qayta qurishini kuting (1 daqiqa).</i>`);
+  } else {
+    await sendMessage(chatId, `❌ GitHub bilan sinxronlashda xatolik: ${res.error}`);
+  }
+}
+
+async function handleDeleteLessonList(chatId: number) {
+  let data;
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+    data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch (err) {
+    await sendMessage(chatId, "❌ Ma'lumotlarni o'qib bo'lmadi.");
+    return;
+  }
+
+  const { lessons, groups, settings } = data;
+  const techSchool = settings?.techSchool || 'shahrisabz';
+
+  const schoolLessons = (lessons || []).filter((l: any) => {
+    const grp = (groups || []).find((g: any) => g.id === l.groupId);
+    return grp && grp.tech_school === techSchool;
+  });
+
+  if (schoolLessons.length === 0) {
+    await sendMessage(chatId, "📭 Jadvalda hech qanday dars topilmadi.");
+    return;
+  }
+
+  let msg = `🗑 <b>Darsni O'chirish</b>\n\nO'chirmoqchi bo'lgan darsni tanlang:\n`;
+  const inlineKeyboard: any[] = [];
+
+  schoolLessons.slice(0, 15).forEach((l: any) => {
+    const grp = (groups || []).find((g: any) => g.id === l.groupId);
+    const label = `${grp?.name || 'Guruh'} | ${DAY_NAMES_UZ[l.dayOfWeek]} (${l.period}-para)`;
+    inlineKeyboard.push([
+      { text: `❌ ${label}`, callback_data: `del_sch_${l.id}` }
+    ]);
+  });
+
+  await sendMessage(chatId, msg, { inline_keyboard: inlineKeyboard });
+}
+
+async function handleCallbackDeleteLesson(chatId: number, callbackQueryId: string, lessonId: number) {
+  let data;
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+    data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch (err) {
+    await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callback_query_id: callbackQueryId, text: "❌ Faylni o'qishda xatolik", show_alert: true })
+    });
+    return;
+  }
+
+  const lessonExists = data.lessons.some((l: any) => l.id === lessonId);
+  if (!lessonExists) {
+    await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callback_query_id: callbackQueryId, text: "⚠️ Ushbu dars allaqachon o'chirilgan", show_alert: true })
+    });
+    return;
+  }
+
+  data.lessons = data.lessons.filter((l: any) => l.id !== lessonId);
+
+  const res = await saveScheduleData(data);
+
+  if (res.success) {
+    await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callback_query_id: callbackQueryId, text: "✅ Dars o'chirildi!" })
+    });
+
+    await sendMessage(chatId, `❌ <b>Dars jadvaldan o'chirildi!</b>\n\n🔄 <i>Saytda yangilanishi uchun Vercel qayta qurishini kuting (1 daqiqa).</i>`);
+  } else {
+    await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callback_query_id: callbackQueryId, text: `❌ GitHub xatosi: ${res.error}`, show_alert: true })
+    });
   }
 }
