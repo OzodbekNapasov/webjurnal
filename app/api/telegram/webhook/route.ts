@@ -125,9 +125,17 @@ interface ScheduleLesson {
   groupId: number;
   sectionId: number;
 }
+function getDayDateString(targetDayOfWeek: number): string {
+  const now = new Date();
+  const currentJsDay = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const currentDayOfWeek = currentJsDay === 0 ? 7 : currentJsDay;
+  const diff = targetDayOfWeek - currentDayOfWeek;
+  const targetDate = new Date(now);
+  targetDate.setDate(now.getDate() + diff);
+  return `${targetDate.getDate()}-${MONTH_NAMES_UZ[targetDate.getMonth()]}, ${DAY_NAMES_UZ[targetDate.getDay()]}`;
+}
 
 async function buildTodayMessage(targetDay?: number): Promise<string> {
-
   let data;
   try {
     const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
@@ -148,7 +156,12 @@ async function buildTodayMessage(targetDay?: number): Promise<string> {
   const jsDay = now.getDay(); // 0=Sun
   const dayOfWeek = targetDay ?? (jsDay === 0 ? 7 : jsDay);
 
-  if (dayOfWeek === 7) return '📅 Bugun Yakshanba — dam olish kuni! Yaxshi hordiq oling 😊';
+  const dateStr = targetDay ? getDayDateString(dayOfWeek) : todayUz();
+
+  if (dayOfWeek === 7) {
+    const label = targetDay ? (targetDay === (jsDay === 0 ? 7 : jsDay) + 1 ? 'Ertangi' : 'Yakshanba kungi') : 'Bugungi';
+    return `📅 <b>${label} darslar — ${dateStr}</b>\n\n😌 Yakshanba — dam olish kuni! Yaxshi hordiq oling 😊`;
+  }
 
   const todayLessons: any[] = (lessons || [])
     .filter((l: ScheduleLesson) => {
@@ -166,29 +179,77 @@ async function buildTodayMessage(targetDay?: number): Promise<string> {
     .filter(Boolean)
     .sort((a: any, b: any) => a.period - b.period);
 
-  const label = targetDay ? (targetDay === (jsDay === 0 ? 7 : jsDay) + 1 ? 'Ertangi' : `${DAY_NAMES_UZ[targetDay - 1]} kungi`) : 'Bugungi';
+  const label = targetDay ? (targetDay === (jsDay === 0 ? 7 : jsDay) + 1 ? 'Ertangi' : `${DAY_NAMES_UZ[dayOfWeek % 7]} kungi`) : 'Bugungi';
 
   if (todayLessons.length === 0) {
-    return `📅 <b>${label} darslar — ${todayUz()}</b>\n\n😌 Bugun dars yo'q. Yaxshi dam oling!`;
+    return `📅 <b>${label} darslar — ${dateStr}</b>\n\n😌 Darslar yo'q. Yaxshi dam oling!`;
   }
 
   const totalHours = todayLessons.length * 1.5;
   const baseUrl = getBaseUrl();
-  let msg = `📅 <b>${label} darslar — ${todayUz()}</b>\n`;
+  let msg = `📅 <b>${label} darslar — ${dateStr}</b>\n`;
   msg += `📌 ${currentWeek}-hafta\n\n`;
 
   todayLessons.forEach((l: any) => {
     const journalUrl = `${baseUrl}/journal?groupId=${l.groupId}&groupName=${encodeURIComponent(l.groupName)}`;
-    msg += `┌─────────────────────\n`;
-    msg += `│ <b>${ROMAN[l.period]}-para</b>  ${l.bell.start}–${l.bell.end}\n`;
-    msg += `│ 👥 ${l.groupName}\n`;
-    msg += `│ 📚 ${l.sectionName}\n`;
-    msg += `│ 🔗 <a href="${journalUrl}">Jurnalni ochish</a>\n`;
-    msg += `└─────────────────────\n`;
+    msg += `🔹 <b>${ROMAN[l.period]}-para</b> (${l.bell.start}–${l.bell.end})\n`;
+    msg += `├  👥 Guruh: <code>${l.groupName}</code>\n`;
+    msg += `├  📚 Fan: <i>${l.sectionName}</i>\n`;
+    msg += `└  🔗 <a href="${journalUrl}">Jurnalni ochish ➡️</a>\n\n`;
   });
 
-  msg += `\n📊 Jami: <b>${todayLessons.length} ta dars</b> · ${totalHours} soat`;
-  msg += `\n\n🎓 Yaxshi dars!`;
+  msg += `📊 Jami: <b>${todayLessons.length} ta dars</b> · ${totalHours} soat`;
+  return msg;
+}
+
+async function buildWeeklyScheduleMessage(): Promise<string> {
+  let data;
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+    data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch (err) {
+    return '❌ Jadval ma\'lumotlari topilmadi.';
+  }
+
+  const { settings, lessons, groups, sections, bellSchedule } = data;
+  const semStart = settings?.semesterStartDate || '';
+  const currentWeek = semStart ? getCurrentWeek(semStart) : (settings?.currentWeek || 1);
+  const techSchool = settings?.techSchool || 'shahrisabz';
+  const baseUrl = getBaseUrl();
+
+  let msg = `🗓 <b>Haftalik Dars Jadvali</b>\n`;
+  msg += `📌 ${currentWeek}-hafta · Texnikum: <i>${techSchool.toUpperCase()}</i>\n\n`;
+
+  for (let day = 1; day <= 6; day++) {
+    const dateStr = getDayDateString(day);
+    const dayLessons = (lessons || [])
+      .filter((l: ScheduleLesson) => {
+        if (Number(l.dayOfWeek) !== day) return false;
+        const weeks = (l.weeks || '').split(',').map(Number);
+        return weeks.includes(currentWeek);
+      })
+      .map((l: ScheduleLesson) => {
+        const group = (groups || []).find((g: any) => g.id === l.groupId);
+        const section = (sections || []).find((s: any) => s.id === l.sectionId);
+        if (!group || group.tech_school !== techSchool) return null;
+        const bell = bellSchedule?.[String(l.shift)]?.[l.period] || { start: '08:30', end: '09:50' };
+        return { ...l, groupName: group.name, sectionName: section?.name || '—', bell };
+      })
+      .filter(Boolean)
+      .sort((a: any, b: any) => a.period - b.period);
+
+    msg += `<b>📅 ${DAY_NAMES_UZ[day % 7].toUpperCase()} (${dateStr.split(',')[0]})</b>\n`;
+    if (dayLessons.length === 0) {
+      msg += `<i>😌 Darslar yo'q</i>\n\n`;
+    } else {
+      dayLessons.forEach((l: any) => {
+        const journalUrl = `${baseUrl}/journal?groupId=${l.groupId}&groupName=${encodeURIComponent(l.groupName)}`;
+        msg += `🔹 <b>${ROMAN[l.period]}-para</b> (${l.bell.start}) | <code>${l.groupName}</code> | <a href="${journalUrl}">Jurnal ➡️</a>\n`;
+      });
+      msg += `\n`;
+    }
+  }
+
   return msg;
 }
 
@@ -238,13 +299,8 @@ async function handleTomorrow(chatId: number) {
 }
 
 async function handleWeek(chatId: number) {
-  const days = [];
-  for (let day = 1; day <= 6; day++) {
-    const msg = await buildTodayMessage(day);
-    days.push(msg);
-  }
-  const combinedMsg = days.join('\n\n====================\n\n');
-  await sendMessage(chatId, combinedMsg);
+  const msg = await buildWeeklyScheduleMessage();
+  await sendMessage(chatId, msg);
 }
 
 async function handleJournals(chatId: number) {
