@@ -142,6 +142,13 @@ export async function GET(req: NextRequest) {
 
     const result = await sendMessage(chatId, msg);
 
+    if (!result.ok) {
+      return NextResponse.json({
+        error: `Telegram API error: ${result.description || 'Unknown error'}`,
+        details: result
+      }, { status: 400 });
+    }
+
     return NextResponse.json({
       ok: true,
       lessons_count: todayLessons.length,
