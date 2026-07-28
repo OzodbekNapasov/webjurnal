@@ -37,6 +37,17 @@ function getCurrentWeek(semesterStartDate: string): number {
   return Math.max(1, Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1);
 }
 
+// Hostname helper
+function getBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3000';
+}
+
 interface ScheduleLesson {
   period: number;
   dayOfWeek: number;
@@ -52,8 +63,6 @@ async function buildTodayMessage(targetDay?: number): Promise<string> {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false } }
   );
-
-
 
   let data;
   try {
@@ -93,7 +102,6 @@ async function buildTodayMessage(targetDay?: number): Promise<string> {
     .filter(Boolean)
     .sort((a: any, b: any) => a.period - b.period);
 
-  const dayName = DAY_NAMES_UZ[jsDay];
   const label = targetDay ? (targetDay === (jsDay === 0 ? 7 : jsDay) + 1 ? 'Ertangi' : `${DAY_NAMES_UZ[targetDay - 1]} kungi`) : 'Bugungi';
 
   if (todayLessons.length === 0) {
@@ -101,14 +109,17 @@ async function buildTodayMessage(targetDay?: number): Promise<string> {
   }
 
   const totalHours = todayLessons.length * 1.5;
+  const baseUrl = getBaseUrl();
   let msg = `📅 <b>${label} darslar — ${todayUz()}</b>\n`;
   msg += `📌 ${currentWeek}-hafta\n\n`;
 
   todayLessons.forEach((l: any) => {
+    const journalUrl = `${baseUrl}/journal?groupId=${l.groupId}&groupName=${encodeURIComponent(l.groupName)}`;
     msg += `┌─────────────────────\n`;
     msg += `│ <b>${ROMAN[l.period]}-para</b>  ${l.bell.start}–${l.bell.end}\n`;
     msg += `│ 👥 ${l.groupName}\n`;
     msg += `│ 📚 ${l.sectionName}\n`;
+    msg += `│ 🔗 <a href="${journalUrl}">Jurnalni ochish</a>\n`;
     msg += `└─────────────────────\n`;
   });
 
@@ -125,6 +136,7 @@ async function handleStart(chatId: number, firstName: string) {
     + `/today — Bugungi darslar\n`
     + `/tomorrow — Ertangi darslar\n`
     + `/week — Haftalik jadval\n`
+    + `/journals — Barcha jurnallar\n`
     + `/help — Yordam\n\n`
     + `Har kuni ertalab <b>07:00</b> da bugungi darslarni avtomatik yuboraman! ✅`;
   await sendMessage(chatId, msg);
@@ -134,7 +146,8 @@ async function handleHelp(chatId: number) {
   const msg = `ℹ️ <b>Yordam</b>\n\n`
     + `/today — Bugungi darslar ro'yxati\n`
     + `/tomorrow — Ertangi darslar ro'yxati\n`
-    + `/week — Haftalik jadval\n\n`
+    + `/week — Haftalik darslar\n`
+    + `/journals — Barcha faol guruhlar jurnallari\n\n`
     + `🔔 Har kuni soat 07:00 da darslar ro'yxati avtomatik yuboriladi.`;
   await sendMessage(chatId, msg);
 }
@@ -165,6 +178,40 @@ async function handleWeek(chatId: number) {
   for (const m of msgs) {
     await sendMessage(chatId, m);
   }
+}
+
+async function handleJournals(chatId: number) {
+  await sendMessage(chatId, '⏳ Jurnallar ro\'yxati yuklanmoqda...');
+  
+  let data;
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    data = JSON.parse(fileContent);
+  } catch (err) {
+    await sendMessage(chatId, '❌ Jurnallar ma\'lumotlarini o\'qib bo\'lmadi.');
+    return;
+  }
+
+  const { groups, settings } = data;
+  const techSchool = settings?.techSchool || 'shahrisabz';
+  const schoolGroups = (groups || []).filter((g: any) => g.tech_school === techSchool);
+
+  if (schoolGroups.length === 0) {
+    await sendMessage(chatId, '📭 Obuna bo\'lish uchun guruhlar topilmadi.');
+    return;
+  }
+
+  const baseUrl = getBaseUrl();
+  let msg = `📘 <b>Elektron Jurnallar Ro'yxati</b>\n`;
+  msg += `🏫 Texnikum: <i>${techSchool.toUpperCase()}</i>\n\n`;
+
+  schoolGroups.forEach((g: any, i: number) => {
+    const journalUrl = `${baseUrl}/journal?groupId=${g.id}&groupName=${encodeURIComponent(g.name)}`;
+    msg += `${i + 1}. <b>${g.name}</b> — <a href="${journalUrl}">Jurnalni ochish ➡️</a>\n`;
+  });
+
+  await sendMessage(chatId, msg);
 }
 
 // ─── Main webhook handler ─────────────────────────────────────────────────────
@@ -200,6 +247,8 @@ export async function POST(req: NextRequest) {
       await handleTomorrow(chatId);
     } else if (text === '/week') {
       await handleWeek(chatId);
+    } else if (text === '/journals') {
+      await handleJournals(chatId);
     } else if (text === '/help') {
       await handleHelp(chatId);
     } else {

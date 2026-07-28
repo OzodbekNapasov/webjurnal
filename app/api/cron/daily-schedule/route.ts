@@ -110,6 +110,13 @@ export async function GET(req: NextRequest) {
       .filter(Boolean)
       .sort((a: any, b: any) => a.period - b.period);
 
+    // Hostname helper
+    const getBaseUrl = () => {
+      if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL;
+      if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+      return 'http://localhost:3000';
+    };
+
     let msg = `🌅 <b>Xayrli tong!</b>\n\n`;
     msg += `📅 <b>${dayName}, ${dateStr}</b>\n`;
     msg += `📌 ${currentWeek}-hafta\n\n`;
@@ -117,11 +124,14 @@ export async function GET(req: NextRequest) {
     if (todayLessons.length === 0) {
       msg += `😌 Bugun dars yo'q. Yaxshi dam oling!`;
     } else {
+      const baseUrl = getBaseUrl();
       todayLessons.forEach((l: any) => {
+        const journalUrl = `${baseUrl}/journal?groupId=${l.groupId}&groupName=${encodeURIComponent(l.groupName)}`;
         msg += `┌─────────────────────\n`;
         msg += `│ <b>${ROMAN[l.period]}-para</b>  ${l.bell.start}–${l.bell.end}\n`;
         msg += `│ 👥 ${l.groupName}\n`;
         msg += `│ 📚 ${l.sectionName}\n`;
+        msg += `│ 🔗 <a href="${journalUrl}">Jurnalni ochish</a>\n`;
         msg += `└─────────────────────\n`;
       });
 
