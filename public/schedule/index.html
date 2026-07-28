@@ -726,7 +726,7 @@
                     </div>
 
                     <!-- Restore -->
-                    <div onclick="triggerImportFileInput()" class="flex items-center justify-between p-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer">
+                    <div onclick="triggerImportFileInput()" class="flex items-center justify-between p-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer border-b border-outline-variant/20">
                         <div class="flex items-center gap-4">
                             <span class="material-symbols-outlined text-secondary dark:text-outline-variant text-2xl">cloud_upload</span>
                             <div>
@@ -737,6 +737,18 @@
                         <span class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant">upload_file</span>
                         <!-- Hidden input for file upload -->
                         <input type="file" id="backup-file-input" class="hidden" accept=".json" onchange="handleImportFile(event)" />
+                    </div>
+
+                    <!-- Reset from Server -->
+                    <div onclick="resetDataFromServer()" class="flex items-center justify-between p-4 hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors cursor-pointer">
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-error dark:text-error/80 text-2xl">autorenew</span>
+                            <div>
+                                <h3 class="font-body-lg text-body-lg text-error dark:text-error/80 font-medium">Serverdan qayta yuklash</h3>
+                                <p class="font-body-md text-body-md text-on-surface-variant dark:text-slate-400">Mahalliy keshni tozalab, serverdagi yangi jadvalni yuklash</p>
+                            </div>
+                        </div>
+                        <span class="material-symbols-outlined text-on-surface-variant dark:text-slate-400">sync</span>
                     </div>
                 </div>
             </div>

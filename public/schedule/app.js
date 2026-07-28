@@ -2795,3 +2795,16 @@ function exportGrafikToExcel() {
         showCustomAlert("Excelga eksport qilishda xatolik yuz berdi: " + err.message);
     }
 }
+
+function resetDataFromServer() {
+    showCustomConfirm("Rostdan ham barcha ma'lumotlarni serverdan qaytadan yuklamoqchisiz? Mahalliy o'zgartirishlaringiz o'chib ketadi.").then(approved => {
+        if (approved) {
+            localStorage.removeItem("dars_sections");
+            localStorage.removeItem("dars_groups");
+            localStorage.removeItem("dars_lessons");
+            localStorage.removeItem("dars_settings");
+            localStorage.removeItem("dars_academic_graphs");
+            window.location.reload();
+        }
+    });
+}
