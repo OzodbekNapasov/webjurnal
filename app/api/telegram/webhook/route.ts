@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
+import ExcelJS from 'exceljs';
 
 export const dynamic = 'force-dynamic';
 
@@ -201,7 +202,8 @@ async function handleStart(chatId: number, firstName: string) {
     keyboard: [
       [{ text: "📅 Bugungi darslar" }, { text: "⏰ Ertangi darslar" }],
       [{ text: "🗓 Haftalik jadval" }, { text: "📘 Jurnallar ro'yxati" }],
-      [{ text: "🗑 Dars o'chirish" }, { text: "ℹ️ Yordam" }]
+      [{ text: "📊 Forma-2 Hisobot" }, { text: "🗑 Dars o'chirish" }],
+      [{ text: "ℹ️ Yordam" }]
     ],
     resize_keyboard: true,
     one_time_keyboard: false
@@ -215,7 +217,8 @@ async function handleHelp(chatId: number) {
     + `/today — Bugungi darslar ro'yxati\n`
     + `/tomorrow — Ertangi darslar ro'yxati\n`
     + `/week — Haftalik darslar\n`
-    + `/journals — Barcha faol guruhlar jurnallari\n\n`
+    + `/journals — Barcha faol guruhlar jurnallari\n`
+    + `/report — Forma-2 oylik hisoboti (Excel)\n\n`
     + `🔔 Har kuni soat 07:00 da darslar ro'yxati avtomatik yuboriladi.`;
   await sendMessage(chatId, msg);
 }
@@ -305,6 +308,9 @@ export async function POST(req: NextRequest) {
       if (cData.startsWith('del_sch_')) {
         const lessonId = parseInt(cData.replace('del_sch_', ''));
         await handleCallbackDeleteLesson(cChatId, cQueryId, lessonId);
+      } else if (cData.startsWith('form2_')) {
+        const monthCode = cData.replace('form2_', '');
+        await handleCallbackForm2Report(cChatId, cQueryId, monthCode);
       }
       return NextResponse.json({ ok: true });
     }
@@ -328,6 +334,7 @@ export async function POST(req: NextRequest) {
       "⏰ ertangi darslar",
       "🗓 haftalik jadval",
       "📘 jurnallar ro'yxati",
+      "📊 forma-2 hisobot",
       "🗑 dars o'chirish",
       "ℹ️ yordam"
     ].includes(text);
@@ -345,6 +352,8 @@ export async function POST(req: NextRequest) {
       await handleWeek(chatId);
     } else if (text === '/journals' || text === "📘 jurnallar ro'yxati") {
       await handleJournals(chatId);
+    } else if (text === '/report' || text === "📊 forma-2 hisobot") {
+      await handleReportPrompt(chatId);
     } else if (text.startsWith('/add_lesson')) {
       await handleAddLesson(chatId, message.text || '');
     } else if (text === '/delete_lesson' || text === "🗑 dars o'chirish") {
@@ -715,5 +724,351 @@ async function handleCallbackDeleteLesson(chatId: number, callbackQueryId: strin
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ callback_query_id: callbackQueryId, text: `❌ GitHub xatosi: ${res.error}`, show_alert: true })
     });
+  }
+}
+
+// ─── Monthly Report & Forma-2 Generator ─────────────────────────────────────
+async function handleReportPrompt(chatId: number) {
+  const msg = `📊 <b>Forma-2 Oylik Hisoboti</b>\n\nHaqiqiy o'tilgan darslar asosida Forma-2 (Tabel) hisobotini yuklab olish uchun oylardan birini tanlang:`;
+  const inlineKeyboard = [
+    [
+      { text: "Yanvar", callback_data: "form2_01" },
+      { text: "Fevral", callback_data: "form2_02" },
+      { text: "Mart", callback_data: "form2_03" }
+    ],
+    [
+      { text: "Aprel", callback_data: "form2_04" },
+      { text: "May", callback_data: "form2_05" },
+      { text: "Iyun", callback_data: "form2_06" }
+    ],
+    [
+      { text: "Iyul", callback_data: "form2_07" },
+      { text: "Avgust", callback_data: "form2_08" },
+      { text: "Sentyabr", callback_data: "form2_09" }
+    ],
+    [
+      { text: "Oktabr", callback_data: "form2_10" },
+      { text: "Noyabr", callback_data: "form2_11" },
+      { text: "Dekabr", callback_data: "form2_12" }
+    ]
+  ];
+  await sendMessage(chatId, msg, { inline_keyboard: inlineKeyboard });
+}
+
+async function handleCallbackForm2Report(chatId: number, callbackQueryId: string, monthCode: string) {
+  // 1. Loading notification to Telegram inline button
+  await fetch(`${TG_API}/answerCallbackQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ callback_query_id: callbackQueryId, text: "⏳ Hisobot tayyorlanmoqda, kuting..." })
+  });
+
+  try {
+    // 2. Read techSchool from settings/data.json
+    let data;
+    try {
+      const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+      data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    } catch (err) {
+      await sendMessage(chatId, "❌ Sozlamalarni o'qishda xatolik yuz berdi.");
+      return;
+    }
+
+    const techSchool = data.settings?.techSchool || 'shahrisabz';
+    const schoolLabel = techSchool === 'ibn_sino' ? "Ibn Sino Tibbiyot Texnikumi" : "Shahrisabz Tibbiyot Texnikumi";
+    const year = new Date().getFullYear();
+
+    const months: Record<string, string> = {
+      '01': 'YANVAR', '02': 'FEVRAL', '03': 'MART', '04': 'APREL',
+      '05': 'MAY', '06': 'IYUN', '07': 'IYUL', '08': 'AVGUST',
+      '09': 'SENTYABR', '10': 'OKTABR', '11': 'NOYABR', '12': 'DEKABR'
+    };
+    const monthName = months[monthCode] || monthCode;
+
+    // 3. Initialize Supabase client
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } }
+    );
+
+    // 4. Query groups with tech_school filter
+    const { data: allGroups, error: groupsError } = await supabase
+      .from('groups')
+      .select('id, name, tech_school');
+
+    if (groupsError) throw groupsError;
+
+    const groups = (allGroups || [])
+      .filter((g: any) => {
+        const school = g.tech_school || 'shahrisabz';
+        return school === techSchool;
+      })
+      .sort((a: any, b: any) => (a.name || '').localeCompare(b.name || '', 'uz', { sensitivity: 'base' }));
+
+    if (groups.length === 0) {
+      await sendMessage(chatId, `📭 Ushbu texnikum (${techSchool.toUpperCase()}) uchun guruhlar topilmadi.`);
+      return;
+    }
+
+    const groupIds = groups.map(g => g.id);
+    const groupMap = new Map<number, string>();
+    groups.forEach(g => groupMap.set(g.id, g.name));
+
+    // 5. Fetch lessons
+    const { data: lessons, error: lessonsError } = await supabase
+      .from('lessons')
+      .select('*')
+      .in('group_id', groupIds);
+
+    if (lessonsError) throw lessonsError;
+
+    // 6. Calculate month days and sundays
+    const totalDays = new Date(year, parseInt(monthCode), 0).getDate();
+    const sundays: number[] = [];
+    for (let d = 1; d <= totalDays; d++) {
+      const dateObj = new Date(year, parseInt(monthCode) - 1, d);
+      if (dateObj.getDay() === 0) {
+        sundays.push(d);
+      }
+    }
+
+    // 7. Map GroupRow data
+    const groupRows = groups.map(g => {
+      const groupLessons = (lessons || []).filter(l => l.group_id === g.id);
+      const dayHours: Record<number, string> = {};
+      let totalHours = 0;
+
+      for (let d = 1; d <= totalDays; d++) {
+        const dStr = d < 10 ? `0${d}` : `${d}`;
+        const targetDateStr = `${dStr}.${monthCode}.${year}`;
+        const matches = groupLessons.filter(l => l.lesson_date === targetDateStr);
+        
+        if (matches.length > 0) {
+          const hoursVal = matches.map(m => m.hours || 2);
+          dayHours[d] = hoursVal.join(' ');
+          totalHours += hoursVal.reduce((acc, h) => acc + h, 0);
+        } else {
+          dayHours[d] = '';
+        }
+      }
+
+      return {
+        groupId: g.id,
+        groupName: g.name.replace(/\([^)]*\)/, '').trim(),
+        dayHours,
+        totalHours
+      };
+    }).filter(row => row.totalHours > 0);
+
+    if (groupRows.length === 0) {
+      await sendMessage(chatId, `📭 Tanlangan <b>${monthName}</b> oyida o'tilgan darslar topilmadi.`);
+      return;
+    }
+
+    // 8. Generate ExcelJS Sheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Forma-2", {
+      views: [{ showGridLines: true }]
+    });
+
+    // Title Row 1
+    worksheet.addRow([`"${schoolLabel}"ning Tibbiyotda axborot texnologiyalari fani o'qituvchisi`]);
+    // Title Row 2
+    worksheet.addRow([`Ozodbek Napasovning ${monthName} oyida o'tgan dars soatlari`]);
+    // Empty Row
+    worksheet.addRow([]);
+
+    // Merge title rows
+    const lastColIndex = 4 + totalDays; // 1 (№) + 1 (Fan) + 1 (Guruh) + totalDays + 1 (Jami)
+    worksheet.mergeCells(1, 1, 1, lastColIndex);
+    worksheet.mergeCells(2, 1, 2, lastColIndex);
+
+    // Format Title Row 1 & 2
+    const titleRow1 = worksheet.getRow(1);
+    titleRow1.getCell(1).font = { name: 'Times New Roman', size: 12, bold: true };
+    titleRow1.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+    titleRow1.height = 24;
+
+    const titleRow2 = worksheet.getRow(2);
+    titleRow2.getCell(1).font = { name: 'Times New Roman', size: 12, bold: true };
+    titleRow2.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+    titleRow2.height = 24;
+
+    // Headers: Row 4 & 5
+    const row4Values: any[] = ["№", "O'tilgan fan", "Guruh"];
+    for (let i = 0; i < totalDays; i++) {
+      row4Values.push(i === 0 ? "Kunlar" : "");
+    }
+    row4Values.push("Jami soat");
+    worksheet.addRow(row4Values); // Row 4
+
+    const row5Values: any[] = ["", "", ""];
+    for (let d = 1; d <= totalDays; d++) {
+      row5Values.push(d);
+    }
+    row5Values.push("");
+    worksheet.addRow(row5Values); // Row 5
+
+    // Merges for Headers
+    worksheet.mergeCells(4, 1, 5, 1); // №
+    worksheet.mergeCells(4, 2, 5, 2); // O'tilgan fan
+    worksheet.mergeCells(4, 3, 5, 3); // Guruh
+    worksheet.mergeCells(4, 4, 4, 3 + totalDays); // Kunlar header
+    worksheet.mergeCells(4, 4 + totalDays, 5, 4 + totalDays); // Jami soat
+
+    // Style Headers
+    const headerRows = [worksheet.getRow(4), worksheet.getRow(5)];
+    const thinBorder: any = {
+      top: { style: 'thin', color: { argb: 'FF000000' } },
+      left: { style: 'thin', color: { argb: 'FF000000' } },
+      bottom: { style: 'thin', color: { argb: 'FF000000' } },
+      right: { style: 'thin', color: { argb: 'FF000000' } }
+    };
+
+    headerRows.forEach(row => {
+      row.height = 20;
+      for (let c = 1; c <= lastColIndex; c++) {
+        const cell = row.getCell(c);
+        cell.font = { name: 'Times New Roman', size: 10, bold: true };
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        cell.border = thinBorder;
+      }
+    });
+
+    // Sunday shading in Row 5
+    for (let d = 1; d <= totalDays; d++) {
+      if (sundays.includes(d)) {
+        const cell = worksheet.getRow(5).getCell(3 + d);
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFCBD5E1' } // Light gray
+        };
+      }
+    }
+
+    // Add Body rows starting from Row 6
+    const bodyStartRow = 6;
+    groupRows.forEach((row, index) => {
+      const rNum = bodyStartRow + index;
+      const rValues: any[] = [
+        index + 1,
+        index === 0 ? "Tibbiyotda axborot texnologiyalari" : "",
+        row.groupName
+      ];
+      for (let d = 1; d <= totalDays; d++) {
+        rValues.push(row.dayHours[d] || "");
+      }
+      rValues.push(row.totalHours);
+      worksheet.addRow(rValues);
+
+      const excelRow = worksheet.getRow(rNum);
+      excelRow.height = 25;
+      for (let c = 1; c <= lastColIndex; c++) {
+        const cell = excelRow.getCell(c);
+        cell.font = { name: 'Times New Roman', size: 10, bold: c === 1 || c === 3 || c === lastColIndex };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = thinBorder;
+
+        // Color sundays
+        if (c >= 4 && c <= 3 + totalDays) {
+          const d = c - 3;
+          if (sundays.includes(d)) {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFCBD5E1' }
+            };
+          }
+        }
+      }
+    });
+
+    // Merge "O'tilgan fan" vertically
+    if (groupRows.length > 0) {
+      worksheet.mergeCells(bodyStartRow, 2, bodyStartRow + groupRows.length - 1, 2);
+      const mergedCell = worksheet.getRow(bodyStartRow).getCell(2);
+      mergedCell.font = { name: 'Times New Roman', size: 10, bold: true };
+      mergedCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    }
+
+    // Total Row
+    const totalRowNum = bodyStartRow + groupRows.length;
+    const totalRowValues: any[] = ["", "Jami", ""];
+    let totalAll = 0;
+    for (let d = 1; d <= totalDays; d++) {
+      let daySum = 0;
+      groupRows.forEach(row => {
+        const vals = (row.dayHours[d] || '').split(' ').map(v => parseInt(v) || 0);
+        daySum += vals.reduce((a, b) => a + b, 0);
+      });
+      totalRowValues.push(daySum || "");
+      totalAll += daySum;
+    }
+    totalRowValues.push(totalAll);
+    worksheet.addRow(totalRowValues);
+
+    worksheet.mergeCells(totalRowNum, 2, totalRowNum, 3);
+    const totalRow = worksheet.getRow(totalRowNum);
+    totalRow.height = 25;
+    for (let c = 1; c <= lastColIndex; c++) {
+      const cell = totalRow.getCell(c);
+      cell.font = { name: 'Times New Roman', size: 10, bold: true };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = thinBorder;
+
+      if (c >= 4 && c <= 3 + totalDays) {
+        const d = c - 3;
+        if (sundays.includes(d)) {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFCBD5E1' }
+          };
+        }
+      }
+    }
+
+    // Footer Signatures
+    worksheet.addRow([]);
+    worksheet.addRow([]);
+    const sig1Row = totalRowNum + 3;
+    const sig2Row = totalRowNum + 4;
+
+    worksheet.getRow(sig1Row).getCell(2).value = "O'qituvchi: ____________________ O.Z.Napasov";
+    worksheet.getRow(sig1Row).getCell(2).font = { name: 'Times New Roman', size: 11, bold: true };
+    
+    worksheet.getRow(sig2Row).getCell(2).value = "O'TBDO': ____________________ B.B.Eshnayev";
+    worksheet.getRow(sig2Row).getCell(2).font = { name: 'Times New Roman', size: 11, bold: true };
+
+    // Set custom column widths
+    worksheet.getColumn(1).width = 5;   // №
+    worksheet.getColumn(2).width = 30;  // O'tilgan fan
+    worksheet.getColumn(3).width = 12;  // Guruh
+    for (let d = 1; d <= totalDays; d++) {
+      worksheet.getColumn(3 + d).width = 4; // Kunlar
+    }
+    worksheet.getColumn(4 + totalDays).width = 12; // Jami soat
+
+    // 9. Write Workbook to Buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+    
+    // 10. Send Document using native Blob & FormData
+    const fileBuffer = Buffer.from(buffer);
+    const blob = new Blob([fileBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const formData = new FormData();
+    formData.append('chat_id', String(chatId));
+    formData.append('document', blob, `Forma_2_${monthName}_${year}.xlsx`);
+    formData.append('caption', `📊 <b>Forma-2 Oylik Hisoboti</b>\n\n📅 Oy: <b>${monthName} ${year}</b>\n🏫 Tibbiyot texnikumi: <b>${schoolLabel}</b>\n\n💾 Faylni telefonda yoki kompyuterda Excel orqali <b>PDF</b> sifatida saqlashingiz yoki to'g'ridan-to'g'ri chop etishingiz mumkin.`);
+
+    await fetch(`${TG_API}/sendDocument`, {
+      method: 'POST',
+      body: formData
+    });
+
+  } catch (err: any) {
+    console.error('Error generating report:', err);
+    await sendMessage(chatId, `❌ Hisobotni tayyorlashda xatolik yuz berdi:\n<code>${err.message || String(err)}</code>`);
   }
 }
