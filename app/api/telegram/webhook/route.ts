@@ -180,6 +180,14 @@ export async function POST(req: NextRequest) {
     const text: string = (message.text || '').trim().toLowerCase();
     const firstName: string = message.from?.first_name || 'Do\'stim';
 
+    // Ruxsat etilgan foydalanuvchini tekshirish
+    const allowedChatId = process.env.TELEGRAM_CHAT_ID;
+    if (allowedChatId && String(chatId) !== String(allowedChatId)) {
+      await sendMessage(chatId, "⚠️ <b>Ruxsat berilmagan!</b>\nSiz ushbu botdan foydalana olmaysiz.");
+      return NextResponse.json({ ok: true, ignored: true });
+    }
+
+
     if (text === '/start' || text.startsWith('/start ')) {
       await handleStart(chatId, firstName);
     } else if (text === '/today') {
