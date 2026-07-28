@@ -34,6 +34,8 @@ export default function SettingsPage() {
     const [newName, setNewName] = useState("");
     const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const [permissionStatus, setPermissionStatus] = useState<string>("default");
+    const [tgLoading, setTgLoading] = useState(false);
+    const [tgStatus, setTgStatus] = useState<{ ok: boolean; text: string } | null>(null);
 
     useEffect(() => {
         if (typeof window !== "undefined" && "Notification" in window) {
@@ -178,8 +180,99 @@ export default function SettingsPage() {
                     </div>
                 )}
 
+                {/* ─── Telegram Bot Card ─────────────────────────────── */}
+                <div className="mt-8 bg-gradient-to-br from-[#0f2b4a]/80 via-[#0a3d6b]/60 to-[#051d36]/80 backdrop-blur-2xl p-6 rounded-3xl border border-cyan-400/30 shadow-[0_20px_50px_rgba(0,0,0,0.4)] mb-8">
+                    <h2 className="text-base font-extrabold text-white mb-1 flex items-center gap-2.5">
+                        <span className="w-7 h-7 rounded-xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center shrink-0 text-cyan-300 text-base">
+                            ✈️
+                        </span>
+                        <span>Telegram Bot</span>
+                        <span className="ml-auto text-[10px] font-black px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 uppercase tracking-wider">Beta</span>
+                    </h2>
+                    <p className="text-xs text-slate-300 mb-5 leading-relaxed font-semibold">
+                        Har kuni ertalab soat <b className="text-cyan-300">07:00</b> da bugungi darslar ro'yxati Telegram ga avtomatik yuboriladi.
+                        Botga <b className="text-cyan-300">/today</b>, <b className="text-cyan-300">/tomorrow</b>, <b className="text-cyan-300">/week</b> buyruqlari ham ishlaydi.
+                    </p>
+
+                    {/* Status alert */}
+                    {tgStatus && (
+                        <div className={`mb-4 p-3.5 rounded-2xl text-xs font-extrabold border flex items-start gap-2 ${
+                            tgStatus.ok
+                                ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300'
+                                : 'bg-rose-950/40 border-rose-500/40 text-rose-300'
+                        }`}>
+                            <span className="shrink-0 mt-0.5">{tgStatus.ok ? '✅' : '❌'}</span>
+                            <span className="whitespace-pre-wrap">{tgStatus.text}</span>
+                        </div>
+                    )}
+
+                    {/* Qadamlar */}
+                    <div className="mb-5 bg-slate-950/40 rounded-2xl p-4 border border-slate-700/50">
+                        <p className="text-[11px] font-extrabold text-slate-300 uppercase tracking-wider mb-3">Sozlash tartibi</p>
+                        <ol className="space-y-2 text-xs text-slate-300 font-semibold list-decimal list-inside">
+                            <li>Telegramda <code className="bg-white/10 px-1.5 py-0.5 rounded text-cyan-300">@BotFather</code> ga <code className="bg-white/10 px-1.5 py-0.5 rounded">/newbot</code> yuboring → token oling</li>
+                            <li>Vercel → Settings → Environment Variables ga qo'shing:<br />
+                                <code className="bg-white/10 px-1.5 py-0.5 rounded text-amber-300 text-[10px]">TELEGRAM_BOT_TOKEN</code>,{' '}
+                                <code className="bg-white/10 px-1.5 py-0.5 rounded text-amber-300 text-[10px]">TELEGRAM_CHAT_ID</code>,{' '}
+                                <code className="bg-white/10 px-1.5 py-0.5 rounded text-amber-300 text-[10px]">TELEGRAM_SECRET_TOKEN</code>
+                            </li>
+                            <li>Qayta deploy qilib, pastdagi "Webhook ulash" tugmasini bosing</li>
+                            <li>Botga <code className="bg-white/10 px-1.5 py-0.5 rounded text-cyan-300">/start</code> yuboring</li>
+                        </ol>
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                        {/* Webhook ulash */}
+                        <button
+                            disabled={tgLoading}
+                            onClick={async () => {
+                                setTgLoading(true); setTgStatus(null);
+                                try {
+                                    const r = await fetch('/api/telegram/setup');
+                                    const d = await r.json();
+                                    if (d.success) {
+                                        setTgStatus({ ok: true, text: `✅ Webhook ulandi!\nBot: @${d.bot?.username}\nURL: ${d.webhook_url}` });
+                                    } else {
+                                        setTgStatus({ ok: false, text: d.error || 'Xato yuz berdi' });
+                                    }
+                                } catch (e: any) {
+                                    setTgStatus({ ok: false, text: e.message });
+                                }
+                                setTgLoading(false);
+                            }}
+                            className="px-5 py-2.5 rounded-xl font-extrabold text-sm bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20 transition-all active:scale-95 cursor-pointer flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            {tgLoading ? <span className="animate-spin">⟳</span> : '🔗'}
+                            Webhook ulash
+                        </button>
+
+                        {/* Test xabar */}
+                        <button
+                            disabled={tgLoading}
+                            onClick={async () => {
+                                setTgLoading(true); setTgStatus(null);
+                                try {
+                                    const r = await fetch('/api/cron/daily-schedule');
+                                    const d = await r.json();
+                                    if (d.ok) {
+                                        setTgStatus({ ok: true, text: `📨 Test xabar yuborildi! (${d.lessons_count} ta dars, ${d.day})` });
+                                    } else {
+                                        setTgStatus({ ok: false, text: d.error || 'Xabar yuborib bo\'lmadi' });
+                                    }
+                                } catch (e: any) {
+                                    setTgStatus({ ok: false, text: e.message });
+                                }
+                                setTgLoading(false);
+                            }}
+                            className="px-5 py-2.5 rounded-xl font-extrabold text-sm bg-white/10 border border-white/20 text-white hover:bg-white/15 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            📨 Test xabar yuborish
+                        </button>
+                    </div>
+                </div>
+
                 {/* Add Custom Holiday Card */}
-                <div className="mt-8 bg-white/10 backdrop-blur-2xl p-6 rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] mb-8">
+                <div className="bg-white/10 backdrop-blur-2xl p-6 rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] mb-8">
                     <h2 className="text-base font-extrabold text-white mb-4 flex items-center gap-2.5">
                         <span className="w-7 h-7 rounded-xl bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 flex items-center justify-center shrink-0">
                             <Plus className="w-4 h-4" />
