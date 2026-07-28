@@ -331,8 +331,8 @@ async function initDb() {
     // Update settings.currentWeek dynamically
     state.settings.currentWeek = calculateCurrentWeek();
 
-    // Persist current state to localStorage
-    saveStateToStorage();
+    // Persist current state to localStorage without posting to DB on load
+    saveStateToStorage(true);
 }
 
 function loadStateFromStorage() {
@@ -377,13 +377,15 @@ function loadStateFromStorage() {
     saveStateToStorage();
 }
 
-function saveStateToStorage() {
+function saveStateToStorage(skipDb = false) {
     // 1. Save locally as backup
     localStorage.setItem("dars_sections", JSON.stringify(state.sections));
     localStorage.setItem("dars_groups", JSON.stringify(state.groups));
     localStorage.setItem("dars_lessons", JSON.stringify(state.lessons));
     localStorage.setItem("dars_settings", JSON.stringify(state.settings));
     localStorage.setItem("dars_academic_graphs", JSON.stringify(state.academicGraphs));
+
+    if (skipDb) return;
 
     // 2. Post payload to backend server
     const payload = {
@@ -2603,7 +2605,7 @@ function loadGeneratedAiSchedule() {
                 state.academicGraphs = parsed.academicGraphs;
                 state.settings = { ...state.settings, ...parsed.settings };
                 
-                saveToDb();
+                saveStateToStorage();
                 
                 // Show notification and go to home
                 showNotification("AI dars jadvali muvaffaqiyatli o'rnatildi!");
