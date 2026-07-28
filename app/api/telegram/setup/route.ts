@@ -19,10 +19,11 @@ export async function GET(req: NextRequest) {
   }
 
   // Vercel URL ni aniqlash
-  const host = process.env.VERCEL_URL
+  const reqHost = req.headers.get('host');
+  const host = reqHost && !reqHost.includes('localhost')
+    ? `https://${reqHost}`
+    : process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : req.headers.get('host')
-    ? `https://${req.headers.get('host')}`
     : 'http://localhost:3000';
 
   const webhookUrl = `${host}/api/telegram/webhook`;
