@@ -239,7 +239,13 @@ export async function POST(req: NextRequest) {
     }
 
 
-    if (text === '/start' || text.startsWith('/start ')) {
+    // Ovozli xabar yoki oddiy izoh matni kelganda
+    const isCommand = text.startsWith('/');
+    const voice = message.voice;
+
+    if (!isCommand && (text || voice)) {
+      await handleIncomingNote(chatId, text, voice);
+    } else if (text === '/start' || text.startsWith('/start ')) {
       await handleStart(chatId, firstName);
     } else if (text === '/today') {
       await handleToday(chatId);
@@ -259,5 +265,181 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error('Telegram webhook error:', err);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+  }
+}
+
+// ─── Incoming Note/Voice Handler ──────────────────────────────────────────────
+async function handleIncomingNote(chatId: number, rawText: string, voice: any) {
+  let textToProcess = rawText || '';
+
+  // 1. Ovozli xabarni transkripsiya qilish (Gemini yordamida)
+  if (voice) {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) {
+      await sendMessage(chatId, "⚠️ <b>Ovozli xabar qabul qilindi.</b>\nLekin uni matnga aylantirish uchun serverda <code>GEMINI_API_KEY</code> sozlanishi kerak. Hozircha faqat matnli izoh yubora olasiz.");
+      return;
+    }
+
+    await sendMessage(chatId, "🎙 <i>Ovozli xabar eshitilmoqda va matnga aylantirilmoqda...</i>");
+
+    try {
+      const fileId = voice.file_id;
+      // Telegramdan fayl yo'lini olamiz
+      const fileRes = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getFile?file_id=${fileId}`);
+      const fileData = await fileRes.json();
+      if (!fileData.ok) throw new Error("Faylni yuklab bo'lmadi");
+
+      const filePath = fileData.result.file_path;
+      // Ogg faylini yuklab olamiz
+      const oggRes = await fetch(`https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${filePath}`);
+      const oggBuffer = await oggRes.arrayBuffer();
+      const base64Audio = Buffer.from(oggBuffer).toString('base64');
+
+      // Gemini API ga yuboramiz
+      const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              {
+                inlineData: {
+                  mimeType: 'audio/ogg',
+                  data: base64Audio
+                }
+              },
+              {
+                text: "Ushbu ovozli xabarni o'zbek tilidagi matnga aylantiring (Transkripsiya qiling). Matnda guruh nomi (masalan 25-16, 25-17) bo'lsa, uni albatta to'g'ri va aniq yozing. Faqat transkripsiya matnini qaytaring, boshqa hech narsa yozmang."
+              }
+            ]
+          }]
+        })
+      });
+
+      const geminiData = await geminiRes.json();
+      const transcription = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!transcription) throw new Error("Transkripsiya amalga oshmadi");
+
+      textToProcess = transcription.trim();
+    } catch (e: any) {
+      console.error("Gemini audio transcription error:", e);
+      await sendMessage(chatId, `❌ <b>Ovozli xabarni o'qishda xatolik:</b> ${e.message}`);
+      return;
+    }
+  }
+
+  // 2. Guruh nomini aniqlash (Regex: 25-16, 24-14 va h.k.)
+  const groupRegex = /\b(2\d-\d\d)\b/;
+  const match = textToProcess.match(groupRegex);
+
+  if (!match) {
+    const errorPrefix = voice ? `🎙 <b>Transkripsiya:</b> <i>"${textToProcess}"</i>\n\n` : '';
+    await sendMessage(chatId, `${errorPrefix}⚠️ <b>Guruh aniqlanmadi!</b>\nIzoh yoki qayd yozayotganda guruh nomini albatta ko'rsating.\n\n<i>Masalan: \"25-16 guruh dars zo'r o'tdi\"</i>`);
+    return;
+  }
+
+  const groupName = match[1];
+  // Izoh matnidan guruh nomini va boshqa ortiqcha so'zlarni olib tashlash
+  const noteText = textToProcess
+    .replace(groupRegex, '')
+    .replace(/izoh|qayd|[:\-]/gi, '')
+    .trim();
+
+  if (!noteText) {
+    await sendMessage(chatId, `⚠️ <b>Izoh matni bo'sh!</b>\nGuruh nomidan keyin izoh matnini ham yozing.\n\n<i>Masalan: \"${groupName} dars a'lo darajada o'tdi\"</i>`);
+    return;
+  }
+
+  // 3. Supabase orqali guruh ID sini aniqlash
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
+  );
+
+  let data;
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'schedule', 'data.json');
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    data = JSON.parse(fileContent);
+  } catch (err) {
+    await sendMessage(chatId, '❌ Server ma\'lumotlarini o\'qib bo\'lmadi.');
+    return;
+  }
+
+  const { groups } = data;
+  const group = (groups || []).find((g: any) => g.name.toLowerCase().includes(groupName.toLowerCase()));
+
+  if (!group) {
+    await sendMessage(chatId, `❌ Tizimda <b>${groupName}</b> guruhi topilmadi.`);
+    return;
+  }
+
+  // Bugungi sanani formatlash (DD.MM.YYYY Uzbekistan vaqti)
+  const now = new Date();
+  const uzTime = new Date(now.getTime() + 5 * 60 * 60 * 1000);
+  const day = String(uzTime.getDate()).padStart(2, '0');
+  const month = String(uzTime.getMonth() + 1).padStart(2, '0');
+  const year = uzTime.getFullYear();
+  const todayDateStr = `${day}.${month}.${year}`;
+
+  // Bugungi darsni izlash
+  const { data: todayLessons } = await supabase
+    .from('lessons')
+    .select('*')
+    .eq('group_id', group.id)
+    .eq('lesson_date', todayDateStr);
+
+  let updatedCount = 0;
+  let targetLessonInfo = '';
+
+  if (todayLessons && todayLessons.length > 0) {
+    // Bugungi dars(lar)ga izoh yozamiz
+    const { error } = await supabase
+      .from('lessons')
+      .update({ note: noteText })
+      .eq('group_id', group.id)
+      .eq('lesson_date', todayDateStr);
+
+    if (error) {
+      await sendMessage(chatId, `❌ Izohni saqlashda xatolik: ${error.message}`);
+      return;
+    }
+    updatedCount = todayLessons.length;
+    targetLessonInfo = `bugungi (${todayDateStr}) darsiga`;
+  } else {
+    // Agar bugun dars topilmasa, guruhning oxirgi darsiga yozamiz
+    const { data: latestLessons } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('group_id', group.id)
+      .order('id', { ascending: false })
+      .limit(1);
+
+    if (latestLessons && latestLessons.length > 0) {
+      const { error } = await supabase
+        .from('lessons')
+        .update({ note: noteText })
+        .eq('id', latestLessons[0].id);
+
+      if (error) {
+        await sendMessage(chatId, `❌ Oxirgi darsga izoh saqlashda xatolik: ${error.message}`);
+        return;
+      }
+      updatedCount = 1;
+      targetLessonInfo = `oxirgi darsiga (${latestLessons[0].lesson_date || 'sanasiz dars'})`;
+    }
+  }
+
+  if (updatedCount > 0) {
+    const successMsg = `✅ <b>Qayd muvaffaqiyatli saqlandi!</b>\n\n`
+      + `👥 Guruh: <b>${group.name}</b>\n`
+      + `📅 Joyi: <b>Guruhning ${targetLessonInfo}</b>\n`
+      + `${voice ? `🎙 <i>Ovozli xabar matni:</i>\n` : `📝 <i>Izoh matni:</i>\n`}`
+      + `\"${noteText}\"\n\n`
+      + `📱 <i>Ushbu qayd avtomatik tarzda elektron jurnal platformasidagi <b>"Izoh / Qayd"</b> ustuniga kelib tushdi.</i>`;
+    await sendMessage(chatId, successMsg);
+  } else {
+    await sendMessage(chatId, `❌ <b>${group.name}</b> guruhi uchun hech qanday dars mavzulari topilmadi. Avval platformadan dars kiriting.`);
   }
 }
